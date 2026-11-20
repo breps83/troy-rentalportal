@@ -1,6 +1,12 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/requirements.md" />
+    <File Path="docs/requirements-checklist.md" />
+    <File Path="docs/interview-prep.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/RentalPortal.Web/RentalPortal.Web.csproj" />

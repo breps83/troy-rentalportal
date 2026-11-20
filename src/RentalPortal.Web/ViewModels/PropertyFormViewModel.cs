@@ -22,6 +22,27 @@ public class PropertyFormViewModel
     [Required, RegularExpression(@"^\d{5}(-\d{4})?$", ErrorMessage = "Please enter a valid postal code.")]
     public string? PostalCode { get; set; }
 
+    /// <summary>
+    /// Creates a property form view model from a property.
+    /// </summary>
+    /// <param name="property">The property used to populate the view model.</param>
+    /// <returns>A property form view model containing the property details.</returns>
+    public static PropertyFormViewModel From(Property property) => new()
+    {
+        Id = property.Id,
+        Name = property.Name,
+        Street = property.Street,
+        City = property.City,
+        State = property.State,
+        PostalCode = property.PostalCode
+    };
+
+    /// <summary>
+    /// Applies the form values to the specified property.
+    /// </summary>
+    /// <remarks>Whitespace is removed from text values, and the state code is converted to uppercase
+    /// invariant before it is trimmed.</remarks>
+    /// <param name="property">The property to update.</param>
     public void ApplyTo(Property property)
     {
         property.Name = Name!.Trim();

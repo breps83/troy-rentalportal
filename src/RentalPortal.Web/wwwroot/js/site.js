@@ -16,7 +16,7 @@
     const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     const content = modalElement.querySelector('.modal-content');
     const ajaxHeaders = { 'X-Requested-With': 'XMLHttpRequest' };
-    const errorMessage = 'Something went wrong. Please try again.';
+   
     // What to reload after a successful save, captured from the data-refresh-url and
     // data-refresh-target attributes of the button that opened the modal. Set on each click.
     let refresh = null;
@@ -30,18 +30,30 @@
         }
     }
 
-    function renderError() {
+    // Picks the message to show for a failed request. response is undefined for network errors.
+    function getErrorMessage(response) {
+        switch (response && response.status) {
+            case 403:
+                return 'You do not have permission to perform this action. Reload the page and try again.';
+            case 409:
+                return 'This record was changed by someone else. Reload the page and try again.';
+            default:
+                return 'Something went wrong. Please try again.';
+        }
+    }
+
+    function renderError(response) {
         render(
             '<div class="modal-header">' +
             '<h5 class="modal-title">Error</h5>' +
             '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
             '</div>' +
             '<div class="modal-body"><div class="alert alert-danger mb-0" role="alert"></div></div>');
-        content.querySelector('.alert').textContent = errorMessage;
+        content.querySelector('.alert').textContent = getErrorMessage(response);
     }
 
     // Shows an error above the form without discarding what the user has typed.
-    function showFormError(form) {
+    function showFormError(form, response) {
         let alert = form.querySelector('[data-modal-error]');
         if (!alert) {
             alert = document.createElement('div');
@@ -50,7 +62,7 @@
             alert.setAttribute('data-modal-error', '');
             (form.querySelector('.modal-body') || form).prepend(alert);
         }
-        alert.textContent = errorMessage;
+        alert.textContent = getErrorMessage(response);
     }
 
     // Follows a redirect with a full page navigation. Returns true if it did.
@@ -107,7 +119,7 @@
             if (response.ok) {
                 render(await response.text());
             } else {
-                renderError();
+                renderError(response);
             }
         } catch {
             renderError();
@@ -141,7 +153,7 @@
             }
 
             if (!response.ok) {
-                showFormError(form);
+                showFormError(form, response);
                 return;
             }
 

@@ -20,6 +20,7 @@ else
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Address</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -28,6 +29,20 @@ else
                     <tr>
                         <td>@property.Name</td>
                         <td>@property.Address</td>
+                        <td class="text-end text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    data-modal-url="@Url.Action("Edit", new { id = property.Id })"
+                                    data-refresh-url="@Url.Action("List")"
+                                    data-refresh-target="#property-list">
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-modal-url="@Url.Action("Delete", new { id = property.Id })"
+                                    data-refresh-url="@Url.Action("List")"
+                                    data-refresh-target="#property-list">
+                                Delete
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>

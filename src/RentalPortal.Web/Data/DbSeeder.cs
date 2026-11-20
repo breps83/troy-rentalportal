@@ -70,7 +70,7 @@ public class DbSeeder
         var applicants = new List<ApplicationUser>()
         {
             await EnsureUserAsync(userManager, "applicant@rentalportal.test", "Arnold", "Schwarzenegger", Roles.Applicant),
-            await EnsureUserAsync(userManager, "applicant2@rentalportal.test", "Sylvestor", "Stallone", Roles.Applicant),
+            await EnsureUserAsync(userManager, "applicant2@rentalportal.test", "Sylvester", "Stallone", Roles.Applicant),
             await EnsureUserAsync(userManager, "applicant3@rentalportal.test", "Bruce", "Willis", Roles.Applicant),
             await EnsureUserAsync(userManager, "applicant4@rentalportal.test", "Chuck", "Norris", Roles.Applicant)
         };
@@ -110,11 +110,18 @@ public class DbSeeder
                 throw new InvalidOperationException(
                     $"Could not seed {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
-            
-            if(!await userManager.IsInRoleAsync(user, role))
+        }
+
+        // Checked on every run, not just when the user is created, so a user left without
+        // their role (e.g. by an earlier failed run) is repaired.
+        if (!await userManager.IsInRoleAsync(user, role))
+        {
+            var roleResult = await userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
             {
-                await userManager.AddToRoleAsync(user, role);
-            }           
+                throw new InvalidOperationException(
+                    $"Could not add {email} to {role}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+            }
         }
 
         return user;

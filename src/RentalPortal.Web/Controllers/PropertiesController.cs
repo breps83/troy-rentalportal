@@ -11,22 +11,13 @@ namespace RentalPortal.Web.Controllers;
 public class PropertiesController(AppDbContext db) : Controller
 {
     private const string FormView = "_PropertyForm";
+    private const string ListView = "_PropertyList";
 
-    public async Task<IActionResult> Index()
-    {
-        var properties = await db.Properties
-            .AsNoTracking()
-            .OrderBy(p => p.Name)
-            .Select(p => new PropertyRowViewModel
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Address = $"{p.Street}, {p.City}, {p.State} {p.PostalCode}"
-            })
-            .ToListAsync();
+    [HttpGet]
+    public async Task<IActionResult> Index() => View(await GetPropertyRowsAsync());
 
-        return View(properties);
-    }
+    [HttpGet]
+    public async Task<IActionResult> List() => PartialView(ListView, await GetPropertyRowsAsync());
 
     [HttpGet]
     public IActionResult Create() => PartialView(FormView, new PropertyFormViewModel());
@@ -45,6 +36,20 @@ public class PropertiesController(AppDbContext db) : Controller
         db.Properties.Add(property);
         await db.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return Json(new { success = true });
+    }
+
+    private Task<List<PropertyRowViewModel>> GetPropertyRowsAsync()
+    {
+        return db.Properties
+            .AsNoTracking()
+            .OrderBy(p => p.Name)
+            .Select(p => new PropertyRowViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Address = $"{p.Street}, {p.City}, {p.State} {p.PostalCode}"
+            })
+            .ToListAsync();
     }
 }

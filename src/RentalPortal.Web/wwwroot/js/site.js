@@ -1,9 +1,12 @@
 ﻿// Generic modal handling.
 //
 // Any element with data-modal-url opens the shared modal with the partial view returned from that URL.
-// Forms inside the modal are submitted via fetch: a redirect response navigates the page (success, or
-// an expired login sending the user to the login page), and any other successful response is
-// re-rendered inside the modal (e.g. validation errors). Error responses show a message instead.
+// Forms inside the modal are posted with fetch. The server either returns the same partial with
+// validation errors (re-rendered in place) or JSON { success: true }, in which case the modal closes
+// and the element named by data-refresh-target is reloaded from data-refresh-url.
+//
+// A redirect response (e.g. an expired login sending the user to the login page) navigates the whole
+// page instead of rendering inside the modal. Error responses show a message instead.
 (function () {
     const modalElement = document.getElementById('app-modal');
     if (!modalElement) {
@@ -14,9 +17,17 @@
     const content = modalElement.querySelector('.modal-content');
     const ajaxHeaders = { 'X-Requested-With': 'XMLHttpRequest' };
     const errorMessage = 'Something went wrong. Please try again.';
+    // What to reload after a successful save, captured from the data-refresh-url and
+    // data-refresh-target attributes of the button that opened the modal. Set on each click.
+    let refresh = null;
 
     function render(html) {
         content.innerHTML = html;
+
+        const form = content.querySelector('form');
+        if (form && window.jQuery && jQuery.validator && jQuery.validator.unobtrusive) {
+            jQuery.validator.unobtrusive.parse(form);
+        }
     }
 
     function renderError() {
@@ -42,6 +53,41 @@
         alert.textContent = errorMessage;
     }
 
+    // Follows a redirect with a full page navigation. Returns true if it did.
+    function followRedirect(response) {
+        if (response.redirected) {
+            window.location.href = response.url;
+            return true;
+        }
+        return false;
+    }
+
+    async function refreshTarget() {
+        if (!refresh || !refresh.url || !refresh.target) {
+            // Nothing to refresh in place; reload so the page reflects the change.
+            window.location.reload();
+            return;
+        }
+
+       
+        const target = document.querySelector(refresh.target);
+        try {
+            const response = await fetch(refresh.url, { headers: ajaxHeaders });
+            if (followRedirect(response)) {
+                return;
+            }
+            if (target && response.ok) {
+                target.innerHTML = await response.text();
+                return;
+            }
+        } catch {
+            // Fall through to a full reload.
+        }
+
+        // The save succeeded but the partial refresh failed; reload to show current data.
+        window.location.reload();
+    }
+
     document.addEventListener('click', async function (event) {
         const trigger = event.target.closest('[data-modal-url]');
         if (!trigger) {
@@ -49,12 +95,12 @@
         }
 
         event.preventDefault();
+        
+        refresh = { url: trigger.dataset.refreshUrl, target: trigger.dataset.refreshTarget };
 
         try {
             const response = await fetch(trigger.dataset.modalUrl, { headers: ajaxHeaders });
-
-            if (response.redirected) {
-                window.location.href = response.url;
+            if (followRedirect(response)) {
                 return;
             }
 
@@ -71,12 +117,12 @@
     });
 
     content.addEventListener('submit', async function (event) {
-        const form = event.target.closest('form');
-        if (!form) {
+        const form = event.target;
+        event.preventDefault();
+
+        if (window.jQuery && jQuery(form).data('validator') && !jQuery(form).valid()) {
             return;
         }
-
-        event.preventDefault();
 
         const submitButton = form.querySelector('[type="submit"]');
         if (submitButton) {
@@ -85,20 +131,26 @@
 
         try {
             const response = await fetch(form.action, {
-                method: form.method || 'post',
-                headers: ajaxHeaders,
-                body: new FormData(form)
+                method: 'POST',
+                body: new FormData(form),
+                headers: ajaxHeaders
             });
 
-            if (response.redirected) {
-                window.location.href = response.url;
+            if (followRedirect(response)) {
                 return;
             }
 
-            if (response.ok) {
-                render(await response.text());
-            } else {
+            if (!response.ok) {
                 showFormError(form);
+                return;
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                modal.hide();
+                await refreshTarget();
+            } else {
+                render(await response.text());
             }
         } catch {
             showFormError(form);

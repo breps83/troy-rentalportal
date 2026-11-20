@@ -1,39 +1,23 @@
-@model IEnumerable<PropertyRowViewModel>
+@model IReadOnlyList<PropertyRowViewModel>
 @{
     ViewData["Title"] = "Properties";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">Properties</h1>
-    <button type="button" class="btn btn-primary" data-modal-url="@Url.Action("Create")">Add property</button>
+    <button type="button" class="btn btn-primary"
+            data-modal-url="@Url.Action("Create")"
+            data-refresh-url="@Url.Action("List")"
+            data-refresh-target="#property-list">
+        Add property
+    </button>
 </div>
 
-@if (!Model.Any())
-{
-    <div class="text-center text-muted py-5">
-        <p>No properties have been added yet.</p>
-        <button type="button" class="btn btn-outline-primary" data-modal-url="@Url.Action("Create")">Add your first property</button>
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Address</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var property in Model)
-                {
-                    <tr>
-                        <td>@property.Name</td>
-                        <td>@property.Address</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+
+<div id="property-list">
+    <partial name="_PropertyList" model="Model" />
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

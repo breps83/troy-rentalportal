@@ -14,6 +14,19 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
+        // Map each account type to its role explicitly; anything else (e.g. a forged numeric value) is rejected.
+        string? role = model.AccountType switch
+        {
+            AccountType.Applicant => Roles.Applicant,
+            AccountType.PropertyManager => Roles.PropertyManager,
+            _ => null
+        };
+
+        if (role is null)
+        {
+            ModelState.AddModelError(nameof(model.AccountType), "Choose a valid account type.");
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -38,8 +51,7 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             return View(model);
         }
 
-        var role = model.AccountType == AccountType.Applicant ? Roles.Applicant : Roles.PropertyManager;
-        await userManager.AddToRoleAsync(user, role);
+        await userManager.AddToRoleAsync(user, role!);
         await signInManager.SignInAsync(user, isPersistent: false);
 
         return RedirectToAction("Index", "Home");

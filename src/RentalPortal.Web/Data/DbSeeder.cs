@@ -11,6 +11,7 @@ public class DbSeeder
     // In a production application, you would not want to use a default password like this.
     // This is just for demonstration purposes.
     public const string DefaultPassword = "Password1**";
+    public const string FakerCulture = "en_US";
 
     /// <summary>
     /// Migrates the database and seeds default roles and demo users.
@@ -30,6 +31,8 @@ public class DbSeeder
         await SeedRolesAsync(roleManager);
 
         await SeedDemoUsersAsync(userManager);
+
+        await SeedPropertiesAsync(db);
     }
 
     /// <summary>
@@ -56,7 +59,7 @@ public class DbSeeder
     /// <returns>A task that represents the asynchronous seeding operation.</returns>
     private static async Task SeedDemoUsersAsync(UserManager<ApplicationUser> userManager)
     {
-        var faker = new Faker("en_US") { Random = new Randomizer(4021) };
+        var faker = new Faker(FakerCulture) { Random = new Randomizer(4021) };
 
         var propertyManagers = new List<ApplicationUser>()
         {
@@ -115,6 +118,31 @@ public class DbSeeder
         }
 
         return user;
+    }
+
+    /// <summary>
+    /// Seeds the database with property records when none exist.
+    /// </summary>
+    /// <remarks>Uses a fixed seed and generates eight property records.</remarks>
+    /// <param name="db">The database context used to seed and persist property records.</param>
+    /// <returns>A task that represents the asynchronous seed operation.</returns>
+    private static async Task SeedPropertiesAsync(AppDbContext db)
+    {
+        if(await db.Properties.AnyAsync())
+            return;
+
+        var properties = new Faker<Property>(FakerCulture)
+            .UseSeed(1187) // fixed seed, this gives the same sequence of generated data
+            .RuleFor(p => p.Name, f => $"{f.Address.StreetName()} {f.PickRandom("Residences", "Apartments", "Condos")}")
+            .RuleFor(p => p.Street, f => f.Address.StreetAddress())
+            .RuleFor(p => p.City, f => f.Address.City())
+            .RuleFor(p => p.State, f => f.Address.StateAbbr())
+            .RuleFor(p => p.PostalCode, f => f.Address.ZipCode("#####"))
+            .Generate(8);
+
+        db.Properties.AddRange(properties);
+
+        await db.SaveChangesAsync();
     }
 
 }

@@ -63,7 +63,9 @@
 
                 case ApplicationSection.ResidenceHistory:
                  
-                    <p class="text-muted mb-0">To Do Residence History</p>
+                   <div id="residence-history">
+                        @await Component.InvokeAsync("ResidenceHistory")
+                   </div>
                     break;
 
                 case ApplicationSection.Summary:

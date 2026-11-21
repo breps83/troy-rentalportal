@@ -1,0 +1,42 @@
+@model IReadOnlyList<AvailableUnitViewModel>
+@{
+    ViewData["Title"] = "Available Units";
+}
+
+<h1 class="h3 mb-4">Available Units</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-light border">There are no units available right now. Please check back later.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Property</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Type</th>
+                    <th scope="col" class="text-center">Bedrooms</th>
+                    <th scope="col" class="text-end">Monthly rent</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var unit in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@unit.PropertyName</div>
+                            <div class="text-muted small">@unit.Address</div>
+                        </td>
+                        <td>@unit.UnitNumber</td>
+                        <td>@unit.UnitType</td>
+                        <td class="text-center">@(unit.Bedrooms == 0 ? "Studio" : unit.Bedrooms.ToString())</td>
+                        <td class="text-end">@unit.MonthlyRent.ToString("C0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

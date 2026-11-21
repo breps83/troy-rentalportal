@@ -18,7 +18,10 @@ public class DbSeeder
             ("Studio", true),
             ("Apartment", true),
             ("Condo", true),
-            ("Townhouse", true)
+            ("Townhouse", true),
+            // Inactive (FR 2.b): no longer offered for new units, but still shown on the
+            // seeded units that already use it, so the "inactive" rule can be demoed.
+            ("Penthouse", false)
         ];
     
 
@@ -122,15 +125,22 @@ public class DbSeeder
 
         foreach (var property in properties)
         {
+            // between 5 & 8 units
             var unitCount = faker.Random.Int(5, 8);
 
             for (var i = 0; i < unitCount; i++)
             {
                 var bedrooms = faker.Random.Int(0, 3);
+                // Pick a unit type that fits the bedroom count. 
+                // The faker has a fixed seed, so the same units get the same types on every reseed.
                 var type = bedrooms switch
                 {
+                    // Studios have no separate bedroom.
                     0 => types["Studio"],
-                    3 => types["Apartment"],
+                    // 3 bedrooms: 10% Penthouse, 90% Apartment. Penthouse is inactive, so these units
+                    // show it with an "inactive" badge but no other unit can be given it 
+                    3 => faker.Random.Bool(0.1f) ? types["Penthouse"] : types["Apartment"],
+                    // 1 or 2 bedrooms: 20% Condo, 80% Townhouse.
                     _ => faker.Random.Bool(0.2f) ? types["Condo"] : types["Townhouse"]
                 };
 
@@ -152,6 +162,11 @@ public class DbSeeder
         await db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Seeds unit types that are not already present in the database.
+    /// </summary>
+    /// <param name="db">The database context used to query and persist unit types.</param>
+    /// <returns>A task that represents the asynchronous seeding operation.</returns>
     private static async Task SeedUnitTypesAsync(AppDbContext db)
     {
         var existingUnitTypes = await db.UnitTypes.Select(t => t.Name).ToListAsync();

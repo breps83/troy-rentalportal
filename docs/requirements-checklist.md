@@ -9,6 +9,8 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Roles defined and seeded
   - [ ] Permissions enforced in every controller
   - [ ] UI shows only the actions the current role can perform
+    - [x] Navbar and homepage links by role (Properties for managers; Available Units when logged in)
+    - [ ] Application, review, and list pages
 - [ ] **Applicant** can:
   - [ ] Create, fill out, and submit an application for an available unit
   - [ ] Withdraw an application
@@ -44,9 +46,10 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Roles
   - [x] Property managers and applicants
   - [x] Properties
-  - [ ] Lookups (unit types, active and inactive)
+  - [x] Lookups (unit types, active and inactive)
     - [x] Active unit types (Studio, Apartment, Condo, Townhouse)
-    - [ ] At least one **inactive** unit type, used by an existing unit
+    - [x] Inactive unit type, used by existing units (`Penthouse` in `DbSeeder.UnitTypes`, on about 30%
+          of 3-bedroom units)
   - [x] Units (5–8 per property)
   - [ ] Applications in **every** status (Draft, Submitted, Returned, Approved, Denied, Withdrawn)
   - [ ] Leases for approved applications
@@ -77,13 +80,15 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
   - [x] Deleting a property or unit is refused with a message when it has rental applications
   - [ ] Applicants can browse available units
+    - [x] Available Units page (`ListingsController`), linked from the navbar and homepage
+    - [ ] Only units with no lease covering today are listed (needs `Lease`; see FR 2.c)
   - [ ] Applicants can start an application from a unit
-- [ ] **2.b** Unit Type lookup with Active and Inactive values
+- [x] **2.b** Unit Type lookup with Active and Inactive values
   - [x] Unit type stored as a lookup table, not free text
   - [x] Inactive type still displays on units that already use it (marked "inactive" in the unit list)
   - [x] Inactive type can't be selected for any other unit
   - [x] Enforced on the server, not just hidden in the UI (`UnitsController.ValidateUnitAsync`)
-  - [ ] Seed data includes an inactive type (see TR 2.b.ii)
+  - [x] Seed data includes an inactive type (`Penthouse`; see TR 2.b.ii)
 - [ ] **2.c** Leases
   - [ ] Approval creates a lease with a start date and a twelve-month term
   - [ ] A unit whose lease term covers today is not available

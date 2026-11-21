@@ -54,8 +54,8 @@ flowchart LR
 | TR 1.b | In progress | Modals done for properties and units; residences and review modals remain |
 | TR 2.b.ii | In progress | Roles, users, unit types, properties, units seeded; applications in every status and leases remain |
 | TR 2.c | In progress | `UnitTypeTests` and `RentalApplicationTests` (23 passing); review, lease, and submit-with-lease tests remain |
-| FR 2.a | In progress | Manager side done; applicants browsing available units and starting an application remain |
-| FR 2.b | Done | Seeding an inactive type is optional, but useful for demoing the rule |
+| FR 2.a | In progress | Manager side done; Available Units page exists but lists every unit until leases exist; starting an application remains |
+| FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
 | FR 3 | In progress | `RentalApplication` domain model, EF mapping, and tests exist; migration, controller, and views remain |
 
 ---
@@ -78,7 +78,7 @@ flowchart LR
     Anyone --> SignUp["Sign up, choosing a role"]:::done
     Anyone --> LogIn["Log in and log out"]:::done
 
-    A --> Browse["Browse available units"]:::todo
+    A --> Browse["Browse available units"]:::partial
     A --> Start["Start an application"]:::partial
     A --> Fill["Fill out sections"]:::partial
     A --> Submit["Submit"]:::partial
@@ -94,8 +94,10 @@ flowchart LR
 ```
 
 Amber here means the rule exists in `RentalApplication` and is unit tested, but there's no
-controller or page for it yet. `PropertiesController` and `UnitsController` are restricted to
-`Roles.PropertyManager`; the navigation shows Properties only to property managers.
+controller or page for it yet. "Browse available units" is amber because the page exists
+(`ListingsController`) but can't filter out leased units until `Lease` exists.
+`PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`; the navbar
+shows Properties only to property managers, and Available Units to anyone logged in.
 
 ---
 

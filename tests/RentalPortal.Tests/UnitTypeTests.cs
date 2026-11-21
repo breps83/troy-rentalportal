@@ -29,12 +29,12 @@ public class UnitTypeTests
     [Fact]
     public void InactiveType_IsOnlySelectableForAUnitAlreadyUsingIt()
     {
-        // Arrange: Townhouse (Id 4 in the seed data) marked inactive for this test.
-        var type = new UnitType { Id = 4, Name = "Townhouse", IsActive = false };
+        // Arrange: Penthouse, the inactive type in the seed data (Id 5).
+        var type = new UnitType { Id = 5, Name = "Penthouse", IsActive = false };
 
         // Act & Assert
         Assert.False(type.IsSelectableFor(null)); // new unit can't pick an inactive type
         Assert.False(type.IsSelectableFor(2));    // existing unit can't switch to an inactive type
-        Assert.True(type.IsSelectableFor(4));     // unit already using it keeps it
+        Assert.True(type.IsSelectableFor(5));     // unit already using it keeps it
     }
 }

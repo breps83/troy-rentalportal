@@ -22,10 +22,10 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 ### TR 1. ASP.NET Core MVC and Razor
 
-- [ ] **1.a** Uses controllers, view models, Razor views, partial views, and view components
+- [x] **1.a** Uses controllers, view models, Razor views, partial views, and view components
   - [x] Controllers, view models, Razor views
   - [x] Partial views
-  - [ ] View components (**required**)
+  - [x] View components (`UnitListViewComponent` on the property Details page)
 - [ ] **1.b** Modals are populated from partial views returned by controller actions
   - [x] Shared modal and script (`_Layout.cshtml`, `wwwroot/js/site.js`)
   - [x] Validation failure re-renders the same partial in the modal
@@ -45,7 +45,9 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Property managers and applicants
   - [x] Properties
   - [ ] Lookups (unit types, active and inactive)
-  - [ ] Units
+    - [x] Active unit types (Studio, Apartment, Condo, Townhouse)
+    - [ ] At least one **inactive** unit type, used by an existing unit
+  - [x] Units (5–8 per property)
   - [ ] Applications in **every** status (Draft, Submitted, Returned, Approved, Denied, Withdrawn)
   - [ ] Leases for approved applications
 - [ ] **2.c** Unit tests for business logic
@@ -65,11 +67,14 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 - [ ] **2.a** Property manager adds, edits, and removes properties and units through modals
   - [x] Properties
-  - [ ] Units (unit number, bedrooms, monthly rent, unit type)
+  - [x] Removing a property removes its units (cascade delete)
+  - [x] Units listed per property (Details page)
+  - [ ] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
   - [ ] Applicants can browse available units
   - [ ] Applicants can start an application from a unit
 - [ ] **2.b** Unit Type lookup with Active and Inactive values
-  - [ ] Inactive type still displays on units that already use it
+  - [x] Unit type stored as a lookup table, not free text
+  - [x] Inactive type still displays on units that already use it (marked "inactive" in the unit list)
   - [ ] Inactive type can't be selected for any other unit
   - [ ] Enforced on the server, not just hidden in the UI
 - [ ] **2.c** Leases

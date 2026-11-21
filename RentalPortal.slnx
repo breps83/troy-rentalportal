@@ -6,6 +6,7 @@
   <Folder Name="/docs/">
     <File Path="docs/requirements.md" />
     <File Path="docs/requirements-checklist.md" />
+    <File Path="docs/diagrams.md" />
     <File Path="docs/interview-prep.md" />
   </Folder>
   <Folder Name="/src/">

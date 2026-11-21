@@ -30,6 +30,4 @@ public class UnitFormViewModel
     [ValidateNever]
     public IReadOnlyList<SelectListItem> UnitTypes { get; set; } = new List<SelectListItem>();
 
-
-
 }

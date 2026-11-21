@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RentalPortal.Web.ViewModels;
 
-
 public enum AccountType
 {
     Applicant,

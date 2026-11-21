@@ -10,6 +10,20 @@ indent_size = 2
 
 [*.cs]
 csharp_style_namespace_declarations = file_scoped:warning
+
+# Line length guideline. Not enforced by the build or dotnet format; used by Rider/ReSharper,
+# CSharpier, and editor guideline extensions. Wrap long lines with Ctrl+. > "Wrap every parameter".
+max_line_length = 120
+
+# ---- Blank lines ----
+
+# IDE2000: no more than one blank line in a row
+dotnet_style_allow_multiple_blank_lines_experimental = false
+dotnet_diagnostic.IDE2000.severity = warning
+
+# IDE2003: blank line required after a block (if, foreach, using, ...) before the next statement
+dotnet_style_allow_statement_immediately_after_block_experimental = false
+dotnet_diagnostic.IDE2003.severity = warning
 # ---- Naming rules ----
 
 # Required for naming rules to be reported by dotnet build (not just the IDE)

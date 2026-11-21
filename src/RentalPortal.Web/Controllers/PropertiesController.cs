@@ -27,7 +27,6 @@ public class PropertiesController(AppDbContext db) : Controller
     [HttpGet]
     public async Task<IActionResult> List() => PartialView(ListView, await GetPropertyRowsAsync());
 
-
     /// <summary>
     /// Displays the form for creating a property.
     /// </summary>
@@ -109,7 +108,13 @@ public class PropertiesController(AppDbContext db) : Controller
     {
         var property = await db.Properties.FindAsync(id);
 
-        return property is null ? NotFound() : PartialView("_ConfirmDelete", BuildDeleteModel(property));
+        if (property is null)
+        {
+            return NotFound();
+        }
+
+        // Show the reason up front; _ConfirmDelete hides the Remove button when there's an error.
+        return PartialView("_ConfirmDelete", BuildDeleteModel(property, await GetDeleteBlockerAsync(id)));
     }
 
     /// <summary>
@@ -126,6 +131,12 @@ public class PropertiesController(AppDbContext db) : Controller
             return NotFound();
         }
 
+        // Checked again on POST: an application may have been started since the modal opened.
+        if (await GetDeleteBlockerAsync(id) is { } error)
+        {
+            return PartialView("_ConfirmDelete", BuildDeleteModel(property, error));
+        }
+
         db.Properties.Remove(property);
 
         await db.SaveChangesAsync();
@@ -139,6 +150,17 @@ public class PropertiesController(AppDbContext db) : Controller
         return property is null ? NotFound() : View(property);
     }
 
+    /// <summary>
+    /// Checks whether a property can be removed. Applications are kept as records
+    /// (RentalApplication -> Unit is DeleteBehavior.Restrict), so removing a property whose units
+    /// have any application would fail in the database when the units cascade.
+    /// </summary>
+    /// <param name="propertyId">The identifier of the property to remove.</param>
+    /// <returns>The message to show when the removal is blocked; otherwise, <c>null</c>.</returns>
+    private async Task<string?> GetDeleteBlockerAsync(int propertyId) =>
+        await db.RentalApplications.AnyAsync(a => a.Unit.PropertyId == propertyId)
+            ? "This property has units with rental applications and can't be removed."
+            : null;
 
     /// <summary>
     /// Creates the confirmation model for deleting a property.

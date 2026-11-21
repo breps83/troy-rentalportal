@@ -119,7 +119,13 @@ public class UnitsController(AppDbContext db) : Controller
     {
         var unit = await db.Units.FindAsync(id);
 
-        return unit is null ? NotFound() : PartialView("_ConfirmDelete", BuildDeleteModel(unit));
+        if (unit is null)
+        {
+            return NotFound();
+        }
+
+        // Show the reason up front; _ConfirmDelete hides the Remove button when there's an error.
+        return PartialView("_ConfirmDelete", BuildDeleteModel(unit, await GetDeleteBlockerAsync(id)));
     }
 
     [HttpPost, ActionName(nameof(Delete))]
@@ -132,13 +138,18 @@ public class UnitsController(AppDbContext db) : Controller
             return NotFound();
         }
 
+        // Checked again on POST: an application may have been started since the modal opened.
+        if (await GetDeleteBlockerAsync(id) is { } error)
+        {
+            return PartialView("_ConfirmDelete", BuildDeleteModel(unit, error));
+        }
+
         db.Units.Remove(unit);
 
         await db.SaveChangesAsync();
 
         return Json(new { success = true });
     }
-
 
     private async Task<IReadOnlyList<SelectListItem>> GetUnitTypeOptionsAsync(int? currentUnitTypeId)
     {
@@ -179,6 +190,13 @@ public class UnitsController(AppDbContext db) : Controller
             }
         }
     }
+
+    // Applications are kept as records (RentalApplication -> Unit is DeleteBehavior.Restrict), so a unit
+    // with any application can't be deleted. Returns the message to show, or null when the delete is allowed.
+    private async Task<string?> GetDeleteBlockerAsync(int unitId) =>
+        await db.RentalApplications.AnyAsync(a => a.UnitId == unitId)
+            ? "This unit has rental applications and can't be deleted."
+            : null;
 
     private ConfirmDeleteViewModel BuildDeleteModel(Unit unit, string? error = null) => new()
     {

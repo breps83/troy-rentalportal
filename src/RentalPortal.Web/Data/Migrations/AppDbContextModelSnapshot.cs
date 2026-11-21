@@ -155,6 +155,46 @@ namespace RentalPortal.Web.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationStatusHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ChangedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ChangedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("RentalApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedById");
+
+                    b.HasIndex("RentalApplicationId");
+
+                    b.ToTable("ApplicationStatusChanges");
+                });
+
             modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -268,6 +308,108 @@ namespace RentalPortal.Web.Data.Migrations
                     b.ToTable("Properties");
                 });
 
+            modelBuilder.Entity("RentalPortal.Web.Domain.RentalApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("ApplicantInfoCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrentAddress")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
+
+                    b.Property<bool>("ResidenceHistoryCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("SubmittedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicantId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("RentalApplications");
+                });
+
+            modelBuilder.Entity("RentalPortal.Web.Domain.Residence", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LandlordName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LandlordPhone")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
+
+                    b.Property<DateOnly>("MoveInDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("MoveOutDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.ToTable("Residences");
+                });
+
             modelBuilder.Entity("RentalPortal.Web.Domain.Unit", b =>
                 {
                     b.Property<int>("Id")
@@ -379,6 +521,51 @@ namespace RentalPortal.Web.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationStatusHistory", b =>
+                {
+                    b.HasOne("RentalPortal.Web.Domain.ApplicationUser", "ChangedByUser")
+                        .WithMany()
+                        .HasForeignKey("ChangedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RentalPortal.Web.Domain.RentalApplication", null)
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("RentalApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangedByUser");
+                });
+
+            modelBuilder.Entity("RentalPortal.Web.Domain.RentalApplication", b =>
+                {
+                    b.HasOne("RentalPortal.Web.Domain.ApplicationUser", "Applicant")
+                        .WithMany()
+                        .HasForeignKey("ApplicantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RentalPortal.Web.Domain.Unit", "Unit")
+                        .WithMany("Applications")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Applicant");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("RentalPortal.Web.Domain.Residence", b =>
+                {
+                    b.HasOne("RentalPortal.Web.Domain.RentalApplication", null)
+                        .WithMany("Residences")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("RentalPortal.Web.Domain.Unit", b =>
                 {
                     b.HasOne("RentalPortal.Web.Domain.Property", "Property")
@@ -401,6 +588,18 @@ namespace RentalPortal.Web.Data.Migrations
             modelBuilder.Entity("RentalPortal.Web.Domain.Property", b =>
                 {
                     b.Navigation("Units");
+                });
+
+            modelBuilder.Entity("RentalPortal.Web.Domain.RentalApplication", b =>
+                {
+                    b.Navigation("Residences");
+
+                    b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("RentalPortal.Web.Domain.Unit", b =>
+                {
+                    b.Navigation("Applications");
                 });
 #pragma warning restore 612, 618
         }

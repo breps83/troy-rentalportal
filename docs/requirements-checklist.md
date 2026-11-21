@@ -52,7 +52,10 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] Leases for approved applications
 - [ ] **2.c** Unit tests for business logic
   - [x] Unit type selection rule (`UnitTypeTests`: `UnitType.IsSelectableFor`)
-  - [ ] Application status transitions, active lease checks, and other rules as they are added
+  - [x] Application rules (`RentalApplicationTests`): create, sections, residences, submit, withdraw,
+        read-only after submit
+  - [ ] Return, Approve, Deny, and resubmit
+  - [ ] Active lease checks at submit and approval, and `Lease` term and coverage
 
 ### TR 3. Database
 
@@ -72,6 +75,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Removing a property removes its units (cascade delete)
   - [x] Units listed per property (Details page)
   - [x] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
+  - [x] Deleting a property or unit is refused with a message when it has rental applications
   - [ ] Applicants can browse available units
   - [ ] Applicants can start an application from a unit
 - [ ] **2.b** Unit Type lookup with Active and Inactive values
@@ -86,6 +90,8 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 ### FR 3. Rental Application
 
+- [x] Domain model and database: `RentalApplication`, `Residence`, `ApplicationStatusHistory`,
+      `AddApplication` migration
 - [ ] **3.a** Application is for one unit, with two sections and a summary
   - [ ] Applicant Information: name, phone, email, current address
   - [ ] Residence History: prior residences with address, landlord name and phone, move-in and
@@ -99,10 +105,14 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] **Continue** re-renders the section with errors when invalid
   - [ ] **Back** returns to the previous section without saving
   - [ ] **Submit** is available from the Summary only after both sections are saved
+    - [x] Rule in the domain (`CanSubmit`, `Submit`)
+    - [ ] Summary page and button
 - [ ] **3.c** Residences are added, edited, and removed through a modal
 - [ ] **3.d** Editable or read-only is a server-side decision
   - [ ] Same section partial renders both modes
   - [ ] Editable only for the applicant, and only in Draft or Returned status
+    - [x] Status rule in the domain (`IsEditable`; edit methods throw otherwise)
+    - [ ] Ownership check (only the applicant who owns it)
   - [ ] Controllers reject posts that aren't allowed
 - [ ] **3.e** Active lease check
   - [ ] Submit is rejected with an error when the unit has an active lease
@@ -115,9 +125,14 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] Outcomes: Approve, Return, Deny
   - [ ] Comment required for Return and Deny
 - [ ] **4.b** Statuses: Draft, Submitted, Returned, Approved, Denied, Withdrawn
-  - [ ] Approved, Denied, and Withdrawn are terminal
+  - [x] All six statuses defined (`ApplicationStatus`)
+  - [x] Approved, Denied, and Withdrawn are terminal (`IsTerminal`)
+  - [x] Withdraw (Draft, Submitted, Returned to Withdrawn)
+  - [ ] Return, Approve, Deny transitions
 - [ ] **4.c** Property managers see a history of status changes and review outcomes (who, when,
       comment)
+  - [x] Every status change is recorded with who, when, and comment (`StatusHistory`)
+  - [ ] History shown on the application page, to property managers only
 
 ### FR 5. Application List
 

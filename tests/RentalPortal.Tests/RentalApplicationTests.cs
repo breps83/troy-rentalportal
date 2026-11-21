@@ -1,4 +1,5 @@
 using RentalPortal.Web.Domain;
+using RentalPortal.Web.Enums;
 
 namespace RentalPortal.Tests;
 

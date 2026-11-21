@@ -85,7 +85,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
             application.Property(a => a.Phone).HasMaxLength(25);
 
-            application.Property(a => a.Email).HasMaxLength(256);
+            application.Property(a => a.Email).HasMaxLength(255);
 
             application.Property(a => a.CurrentAddress).HasMaxLength(250);
 

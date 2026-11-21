@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RentalPortal.Web.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 
 namespace RentalPortal.Web.Domain;

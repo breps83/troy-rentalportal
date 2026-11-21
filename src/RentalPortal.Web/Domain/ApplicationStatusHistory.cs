@@ -1,4 +1,6 @@
-﻿namespace RentalPortal.Web.Domain;
+﻿using RentalPortal.Web.Enums;
+
+namespace RentalPortal.Web.Domain;
 
 public class ApplicationStatusHistory
 {

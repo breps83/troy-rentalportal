@@ -1,4 +1,4 @@
-@using RentalPortal.Web.Domain
+@using RentalPortal.Web.Enums
 @model ApplicationFormViewModel
 @{
     ViewData["Title"] = $"Application for {Model.PropertyName} – Unit {Model.UnitNumber}";
@@ -13,6 +13,9 @@
         ApplicationStatus.Denied => "text-bg-danger",
         _ => "text-bg-light border"
     };
+
+    var current = Model.CurrentSection;
+    var sectionEditable = Model.IsSectionEditable(current);
 }
 
 <nav aria-label="breadcrumb">
@@ -30,7 +33,69 @@
     <span class="badge fs-6 @statusBadge">@Model.Status</span>
 </div>
 
-@* Placeholder until the section partials (Applicant Information, Residence History, Summary) exist. *@
-<div class="alert alert-light border">
-    @* Todo Application Form*@
-</div>
+<ol class="list-group list-group-horizontal-md mb-4">
+    @foreach (var step in Enum.GetValues<ApplicationSection>())
+    {
+        <li class="list-group-item flex-fill @(step == current ? "active" : "")"
+            aria-current="@(step == current ? "step" : null)">
+            @step.Title()
+            @if (Model.IsSectionCompleted(step))
+            {
+                <span class="ms-1" aria-label="saved">✓</span>
+            }
+        </li>
+    }
+</ol>
+
+<form asp-action="Details" asp-route-id="@Model.Id" method="post">
+    <input type="hidden" asp-for="CurrentSection" />
+
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">@current.Title()</div>
+        <div class="card-body">
+
+            @switch (current)
+            {
+                case ApplicationSection.Info:
+                   
+                    <partial name="_ApplicantInfo" for="ApplicantInfo" />
+                    break;
+
+                case ApplicationSection.ResidenceHistory:
+                 
+                    <p class="text-muted mb-0">To Do Residence History</p>
+                    break;
+
+                case ApplicationSection.Summary:
+                   
+                    <h2 class="h6">@ApplicationSection.Info.Title()</h2>
+                    <partial name="_ApplicantInfo" for="ApplicantInfo" />
+                    break;
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+
+        @if (current != ApplicationSection.Info)
+        {
+            <button type="submit" class="btn btn-outline-secondary" formnovalidate
+                    name="command" value="@ApplicationFormViewModel.Back">Back</button>
+        }
+        else
+        {
+            <span></span>
+        }
+
+        
+        @if (sectionEditable && current == ApplicationSection.Info)
+        {
+            <button type="submit" class="btn btn-primary"
+                    name="command" value="@ApplicationFormViewModel.Continue">Continue</button>
+        }
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,4 @@
-﻿namespace RentalPortal.Web.Domain;
+﻿namespace RentalPortal.Web.Enums;
 
 public enum ApplicationStatus
 {

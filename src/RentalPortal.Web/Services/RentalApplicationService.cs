@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
+using RentalPortal.Web.Enums;
 
 
 namespace RentalPortal.Web.Services;

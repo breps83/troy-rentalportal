@@ -8,4 +8,6 @@ public class PropertyRowViewModel
 
     public string Address { get; init; } = string.Empty;
 
+    public int UnitCount { get; init; }
+
 }

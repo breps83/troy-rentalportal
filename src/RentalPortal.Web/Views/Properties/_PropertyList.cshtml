@@ -20,6 +20,7 @@ else
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Address</th>
+                    <th scope="col">Units</th>
                     <th scope="col"><span class="visually-hidden">Actions</span></th>
                 </tr>
             </thead>
@@ -27,9 +28,11 @@ else
                 @foreach (var property in Model)
                 {
                     <tr>
-                        <td>@property.Name</td>
+                        <td><a asp-action="Details" asp-route-id="@property.Id">@property.Name</a></td>
                         <td>@property.Address</td>
+                        <td class="text-center">@property.UnitCount</td>
                         <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@property.Id">View Units</a>
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                     data-modal-url="@Url.Action("Edit", new { id = property.Id })"
                                     data-refresh-url="@Url.Action("List")"

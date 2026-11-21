@@ -27,6 +27,7 @@ public class PropertiesController(AppDbContext db) : Controller
     [HttpGet]
     public async Task<IActionResult> List() => PartialView(ListView, await GetPropertyRowsAsync());
 
+
     /// <summary>
     /// Displays the form for creating a property.
     /// </summary>
@@ -80,7 +81,7 @@ public class PropertiesController(AppDbContext db) : Controller
     {
         var property = await db.Properties.FindAsync(model.Id);
 
-        if(property is null)
+        if (property is null)
         {
             return NotFound();
         }
@@ -132,6 +133,13 @@ public class PropertiesController(AppDbContext db) : Controller
         return Json(new { success = true });
     }
 
+    public async Task<IActionResult> Details(int id)
+    {
+        var property = (await GetPropertyRowsAsync(id)).SingleOrDefault();
+        return property is null ? NotFound() : View(property);
+    }
+
+
     /// <summary>
     /// Creates the confirmation model for deleting a property.
     /// </summary>
@@ -147,19 +155,24 @@ public class PropertiesController(AppDbContext db) : Controller
     };
 
     /// <summary>
-    /// Retrieves properties and creates the rows used for property display.
+    /// Retrieves property rows for display.
     /// </summary>
-    /// <returns>A task whose result contains the property rows ordered by property name.</returns>
-    private Task<List<PropertyRowViewModel>> GetPropertyRowsAsync()
+    /// <remarks>Each result includes the property address and unit count.</remarks>
+    /// <param name="id">The property identifier used to filter results, or null to retrieve all properties.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the matching property rows ordered by
+    /// name.</returns>
+    private Task<List<PropertyRowViewModel>> GetPropertyRowsAsync(int? id = null)
     {
         return db.Properties
             .AsNoTracking()
+            .Where(p => !id.HasValue || p.Id == id.Value)
             .OrderBy(p => p.Name)
             .Select(p => new PropertyRowViewModel
             {
                 Id = p.Id,
                 Name = p.Name,
-                Address = $"{p.Street}, {p.City}, {p.State} {p.PostalCode}"
+                Address = p.Street + ", " + p.City + ", " + p.State + " " + p.PostalCode,
+                UnitCount = p.Units.Count
             })
             .ToListAsync();
     }

@@ -13,6 +13,15 @@ public class DbSeeder
     public const string DefaultPassword = "Password1**";
     public const string FakerCulture = "en_US";
 
+    public static readonly (string Name, bool IsActive)[] UnitTypes = 
+        [
+            ("Studio", true),
+            ("Apartment", true),
+            ("Condo", true),
+            ("Townhouse", true)
+        ];
+    
+
     /// <summary>
     /// Migrates the database and seeds default roles and demo users.
     /// </summary>
@@ -25,14 +34,19 @@ public class DbSeeder
         var db = provider.GetRequiredService<AppDbContext>();
         var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+        var faker = new Faker(FakerCulture) { Random = new Randomizer(4021) };
 
         await db.Database.MigrateAsync();
 
         await SeedRolesAsync(roleManager);
 
-        await SeedDemoUsersAsync(userManager);
+        await SeedDemoUsersAsync(userManager, faker);
 
-        await SeedPropertiesAsync(db);
+        await SeedUnitTypesAsync(db);
+        
+        await SeedPropertiesAsync(db, faker);
+
+       
     }
 
     /// <summary>
@@ -56,10 +70,11 @@ public class DbSeeder
     /// </summary>
     /// <remarks>Uses deterministic generated applicant names and fixed test credentials.</remarks>
     /// <param name="userManager">The user manager used to create and configure demo users.</param>
+    /// <param name="faker">The faker instance used to generate deterministic test data.</param>
     /// <returns>A task that represents the asynchronous seeding operation.</returns>
-    private static async Task SeedDemoUsersAsync(UserManager<ApplicationUser> userManager)
+    private static async Task SeedDemoUsersAsync(UserManager<ApplicationUser> userManager, Faker faker)
     {
-        var faker = new Faker(FakerCulture) { Random = new Randomizer(4021) };
+        
 
         var propertyManagers = new List<ApplicationUser>()
         {
@@ -81,6 +96,76 @@ public class DbSeeder
         }
 
     }
+
+
+    /// <summary>
+    /// Seeds the database with property records when none exist.
+    /// </summary>
+    /// <remarks>Uses a fixed seed and generates eight property records.</remarks>
+    /// <param name="db">The database context used to seed and persist property records.</param>
+    /// <returns>A task that represents the asynchronous seed operation.</returns>
+    private static async Task SeedPropertiesAsync(AppDbContext db, Faker faker)
+    {
+        if(await db.Properties.AnyAsync())
+            return;
+
+        var types = await db.UnitTypes.ToDictionaryAsync(t => t.Name);
+
+        var properties = new Faker<Property>(FakerCulture)
+            .UseSeed(1187) // fixed seed, this gives the same sequence of generated data
+            .RuleFor(p => p.Name, f => $"{f.Address.StreetName()} {f.PickRandom("Residences", "Apartments", "Condos", "Townhouses")}")
+            .RuleFor(p => p.Street, f => f.Address.StreetAddress())
+            .RuleFor(p => p.City, f => f.Address.City())
+            .RuleFor(p => p.State, f => f.Address.StateAbbr())
+            .RuleFor(p => p.PostalCode, f => f.Address.ZipCode("#####"))
+            .Generate(8);
+
+        foreach (var property in properties)
+        {
+            var unitCount = faker.Random.Int(5, 8);
+
+            for (var i = 0; i < unitCount; i++)
+            {
+                var bedrooms = faker.Random.Int(0, 3);
+                var type = bedrooms switch
+                {
+                    0 => types["Studio"],
+                    3 => types["Apartment"],
+                    _ => faker.Random.Bool(0.2f) ? types["Condo"] : types["Townhouse"]
+                };
+
+                property.Units.Add(new Unit
+                {
+                    // 101, 102, 103, 104, 201, 202, 203, 204, etc.
+                    UnitNumber = $"{i / 4 + 1}{i % 4 + 1:00}", 
+                    Bedrooms = bedrooms,
+                    // Rent is 950, plus 375 per bedroom, plus a random 0–200 in steps of 10.
+                    // $950 for studio, $1325 for 1BR, $1700 for 2BR, $2075 for 3BR, plus a random amount up to $200
+                    MonthlyRent = 950 + bedrooms * 375 + faker.Random.Int(0, 20) * 10, 
+                    UnitTypeId = type.Id
+                });
+            }
+        }
+
+        db.Properties.AddRange(properties);
+
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedUnitTypesAsync(AppDbContext db)
+    {
+        var existingUnitTypes = await db.UnitTypes.Select(t => t.Name).ToListAsync();
+
+        foreach (var (name, isActive) in UnitTypes.Where(t => !existingUnitTypes.Contains(t.Name)))
+        {
+            db.UnitTypes.Add(new UnitType { Name = name, IsActive = isActive });
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    
+
 
     /// <summary>
     /// Ensures that a user with the specified email address exists and assigns the specified role.
@@ -125,31 +210,6 @@ public class DbSeeder
         }
 
         return user;
-    }
-
-    /// <summary>
-    /// Seeds the database with property records when none exist.
-    /// </summary>
-    /// <remarks>Uses a fixed seed and generates eight property records.</remarks>
-    /// <param name="db">The database context used to seed and persist property records.</param>
-    /// <returns>A task that represents the asynchronous seed operation.</returns>
-    private static async Task SeedPropertiesAsync(AppDbContext db)
-    {
-        if(await db.Properties.AnyAsync())
-            return;
-
-        var properties = new Faker<Property>(FakerCulture)
-            .UseSeed(1187) // fixed seed, this gives the same sequence of generated data
-            .RuleFor(p => p.Name, f => $"{f.Address.StreetName()} {f.PickRandom("Residences", "Apartments", "Condos")}")
-            .RuleFor(p => p.Street, f => f.Address.StreetAddress())
-            .RuleFor(p => p.City, f => f.Address.City())
-            .RuleFor(p => p.State, f => f.Address.StateAbbr())
-            .RuleFor(p => p.PostalCode, f => f.Address.ZipCode("#####"))
-            .Generate(8);
-
-        db.Properties.AddRange(properties);
-
-        await db.SaveChangesAsync();
     }
 
 }

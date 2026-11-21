@@ -1,0 +1,38 @@
+﻿@model UnitListViewModel
+
+@if (Model.Units.Count == 0)
+{
+    <div class="alert alert-light border">This property doesn't have any units yet.</div>
+}
+else
+{
+    <div class="card">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Unit</th>
+                    <th>Type</th>
+                    <th class="text-center">Bedrooms</th>
+                    <th class="text-end">Monthly rent</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var unit in Model.Units)
+                {
+                    <tr>
+                        <td class="fw-semibold">@unit.UnitNumber</td>
+                        <td>
+                            @unit.UnitType
+                            @if (!unit.UnitTypeIsActive)
+                            {
+                                <span class="badge text-bg-light border ms-1">inactive</span>
+                            }
+                        </td>
+                        <td class="text-center">@(unit.Bedrooms == 0 ? "Studio" : unit.Bedrooms)</td>
+                        <td class="text-end">@unit.MonthlyRent.ToString("C0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

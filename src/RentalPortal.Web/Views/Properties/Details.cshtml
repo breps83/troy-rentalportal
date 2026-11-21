@@ -1,0 +1,20 @@
+﻿@model PropertyRowViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Properties</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+    </ol>
+</nav>
+
+<div class="mb-3">
+    <h1 class="h3 mb-0">@Model.Name</h1>
+    <div class="text-muted">@Model.Address</div>
+</div>
+
+<div id="unit-list">
+    @await Component.InvokeAsync("UnitList", new { propertyId = Model.Id })
+</div>

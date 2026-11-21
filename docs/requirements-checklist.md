@@ -14,7 +14,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] Withdraw an application
   - [ ] Correct and resubmit a returned application
 - [ ] **Property Manager** can:
-  - [ ] Maintain properties and units
+  - [x] Maintain properties and units
   - [ ] Review submitted applications
   - [ ] Approve an application, issuing a twelve-month lease
 
@@ -31,7 +31,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Validation failure re-renders the same partial in the modal
   - [x] Success closes the modal and refreshes the affected part of the page
   - [x] Properties: add, edit, remove
-  - [ ] Units: add, edit, remove
+  - [x] Units: add, edit, remove
   - [ ] Residences: add, edit, remove
   - [ ] Review modal
 - [ ] **1.c** Structure and styling follow best practices
@@ -51,6 +51,8 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] Applications in **every** status (Draft, Submitted, Returned, Approved, Denied, Withdrawn)
   - [ ] Leases for approved applications
 - [ ] **2.c** Unit tests for business logic
+  - [x] Unit type selection rule (`UnitTypeTests`: `UnitType.IsSelectableFor`)
+  - [ ] Application status transitions, active lease checks, and other rules as they are added
 
 ### TR 3. Database
 
@@ -69,14 +71,15 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Properties
   - [x] Removing a property removes its units (cascade delete)
   - [x] Units listed per property (Details page)
-  - [ ] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
+  - [x] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
   - [ ] Applicants can browse available units
   - [ ] Applicants can start an application from a unit
 - [ ] **2.b** Unit Type lookup with Active and Inactive values
   - [x] Unit type stored as a lookup table, not free text
   - [x] Inactive type still displays on units that already use it (marked "inactive" in the unit list)
-  - [ ] Inactive type can't be selected for any other unit
-  - [ ] Enforced on the server, not just hidden in the UI
+  - [x] Inactive type can't be selected for any other unit
+  - [x] Enforced on the server, not just hidden in the UI (`UnitsController.ValidateUnitAsync`)
+  - [ ] Seed data includes an inactive type (see TR 2.b.ii)
 - [ ] **2.c** Leases
   - [ ] Approval creates a lease with a start date and a twelve-month term
   - [ ] A unit whose lease term covers today is not available

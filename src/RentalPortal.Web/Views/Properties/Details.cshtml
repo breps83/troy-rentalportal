@@ -10,11 +10,22 @@
     </ol>
 </nav>
 
-<div class="mb-3">
-    <h1 class="h3 mb-0">@Model.Name</h1>
-    <div class="text-muted">@Model.Address</div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="mb-3">
+        <h1 class="h3 mb-0">@Model.Name</h1>
+        <div class="text-muted">@Model.Address</div>
+    </div>
+    <button type="button" class="btn btn-primary"
+            data-modal-url="@Url.Action("Create", "Units", new { propertyId = Model.Id })"
+            data-refresh-url="@Url.Action("List", "Units", new { propertyId = Model.Id })"
+            data-refresh-target="#unit-list">
+        Add unit
+    </button>
 </div>
 
 <div id="unit-list">
     @await Component.InvokeAsync("UnitList", new { propertyId = Model.Id })
 </div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

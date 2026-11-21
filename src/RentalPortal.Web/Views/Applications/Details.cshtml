@@ -1,0 +1,36 @@
+@using RentalPortal.Web.Domain
+@model ApplicationFormViewModel
+@{
+    ViewData["Title"] = $"Application for {Model.PropertyName} – Unit {Model.UnitNumber}";
+
+    // Bootstrap badge color per status; terminal statuses use muted or outcome colors.
+    var statusBadge = Model.Status switch
+    {
+        ApplicationStatus.Draft => "text-bg-secondary",
+        ApplicationStatus.Submitted => "text-bg-primary",
+        ApplicationStatus.Returned => "text-bg-warning",
+        ApplicationStatus.Approved => "text-bg-success",
+        ApplicationStatus.Denied => "text-bg-danger",
+        _ => "text-bg-light border"
+    };
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Listings" asp-action="Index">Available Units</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Application</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-0">@Model.PropertyName – Unit @Model.UnitNumber</h1>
+        <div class="text-muted">@Model.MonthlyRent.ToString("C0") per month</div>
+    </div>
+    <span class="badge fs-6 @statusBadge">@Model.Status</span>
+</div>
+
+@* Placeholder until the section partials (Applicant Information, Residence History, Summary) exist. *@
+<div class="alert alert-light border">
+    @* Todo Application Form*@
+</div>

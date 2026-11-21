@@ -19,7 +19,6 @@ public class RentalApplicationTests
     private static readonly DateTime _createdUtc = new(2026, 11, 1, 9, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime _submittedUtc = new(2026, 11, 2, 10, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime _withdrawnUtc = new(2026, 11, 3, 11, 0, 0, DateTimeKind.Utc);
-
     private static readonly DateOnly _moveIn = new(2022, 1, 1);
     private static readonly DateOnly _moveOut = new(2024, 6, 30);
 

@@ -14,4 +14,10 @@ public static class ClaimsPrincipalExtensions
     {
         return principal.IsInRole(Roles.Applicant);
     }
+
+    public static string GetUserId(this ClaimsPrincipal user) =>
+        user.FindFirstValue(ClaimTypes.NameIdentifier)
+        ?? throw new InvalidOperationException("The current user is not signed in.");
+
+
 }

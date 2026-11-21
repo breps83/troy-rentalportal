@@ -22,15 +22,13 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             _ => null
         };
 
-        if (role is null)
-        {
+        if (role is null)        
             ModelState.AddModelError(nameof(model.AccountType), "Choose a valid account type.");
-        }
+        
 
         if (!ModelState.IsValid)
-        {
             return View(model);
-        }
+        
         var user = new ApplicationUser
         {
             UserName = model.Email,
@@ -38,8 +36,8 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             FirstName = model.FirstName!.Trim(),
             LastName = model.LastName!.Trim()
         };
-        var result = await userManager.CreateAsync(user, model.Password!);
 
+        var result = await userManager.CreateAsync(user, model.Password!);
 
         if (!result.Succeeded)
         {
@@ -52,10 +50,10 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
         }
 
         await userManager.AddToRoleAsync(user, role!);
+
         await signInManager.SignInAsync(user, isPersistent: false);
 
         return RedirectToAction("Index", "Home");
-
     }
 
     [HttpGet]
@@ -64,17 +62,16 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
-        if (!ModelState.IsValid)
-        {
+        if (!ModelState.IsValid)        
             return View(model);
-        }
-
+        
         // Define a generic error message for invalid login attempts
         // use the same message for both cases to avoid revealing whether the email exists or not
         string invalidLoginMessage = "Invalid login attempt.";
 
         // Check if the user exists
         var user = await userManager.FindByEmailAsync(model.Email!);
+
         if (user == null)
         {
             ModelState.AddModelError(string.Empty, invalidLoginMessage);
@@ -84,6 +81,7 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
 
         // Attempt to sign in the user
         var result = await signInManager.PasswordSignInAsync(user, model.Password!, model.RememberMe, lockoutOnFailure: true);
+        
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, result.IsLockedOut
@@ -102,6 +100,7 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
+
         return RedirectToAction("Index", "Home");
     }
 

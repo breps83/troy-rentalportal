@@ -126,11 +126,10 @@ public class PropertiesController(AppDbContext db) : Controller
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var property = await db.Properties.FindAsync(id);
-        if (property is null)
-        {
-            return NotFound();
-        }
 
+        if (property is null)        
+            return NotFound();
+        
         // Checked again on POST: an application may have been started since the modal opened.
         if (await GetDeleteBlockerAsync(id) is { } error)
         {
@@ -147,6 +146,7 @@ public class PropertiesController(AppDbContext db) : Controller
     public async Task<IActionResult> Details(int id)
     {
         var property = (await GetPropertyRowsAsync(id)).SingleOrDefault();
+
         return property is null ? NotFound() : View(property);
     }
 

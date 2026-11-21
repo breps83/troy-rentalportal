@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
+using RentalPortal.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
+
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<RentalApplicationService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(opt => 

@@ -124,7 +124,7 @@ public class UnitsController(AppDbContext db) : Controller
             return NotFound();
         }
 
-        // Show the reason up front; _ConfirmDelete hides the Remove button when there's an error.
+        // Show the reason up front; _ConfirmDelete hides the Delete button when there's an error.
         return PartialView("_ConfirmDelete", BuildDeleteModel(unit, await GetDeleteBlockerAsync(id)));
     }
 

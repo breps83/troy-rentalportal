@@ -16,4 +16,5 @@ public static class ApplicationSectionExtensions
         ApplicationSection.ResidenceHistory => "Residence History",
         _ => "Summary"
     };
+
 }

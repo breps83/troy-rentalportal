@@ -72,7 +72,14 @@
                 case ApplicationSection.Summary:
                    
                     <h2 class="h6">@ApplicationSection.Info.Title()</h2>
+
                     <partial name="_ApplicantInfo" for="ApplicantInfo" />
+
+                    <h2 class="h6">@ApplicationSection.ResidenceHistory.Title()</h2>
+
+                    @await Component.InvokeAsync("ResidenceHistory",
+                        new { applicationId = Model.Id, editable = false })
+
                     break;
             }
         </div>
@@ -91,14 +98,29 @@
         }
 
         
-        @if (sectionEditable && current == ApplicationSection.Info)
+        @if (sectionEditable && current != ApplicationSection.Summary)
         {
             <button type="submit" class="btn btn-primary"
                     name="command" value="@ApplicationFormViewModel.Continue">Continue</button>
+        }
+
+        @if (current == ApplicationSection.Summary && Model.CanSubmit)
+        {
+            <button type="submit" class="btn btn-success" id="submit-application"
+                    name="command" value="@ApplicationFormViewModel.Submit">Submit</button>
         }
     </div>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Disable Submit after the first click so a double-click doesn't post twice.
+        document.addEventListener('submit', function (event) {
+            if (event.submitter && event.submitter.id === 'submit-application') {
+                setTimeout(function () { event.submitter.disabled = true; });
+            }
+        });
+    </script>
 }

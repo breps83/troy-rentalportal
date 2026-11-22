@@ -41,7 +41,7 @@ public class ApplicationsController(
     [HttpGet]
     public async Task<IActionResult> Details(int id, ApplicationSection? section)
     {
-        var application = await GetApplication(id);
+        var application = await GetApplicationAsync(id);
 
         if (application is null)
             return NotFound();
@@ -55,36 +55,31 @@ public class ApplicationsController(
     [HttpPost]
     public async Task<IActionResult> Details(int id, ApplicationFormViewModel model, string command)
     {
-        var application = await GetApplication(id);
+        var application = await GetApplicationAsync(id);
 
         if (application is null)
             return NotFound();
 
-        
-        if (command == ApplicationFormViewModel.Back)
-        {
-            if (!application.UserCanView(User))
-                return Forbid();
-
-            return RedirectToAction("Details", new { id, section = model.CurrentSection.PreviousSection() });
-        }
-
-        if (application.ApplicantId != User.GetUserId())
-            return Forbid();
-
-        
-        if (!application.IsEditable)
-        {
-            // appears in alert
-            TempData["Error"] = $"This application is {application.Status} and can no longer be edited.";
-            return RedirectToAction("Details", new { id });
-        }
-
         var section = model.CurrentSection;
+
+        IActionResult? rejected;
 
         switch (command)
         {
+            case ApplicationFormViewModel.Back:
+                
+                if (!application.UserCanView(User))
+                    return Forbid();
+
+                return RedirectToAction("Details", new { id, section = section.PreviousSection() });
+
             case ApplicationFormViewModel.Continue when section == Enums.ApplicationSection.Info:
+                
+                rejected = RejectEditActionResult(application);
+
+                if (rejected != null)
+                    return rejected;
+
                 if (!IsValid(ModelState, nameof(model.ApplicantInfo)))
                     return View(CreateForm(application, section, model.ApplicantInfo));
 
@@ -101,17 +96,76 @@ public class ApplicationsController(
 
                 return RedirectToAction("Details", new { id, section = section.NextSection() });
 
+            case ApplicationFormViewModel.Continue when section == ApplicationSection.ResidenceHistory:
+               
+                rejected = RejectEditActionResult(application);
+
+                if (rejected != null)
+                    return rejected;
+
+                try
+                {
+                    application.SetResidenceHistoryCompleted();
+                }
+                catch (RuleException ex)
+                {
+                    TempData["Error"] = ex.Message;
+
+                    return RedirectToAction(nameof(Details), new { id, section });
+                }
+
+                await db.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Details), new { id, section = section.NextSection() });
+            
+            case ApplicationFormViewModel.Submit when section == ApplicationSection.Summary:
+
+                rejected = RejectEditActionResult(application);
+
+                if (rejected != null)
+                    return rejected;
+
+                var result = await applicationService.SubmitAsync(application, User.GetUserId());
+
+                if (!result.Succeeded)
+                {
+                    TempData["Error"] = result.Error;
+
+                    return RedirectToAction(nameof(Details), new { id, section });
+                }
+
+                TempData["Success"] = "Thank you. Your application has been submitted!";
+
+                return RedirectToAction(nameof(Details), new { id });
+
             default:
                 return BadRequest();
         }
         
     }
 
-    private Task<RentalApplication?> GetApplication(int id) =>
+    private Task<RentalApplication?> GetApplicationAsync(int id) =>
         db.RentalApplications
             .Include(a => a.Unit)
             .ThenInclude(u => u.Property)
+            .Include(a => a.Residences)
             .FirstOrDefaultAsync(a => a.Id == id);
+
+    private IActionResult? RejectEditActionResult(RentalApplication application)
+    {
+        if (application.ApplicantId != User.GetUserId())
+            return Forbid();
+
+        if (!application.IsEditable)
+        {
+            // appears in alert
+            TempData["Error"] = $"This application is {application.Status} and can no longer be edited.";
+            
+            return RedirectToAction("Details", new { id = application.Id });
+        }
+
+        return null;
+    }
 
     private ApplicationFormViewModel CreateForm(
         RentalApplication application, 
@@ -129,6 +183,7 @@ public class ApplicationsController(
             UnitNumber = application.Unit.UnitNumber,
             MonthlyRent = application.Unit.MonthlyRent,
             IsEditable = application.UserCanEdit(User),
+            CanSubmit = application.UserCanEdit(User) && application.CanSubmit,
             ApplicantInfoCompleted = application.ApplicantInfoCompleted,
             ResidenceHistoryCompleted = application.ResidenceHistoryCompleted
         };

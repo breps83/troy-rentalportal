@@ -10,6 +10,8 @@ public class ApplicationFormViewModel
     
     public const string Back = "back";
 
+    public const string Submit = "submit";
+
     public int Id { get; set; }
 
     [ValidateNever]
@@ -26,6 +28,9 @@ public class ApplicationFormViewModel
 
     [ValidateNever]
     public bool IsEditable { get; set; }
+
+    [ValidateNever] 
+    public bool CanSubmit { get; set; }
 
     [ValidateNever]
     public bool ApplicantInfoCompleted { get; set; }

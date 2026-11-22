@@ -40,4 +40,23 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         return application;
     }
 
+    public async Task<Result> SubmitAsync(RentalApplication application, string userId)
+    {
+        if (application.ApplicantId != userId)
+        {
+            return Result.Failure("Failed. This may not be your application.");
+        }
+
+        if (!application.CanSubmit)
+        {
+            return Result.Failure("Please complete both sections before submitting.");
+        }
+
+        application.Submit(userId, Now);
+
+        await db.SaveChangesAsync();
+        
+        return Result.Success();
+    }
+
 }

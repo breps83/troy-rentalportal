@@ -113,7 +113,7 @@ public class PropertiesController(AppDbContext db) : Controller
             return NotFound();
         }
 
-        // Show the reason up front; _ConfirmDelete hides the Remove button when there's an error.
+        // Show the reason up front; _ConfirmDelete hides the Delete button when there's an error.
         return PartialView("_ConfirmDelete", BuildDeleteModel(property, await GetDeleteBlockerAsync(id)));
     }
 
@@ -170,8 +170,8 @@ public class PropertiesController(AppDbContext db) : Controller
     /// <returns>A confirmation model containing the deletion details.</returns>
     private ConfirmDeleteViewModel BuildDeleteModel(Property property, string? error = null) => new()
     {
-        Title = "Remove Property",
-        Message = $"Remove {property.Name} and all of its units?",
+        Title = "Delete Property",
+        Message = $"Delete {property.Name} and all of its units?",
         ActionUrl = Url.Action(nameof(Delete), new { id = property.Id })!,
         Error = error
     };

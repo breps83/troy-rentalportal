@@ -34,6 +34,10 @@
                     <th>Landlord</th>
                     <th>Moved In</th>
                     <th>Moved Out</th>
+                    @if (Model.IsEditable)
+                    {
+                        <th> </th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -47,6 +51,26 @@
                      </td>
                      <td>@residence.MoveInDate</td>
                      <td>@residence.MoveOutDate</td>
+                        @if (Model.IsEditable)
+                        {
+                            <td class="text-end text-nowrap">
+                                
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        data-modal-url="@Url.Action("Edit", "Residences", new { id = residence.Id })" 
+                                        data-refresh-url="@refreshUrl" 
+                                        data-refresh-target="#residence-history">
+                                    Edit 
+                                </button>
+
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        data-modal-url="@Url.Action("Delete", "Residences", new { id = residence.Id })" 
+                                        data-refresh-url="@refreshUrl" 
+                                        data-refresh-target="#residence-history">
+                                    Delete
+                                </button>
+
+                            </td>
+                        }
                  </tr>    
                 }
             </tbody>

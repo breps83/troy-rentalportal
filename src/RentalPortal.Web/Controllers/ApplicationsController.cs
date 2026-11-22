@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
@@ -19,7 +20,7 @@ public class ApplicationsController(
     RentalApplicationService applicationService,
     UserManager<ApplicationUser> userManager) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(ApplicationStatus? status, int? propertyId)
     {
         var query = db.RentalApplications.AsNoTracking();
 
@@ -29,6 +30,12 @@ public class ApplicationsController(
 
             query = query.Where(a => a.ApplicantId == userId);
         }
+
+        if (status.HasValue)        
+            query = query.Where(a => a.Status == status.Value);        
+
+        if (propertyId.HasValue)        
+            query = query.Where(a => a.Unit.PropertyId == propertyId.Value);        
 
         var applications = await query
             .OrderByDescending(a => a.CreatedAtUtc)
@@ -44,7 +51,19 @@ public class ApplicationsController(
             })
             .ToListAsync();
 
-        return View(applications);
+        var properties = await db.Properties
+            .AsNoTracking()
+            .OrderBy(p=>p.Name)
+            .Select(p=> new SelectListItem(p.Name, p.Id.ToString()))
+            .ToListAsync();
+
+        return View(new ApplicationListViewModel
+        {
+            Status = status,
+            PropertyId = propertyId,
+            Properties = properties,
+            Applications = applications
+        });
     }
 
     [HttpPost, Authorize(Roles = Roles.Applicant)]

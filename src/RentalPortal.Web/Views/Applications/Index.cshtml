@@ -1,4 +1,4 @@
-﻿@model IReadOnlyList<ApplicationRowViewModel>
+﻿@model ApplicationListViewModel
 @{
     var isManager = User.IsPropertyManager();
 
@@ -6,11 +6,42 @@
 }
 
 <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+<form asp-action="Index" method="get" class="card card-body mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-sm-4">
+            <label for="status" class="form-label">Status</label>
+            <select id="status" name="status" class="form-select"
+                    asp-items="Html.GetEnumSelectList<ApplicationStatus>()
+                        .Select(i => new SelectListItem(
+                                        i.Text,
+                                        i.Text,
+                                        i.Text == Model.Status?.ToString()))">
+<option value="">All statuses</option>
+</select>
+        </div>
+        <div class="col-sm-4">
+            <label for="propertyId" class="form-label">Property</label>
+            <select id="propertyId" name="propertyId" class="form-select"
+                    asp-items="Model.Properties.Select(p => new SelectListItem(
+                                                                p.Text,
+                                                                p.Value,
+                                                                p.Value == Model.PropertyId?.ToString()))">
+<option value="">All properties</option>
+</select>
+        </div>
+        <div class="col-sm-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </div>
+</form>
 
-@if (Model.Count == 0)
+@if (Model.Applications.Count == 0)
 {
     <div class="alert alert-light border">
-        No applications yet.
+        
+        There are no applications that match these filters.
+
         @if (!isManager)
         {
             <a asp-controller="Listings" asp-action="Index">Browse available units</a>
@@ -36,7 +67,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var application in Model)
+                @foreach (var application in Model.Applications)
                 {
                     <tr>
                         <td>@application.Id</td>

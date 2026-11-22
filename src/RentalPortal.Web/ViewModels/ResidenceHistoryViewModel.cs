@@ -1,6 +1,12 @@
-﻿namespace RentalPortal.Web.ViewModels;
+﻿using RentalPortal.Web.Domain;
 
-public record ResidenceHistoryViewModel
+namespace RentalPortal.Web.ViewModels;
+
+public record ResidenceHistoryViewModel(
+    int ApplicationId, 
+    bool IsEditable, 
+    IReadOnlyList<Residence> Residences)
 {
 
 }
+

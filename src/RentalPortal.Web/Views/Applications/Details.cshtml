@@ -64,7 +64,8 @@
                 case ApplicationSection.ResidenceHistory:
                  
                    <div id="residence-history">
-                        @await Component.InvokeAsync("ResidenceHistory")
+                        @await Component.InvokeAsync("ResidenceHistory", 
+                            new{applicationId = Model.Id, editable = Model.IsSectionEditable(current)})
                    </div>
                     break;
 

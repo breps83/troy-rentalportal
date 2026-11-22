@@ -203,7 +203,7 @@ public class RentalApplication
         DateOnly moveOut)
     {
         if (moveOut < moveIn)        
-            throw new RuleException("Move out date cannot be before the move in date.");        
+            throw new RuleException("Move Out date cannot be before the Move In date.");        
 
         residence.Address = address.Trim();
 

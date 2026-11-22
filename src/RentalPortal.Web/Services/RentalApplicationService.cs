@@ -2,6 +2,7 @@
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
+using RentalPortal.Web.Extensions;
 
 namespace RentalPortal.Web.Services;
 
@@ -25,8 +26,14 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         if (existing is not null)
             return existing;
 
-        // confirm the unit exists
-        if (!await db.Units.AnyAsync(u => u.Id == unitId))
+        var today = time.GetToday();
+
+        // confirm the unit exists and is not leased today
+        var available = await db.Units.AnyAsync(u =>
+            u.Id == unitId &&
+            !u.Leases.Any(l => l.StartDate <= today && today <= l.EndDate));
+
+        if (!available)
             return null;
 
         // start a new application
@@ -63,6 +70,69 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
             return Result.Failure($"An application that is {application.Status} can't be withdrawn.");
 
         application.Withdraw(userId, Now);
+
+        await db.SaveChangesAsync();
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ReviewApplicationAsync(
+        RentalApplication application,
+        ApplicationReviewStatus reviewStatus,
+        string? comment,
+        string userId)
+    {
+        if (!application.CanReview)
+            return Result.Failure("The application needs to be submitted before review.");
+
+        if (reviewStatus != ApplicationReviewStatus.Approve && string.IsNullOrWhiteSpace(comment))
+            return Result.Failure("A comment is required.");
+
+        try
+        {
+            switch (reviewStatus)
+            {
+                case ApplicationReviewStatus.Approve:
+                    var unitLeases = await db.Leases
+                        .Where(l => l.UnitId == application.UnitId)
+                        .ToListAsync();
+
+                    var today = time.GetToday();
+
+                    // lease starts today
+                    var lease = application.ApproveApplicationForLease(
+                        userId,
+                        comment,
+                        Now,
+                        today,
+                        today,
+                        unitLeases);
+
+                    db.Leases.Add(lease);
+                    break;
+
+                case ApplicationReviewStatus.Return:
+                    application.ReturnLease(
+                        userId,
+                        comment!,
+                        Now);
+                    break;
+
+                case ApplicationReviewStatus.Deny:
+                    application.DenyLease(
+                        userId,
+                        comment!,
+                        Now);
+                    break;
+
+                default:
+                    return Result.Failure("Invalid review status");
+            }
+        }
+        catch (RuleException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
 
         await db.SaveChangesAsync();
 

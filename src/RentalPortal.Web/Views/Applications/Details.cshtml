@@ -28,7 +28,7 @@
             </button>
         }
     </div>
-    <div class="col-md-5 col-lg-4">
+    <div class="col-md-5 col-lg-4" id="application-status">
         @await Component.InvokeAsync("ApplicationStatus", new { applicationId = Model.Id })
     </div>
 </div>

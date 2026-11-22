@@ -234,6 +234,66 @@ public class ApplicationsController(
         return Json(new { success = true, redirectUrl = Url.Action(nameof(Index)) });
     }
 
+    [HttpGet, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> Review(int id)
+    {
+        var application = await db.RentalApplications.FindAsync(id);
+
+        if (application is null)
+            return NotFound();
+
+        if (!application.CanReview)
+        {
+            ModelState.AddModelError(string.Empty,
+                $"This application is {application.Status} and can no longer be reviewed.");
+        }
+
+        return PartialView("_ReviewForm", new ReviewViewModel
+        {
+            ApplicationId = id,
+            CanReview = application.CanReview
+        });
+    }
+
+    [HttpPost, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> Review(ReviewViewModel model)
+    {
+        var application = await db.RentalApplications
+                                    .FindAsync(model.ApplicationId);
+        
+        if (application is null)
+            return NotFound();
+        
+        if (!ModelState.IsValid)
+            return PartialView("_ReviewForm", model);
+        
+        var result = await applicationService.ReviewApplicationAsync(
+            application, 
+            model.ReviewStatus!.Value, 
+            model.Comment, 
+            User.GetUserId());
+        
+        if (!result.Succeeded)
+        {
+            ModelState.AddModelError(string.Empty, result.Error!);
+
+            return PartialView("_ReviewForm", model);
+        }
+
+        return Json(new { success = true });
+    }
+
+    public async Task<IActionResult> Status(int id)
+    {
+        var application = await db.RentalApplications.FindAsync(id);
+
+        if (application is null)        
+            return NotFound();
+        
+        return application.UserCanView(User) ? ViewComponent("ApplicationStatus", 
+            new { applicationId = id }) : Forbid();
+    }
+
     private ConfirmDeleteViewModel WithdrawConfirmation(int id, string? error) =>
         new ConfirmDeleteViewModel
         {

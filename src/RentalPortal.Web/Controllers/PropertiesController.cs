@@ -43,15 +43,15 @@ public class PropertiesController(AppDbContext db) : Controller
     [HttpPost]
     public async Task<IActionResult> Create(PropertyFormViewModel model)
     {
-        if (!ModelState.IsValid)
-        {
+        if (!ModelState.IsValid)        
             return PartialView(FormView, model);
-        }
-
+        
         var property = new Property();
+
         model.ApplyTo(property);
 
         db.Properties.Add(property);
+
         await db.SaveChangesAsync();
 
         return Json(new { success = true });
@@ -109,12 +109,9 @@ public class PropertiesController(AppDbContext db) : Controller
     {
         var property = await db.Properties.FindAsync(id);
 
-        if (property is null)
-        {
-            return NotFound();
-        }
+        if (property is null)        
+            return NotFound();        
 
-        // Show the reason up front; _ConfirmDelete hides the Delete button when there's an error.
         return PartialView("_ConfirmDelete", BuildDeleteModel(property, await GetDeleteBlockerAsync(id)));
     }
 
@@ -132,10 +129,9 @@ public class PropertiesController(AppDbContext db) : Controller
             return NotFound();
 
         // Checked again on POST: an application may have been started since the modal opened.
-        if (await GetDeleteBlockerAsync(id) is { } error)
-        {
+        if (await GetDeleteBlockerAsync(id) is { } error)        
             return PartialView("_ConfirmDelete", BuildDeleteModel(property, error));
-        }
+        
 
         db.Properties.Remove(property);
 
@@ -144,6 +140,11 @@ public class PropertiesController(AppDbContext db) : Controller
         return Json(new { success = true });
     }
 
+    /// <summary>
+    /// Retrieves a property and displays its details.
+    /// </summary>
+    /// <param name="id">The property identifier.</param>
+    /// <returns>A view containing the property when found; otherwise, a not-found result.</returns>
     public async Task<IActionResult> Details(int id)
     {
         var property = (await GetPropertyRowsAsync(id)).SingleOrDefault();

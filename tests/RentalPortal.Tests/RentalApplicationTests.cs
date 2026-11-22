@@ -11,15 +11,19 @@ namespace RentalPortal.Tests;
 /// section (submit and withdraw).
 /// </summary>
 /// <remarks>
-/// Not covered yet, because the domain model doesn't have them:
-/// Return, Approve, and Deny (FR 4.a), resubmitting a returned application, and the active lease
-/// check at submit and approval (FR 3.e).
+/// Not covered yet, because the domain model doesn't have it:
+/// the active lease check at submit and approval (FR 3.e).
 /// </remarks>
 public class RentalApplicationTests
 {
     private static readonly DateTime _createdUtc = new(2026, 11, 1, 9, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime _submittedUtc = new(2026, 11, 2, 10, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime _withdrawnUtc = new(2026, 11, 3, 11, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime _reviewedUtc = new(2026, 11, 4, 12, 0, 0, DateTimeKind.Utc);
+    private static readonly DateOnly _reviewedToday = new(2026, 11, 4);
+    private static readonly DateOnly _leaseStart = new(2026, 12, 1);
+    private const string ManagerId = "manager-1";
+    private static readonly Lease[] _noLeases = [];
     private static readonly DateOnly _moveIn = new(2022, 1, 1);
     private static readonly DateOnly _moveOut = new(2024, 6, 30);
 
@@ -414,5 +418,323 @@ public class RentalApplicationTests
         Assert.Throws<RuleException>(() => application.Withdraw("applicant-1", _withdrawnUtc));
         Assert.Throws<RuleException>(() => application.Submit("applicant-1", _withdrawnUtc));
         Assert.Throws<RuleException>(() => FillApplicantInfo(application));
+    }
+
+    // ---- Review: Approve, Return, Deny (FR 4.a) ----
+
+    /// <summary>Only a Submitted application can be reviewed.</summary>
+    [Fact]
+    public void CanReview_IsTrueOnlyWhenSubmitted()
+    {
+        Assert.False(NewDraft().CanReview);
+        Assert.True(NewSubmitted().CanReview);
+
+        var withdrawn = NewSubmitted();
+        withdrawn.Withdraw("applicant-1", _withdrawnUtc);
+        Assert.False(withdrawn.CanReview);
+    }
+
+    /// <summary>
+    /// Approving moves the application to Approved (terminal), records the manager and comment in
+    /// the history, and creates a lease for the unit.
+    /// </summary>
+    [Fact]
+    public void Approve_Submitted_MovesToApproved_RecordsHistory_AndCreatesLease()
+    {
+        // Arrange
+        var application = NewSubmitted();
+
+        // Act
+        var lease = application.ApproveApplicationForLease(
+            ManagerId, " Welcome aboard ", _reviewedUtc, _reviewedToday, _leaseStart, _noLeases);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Approved, application.Status);
+        Assert.True(application.IsTerminal);
+        Assert.False(application.CanReview);
+
+        var change = application.StatusHistory.Last();
+        Assert.Equal(ApplicationStatus.Submitted, change.FromStatus);
+        Assert.Equal(ApplicationStatus.Approved, change.ToStatus);
+        Assert.Equal(ManagerId, change.ChangedById);
+        Assert.Equal(_reviewedUtc, change.ChangedAtUtc);
+        Assert.Equal("Welcome aboard", change.Comment);
+
+        Assert.Same(lease, application.Lease);
+        Assert.Same(application, lease.RentalApplication);
+        Assert.Equal(7, lease.UnitId);
+        Assert.Equal(_leaseStart, lease.StartDate);
+    }
+
+    /// <summary>A comment is optional when approving.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Approve_WithoutComment_IsAllowed(string? comment)
+    {
+        // Arrange
+        var application = NewSubmitted();
+
+        // Act
+        application.ApproveApplicationForLease(
+            ManagerId, comment, _reviewedUtc, _reviewedToday, _leaseStart, _noLeases);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Approved, application.Status);
+        Assert.NotNull(application.Lease);
+    }
+
+    [Fact]
+    public void Return_Submitted_MovesToReturned_AndRecordsHistory()
+    {
+        // Arrange
+        var application = NewSubmitted();
+
+        // Act
+        application.ReturnLease(ManagerId, " Please add a landlord phone ", _reviewedUtc);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Returned, application.Status);
+        Assert.False(application.IsTerminal);
+        Assert.Null(application.Lease);
+
+        var change = application.StatusHistory.Last();
+        Assert.Equal(ApplicationStatus.Submitted, change.FromStatus);
+        Assert.Equal(ApplicationStatus.Returned, change.ToStatus);
+        Assert.Equal(ManagerId, change.ChangedById);
+        Assert.Equal(_reviewedUtc, change.ChangedAtUtc);
+        Assert.Equal("Please add a landlord phone", change.Comment);
+    }
+
+    /// <summary>
+    /// FR 3.d: a Returned application is editable again and, with its sections still saved, can be
+    /// resubmitted.
+    /// </summary>
+    [Fact]
+    public void ReturnedApplication_IsEditable_AndCanBeResubmitted()
+    {
+        // Arrange
+        var application = NewSubmitted();
+        application.ReturnLease(ManagerId, "Please fix", _reviewedUtc);
+
+        // Act
+        Assert.True(application.IsEditable);
+        Assert.True(application.CanSubmit);
+        application.Submit("applicant-1", _reviewedUtc.AddDays(1));
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Submitted, application.Status);
+        Assert.Equal(ApplicationStatus.Returned, application.StatusHistory.Last().FromStatus);
+        Assert.True(application.CanReview);
+    }
+
+    [Fact]
+    public void Deny_Submitted_MovesToDenied_AndRecordsHistory()
+    {
+        // Arrange
+        var application = NewSubmitted();
+
+        // Act
+        application.DenyLease(ManagerId, "Incomplete rental history", _reviewedUtc);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Denied, application.Status);
+        Assert.True(application.IsTerminal);
+        Assert.False(application.IsEditable);
+        Assert.Null(application.Lease);
+
+        var change = application.StatusHistory.Last();
+        Assert.Equal(ApplicationStatus.Submitted, change.FromStatus);
+        Assert.Equal(ApplicationStatus.Denied, change.ToStatus);
+        Assert.Equal(ManagerId, change.ChangedById);
+        Assert.Equal("Incomplete rental history", change.Comment);
+    }
+
+    /// <summary>Return and Deny need a comment so the applicant knows why.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ReturnOrDeny_WithoutComment_IsRejected(string? comment)
+    {
+        // Arrange
+        var application = NewSubmitted();
+        var historyCount = application.StatusHistory.Count;
+
+        // Act & Assert
+        Assert.Throws<RuleException>(() => application.ReturnLease(ManagerId, comment!, _reviewedUtc));
+        Assert.Throws<RuleException>(() => application.DenyLease(ManagerId, comment!, _reviewedUtc));
+        Assert.Equal(ApplicationStatus.Submitted, application.Status);
+        Assert.Equal(historyCount, application.StatusHistory.Count);
+    }
+
+    /// <summary>Draft, Returned, Approved, Denied, and Withdrawn applications can't be reviewed.</summary>
+    [Fact]
+    public void Review_WhenNotSubmitted_IsRejected()
+    {
+        // Arrange
+        var draft = NewCompleteDraft();
+
+        var returned = NewSubmitted();
+        returned.ReturnLease(ManagerId, "Please fix", _reviewedUtc);
+
+        var approved = NewSubmitted();
+        approved.ApproveApplicationForLease(ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, _noLeases);
+
+        var denied = NewSubmitted();
+        denied.DenyLease(ManagerId, "No", _reviewedUtc);
+
+        var withdrawn = NewSubmitted();
+        withdrawn.Withdraw("applicant-1", _withdrawnUtc);
+
+        // Act & Assert
+        foreach (var application in new[] { draft, returned, approved, denied, withdrawn })
+        {
+            var status = application.Status;
+            var lease = application.Lease;
+
+            Assert.Throws<RuleException>(() =>
+                application.ApproveApplicationForLease(
+                    ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, _noLeases));
+            Assert.Throws<RuleException>(() => application.ReturnLease(ManagerId, "Again", _reviewedUtc));
+            Assert.Throws<RuleException>(() => application.DenyLease(ManagerId, "Again", _reviewedUtc));
+
+            Assert.Equal(status, application.Status);
+            Assert.Same(lease, application.Lease);
+        }
+    }
+
+    // ---- Approval checks: lease start date and existing leases (FR 2.c, FR 3.e) ----
+
+    /// <summary>A lease on unit 7 (the unit used by these tests) with a 12-month term.</summary>
+    private static Lease ExistingLease(DateOnly startDate, int unitId = 7) => new()
+    {
+        UnitId = unitId,
+        StartDate = startDate,
+        EndDate = startDate.AddMonths(Lease.DefaultTermMonths).AddDays(-1)
+    };
+
+    private static void AssertApprovalRejected(RentalApplication application, int historyCount)
+    {
+        Assert.Equal(ApplicationStatus.Submitted, application.Status);
+        Assert.Null(application.Lease);
+        Assert.Equal(historyCount, application.StatusHistory.Count);
+    }
+
+    /// <summary>The lease can start today (the review date) but not before it.</summary>
+    [Fact]
+    public void Approve_StartDateInThePast_IsRejected()
+    {
+        // Arrange
+        var application = NewSubmitted();
+        var historyCount = application.StatusHistory.Count;
+        var yesterday = _reviewedToday.AddDays(-1);
+
+        // Act & Assert
+        Assert.Throws<RuleException>(() =>
+            application.ApproveApplicationForLease(
+                ManagerId, null, _reviewedUtc, _reviewedToday, yesterday, _noLeases));
+        Assert.Throws<RuleException>(() =>
+            application.ApproveApplicationForLease(
+                ManagerId, null, _reviewedUtc, _reviewedToday, default, _noLeases));
+        AssertApprovalRejected(application, historyCount);
+    }
+
+    [Fact]
+    public void Approve_StartDateToday_IsAllowed()
+    {
+        // Arrange
+        var application = NewSubmitted();
+        // Act
+        var lease = application.ApproveApplicationForLease(
+            ManagerId, null, _reviewedUtc, _reviewedToday, _reviewedToday, _noLeases);
+
+        // Assert
+        Assert.Equal(_reviewedToday, lease.StartDate);
+    }
+
+    /// <summary>
+    /// "Today" is the local calendar date. In the evening in the US the UTC date is already
+    /// tomorrow, and a lease starting on the local today must still be allowed.
+    /// </summary>
+    [Fact]
+    public void Approve_UtcDateIsAheadOfLocalToday_StartDateTodayIsAllowed()
+    {
+        // Arrange
+        var application = NewSubmitted();
+
+        // 7 PM Eastern on Nov 4 is midnight UTC on Nov 5.
+        var reviewedUtc = new DateTime(2026, 11, 5, 0, 0, 0, DateTimeKind.Utc);
+        var localToday = new DateOnly(2026, 11, 4);
+
+        // Act
+        var lease = application.ApproveApplicationForLease(
+            ManagerId, null, reviewedUtc, localToday, localToday, _noLeases);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Approved, application.Status);
+        Assert.Equal(localToday, lease.StartDate);
+    }
+
+    /// <summary>FR 3.e: approval is rejected when the unit has a lease covering today.</summary>
+    [Fact]
+    public void Approve_UnitHasActiveLease_IsRejected()
+    {
+        // Arrange
+        var application = NewSubmitted();
+        var historyCount = application.StatusHistory.Count;
+
+        // Active today (Nov 4, 2026) and ends Nov 30, 2026, before the new lease would start.
+        var active = ExistingLease(new DateOnly(2025, 12, 1));
+
+        // Act & Assert
+        Assert.Throws<RuleException>(() =>
+            application.ApproveApplicationForLease(
+                ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, [active]));
+        AssertApprovalRejected(application, historyCount);
+    }
+
+    /// <summary>
+    /// FR 3.e: a second lease for the same period is prevented, including a future lease that isn't
+    /// active yet.
+    /// </summary>
+    [Theory]
+    [InlineData("2026-12-01")]
+    [InlineData("2027-06-01")]
+    [InlineData("2027-11-30")]
+    public void Approve_OverlapsAFutureLease_IsRejected(string existingStart)
+    {
+        // Arrange
+        var application = NewSubmitted();
+        var historyCount = application.StatusHistory.Count;
+        var future = ExistingLease(DateOnly.Parse(existingStart));
+
+        // Act & Assert
+        Assert.Throws<RuleException>(() =>
+            application.ApproveApplicationForLease(
+                ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, [future]));
+        AssertApprovalRejected(application, historyCount);
+    }
+
+    /// <summary>
+    /// Leases that ended before today, leases that start after the new term ends, and leases on
+    /// other units don't block approval.
+    /// </summary>
+    [Fact]
+    public void Approve_WithNonConflictingLeases_IsAllowed()
+    {
+        // Arrange
+        var application = NewSubmitted();
+        var ended = ExistingLease(new DateOnly(2025, 1, 1));
+        var startsAfter = ExistingLease(new DateOnly(2027, 12, 1));
+        var otherUnit = ExistingLease(_leaseStart, unitId: 8);
+
+        // Act
+        var lease = application.ApproveApplicationForLease(
+            ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, [ended, startsAfter, otherUnit]);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Approved, application.Status);
+        Assert.Same(lease, application.Lease);
     }
 }

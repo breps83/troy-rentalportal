@@ -270,6 +270,36 @@ namespace RentalPortal.Web.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("RentalPortal.Web.Domain.Lease", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("RentalApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RentalApplicationId")
+                        .IsUnique();
+
+                    b.HasIndex("UnitId", "StartDate", "EndDate");
+
+                    b.ToTable("Leases");
+                });
+
             modelBuilder.Entity("RentalPortal.Web.Domain.Property", b =>
                 {
                     b.Property<int>("Id")
@@ -538,6 +568,25 @@ namespace RentalPortal.Web.Data.Migrations
                     b.Navigation("ChangedByUser");
                 });
 
+            modelBuilder.Entity("RentalPortal.Web.Domain.Lease", b =>
+                {
+                    b.HasOne("RentalPortal.Web.Domain.RentalApplication", "RentalApplication")
+                        .WithOne("Lease")
+                        .HasForeignKey("RentalPortal.Web.Domain.Lease", "RentalApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RentalPortal.Web.Domain.Unit", "Unit")
+                        .WithMany("Leases")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RentalApplication");
+
+                    b.Navigation("Unit");
+                });
+
             modelBuilder.Entity("RentalPortal.Web.Domain.RentalApplication", b =>
                 {
                     b.HasOne("RentalPortal.Web.Domain.ApplicationUser", "Applicant")
@@ -592,6 +641,8 @@ namespace RentalPortal.Web.Data.Migrations
 
             modelBuilder.Entity("RentalPortal.Web.Domain.RentalApplication", b =>
                 {
+                    b.Navigation("Lease");
+
                     b.Navigation("Residences");
 
                     b.Navigation("StatusHistory");
@@ -600,6 +651,8 @@ namespace RentalPortal.Web.Data.Migrations
             modelBuilder.Entity("RentalPortal.Web.Domain.Unit", b =>
                 {
                     b.Navigation("Applications");
+
+                    b.Navigation("Leases");
                 });
 #pragma warning restore 612, 618
         }

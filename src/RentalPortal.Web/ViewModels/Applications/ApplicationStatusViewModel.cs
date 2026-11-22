@@ -14,4 +14,17 @@ public class ApplicationStatusViewModel
 
     public DateTime? SubmittedAtUtc { get; init; }
 
+    public DateOnly? LeaseStart { get; init; }
+
+    public DateOnly? LeaseEnd { get; init; }
+
+    public string? ReviewComment { get; init; }
+
+    public bool CanReview { get; init; }
+
+    public bool ShowHistory { get; init; }
+
+    public IReadOnlyList<ReviewStatusChangeViewModel> ReviewStatusHistory { get; set; } =
+        new List<ReviewStatusChangeViewModel>();
+
 }

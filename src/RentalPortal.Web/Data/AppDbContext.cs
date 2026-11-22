@@ -19,6 +19,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
     public DbSet<ApplicationStatusHistory> ApplicationStatusChanges => Set<ApplicationStatusHistory>();
 
+    public DbSet<Lease> Leases => Set<Lease>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -109,6 +111,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
                 .HasForeignKey(c => c.RentalApplicationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            application.HasOne(a => a.Lease)
+                .WithOne(l => l.RentalApplication)
+                .HasForeignKey<Lease>(l => l.RentalApplicationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         });
 
         builder.Entity<Residence>(r =>
@@ -137,6 +144,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
                 .WithMany()
                 .HasForeignKey(c => c.ChangedById)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Lease>(lease =>
+        {
+            lease
+                .HasOne(l => l.Unit)
+                .WithMany(u => u.Leases)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            lease.HasIndex(l => new
+            {
+                l.UnitId,
+                l.StartDate,
+                l.EndDate
+            });
+
         });
     }
 }

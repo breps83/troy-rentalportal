@@ -14,7 +14,7 @@
             <dd class="col-7 mb-1">@Model.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</dd>
 
             <dt class="col-5 fw-normal text-muted">Submitted</dt>
-            <dd class="col-7 mb-0">
+            <dd class="col-7 mb-1">
                 @if (Model.SubmittedAtUtc.HasValue)
                 {
                     @Model.SubmittedAtUtc.Value.ToLocalTime().ToString("MMM d, yyyy")
@@ -24,6 +24,58 @@
                     <span class="text-muted">Not yet</span>
                 }
             </dd>
+
+            @if (Model.LeaseStart.HasValue && Model.LeaseEnd.HasValue)
+            {
+                <dt class="col-5 fw-normal text-muted">Lease</dt>
+                <dd class="col-7 mb-1">
+                    @Model.LeaseStart.Value.ToString("MMM d, yyyy") – @Model.LeaseEnd.Value.ToString("MMM d, yyyy")
+                </dd>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.ReviewComment))
+            {
+                <dt class="col-5 fw-normal text-muted">Comment</dt>
+                <dd class="col-7 mb-1">@Model.ReviewComment</dd>
+            }
         </dl>
-    </div> 
+
+        @if (Model.CanReview)
+        {
+            <button type="button" class="btn btn-sm btn-primary mt-1 mb-1"
+                    data-modal-url="@Url.Action("Review", "Applications", new { id = Model.ApplicationId })"
+                    data-refresh-url="@Url.Action("Status", "Applications", new { id = Model.ApplicationId })"
+                    data-refresh-target="#application-status">
+                Review application
+            </button>
+        }
+
+        @if (Model.ShowHistory && Model.ReviewStatusHistory.Count > 0)
+        {
+            <div class="border-top pt-2 mt-2">
+                <div class="small fw-semibold mb-1">History</div>
+                <ul class="list-unstyled small mb-0">
+                    @foreach (var change in Model.ReviewStatusHistory)
+                    {
+                        <li class="mb-2">
+                            <div>
+                                @if (change.FromStatus.HasValue)
+                                {
+                                    <span>@change.FromStatus →</span>
+                                }
+                                <partial name="_ApplicationStatus" model="change.ToStatus" />
+                            </div>
+                            <div class="text-muted">
+                                @change.ChangedBy, @change.ChangedAtUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(change.Comment))
+                            {
+                                <div class="fst-italic">@change.Comment</div>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
 </div>

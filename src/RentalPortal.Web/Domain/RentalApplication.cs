@@ -1,6 +1,4 @@
 ﻿using RentalPortal.Web.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
 
 namespace RentalPortal.Web.Domain;
 
@@ -40,6 +38,8 @@ public class RentalApplication
 
     public List<ApplicationStatusHistory> StatusHistory { get; } = new List<ApplicationStatusHistory>();
 
+    public Lease? Lease { get; private set; }
+
     public bool IsEditable =>
         Status is ApplicationStatus.Draft
         or ApplicationStatus.Returned;
@@ -52,6 +52,8 @@ public class RentalApplication
     public bool CanSubmit => IsEditable && ApplicantInfoCompleted && ResidenceHistoryCompleted;
 
     public bool CanWithdraw => !IsTerminal;
+
+    public bool CanReview => Status == ApplicationStatus.Submitted;
 
     public static RentalApplication NewApplication(
         int unitId,
@@ -162,7 +164,7 @@ public class RentalApplication
     {
         CheckEditable();
 
-        if (!Residences.Any())
+        if (Residences.Count() == 0)
             throw new RuleException("Please add at least one prior residence.");
 
         ResidenceHistoryCompleted = true;
@@ -187,11 +189,90 @@ public class RentalApplication
         SetStatus(ApplicationStatus.Withdrawn, userId, nowUtc);
     }
 
+    public Lease ApproveApplicationForLease(
+        string userId,
+        string? comment,
+        DateTime nowUtc,
+        DateOnly today,
+        DateOnly leaseStartDate,
+        IEnumerable<Lease> unitLeases)
+    {
+        CheckReviewable();
+
+        if (leaseStartDate < today)
+            throw new RuleException("The lease start date cannot be in the past.");
+
+        var newLease = Lease.CreateFromApplication(this, leaseStartDate);
+
+        foreach (var existing in unitLeases.Where(l => l.UnitId == UnitId))
+        {
+            if (existing.IsActive(today) || existing.Overlaps(newLease.StartDate, newLease.EndDate))
+                throw new RuleException("This unit already has a lease for that period.");
+        }
+
+        SetStatus(
+            ApplicationStatus.Approved,
+            userId,
+            nowUtc,
+            comment);
+
+        Lease = newLease;
+
+        return Lease;
+    }
+
+    public void ReturnLease(
+        string userId,
+        string comment,
+        DateTime nowUtc)
+    {
+        CheckReviewable();
+
+        RequireComment(comment);
+
+        SetStatus(
+            ApplicationStatus.Returned,
+            userId,
+            nowUtc,
+            comment);
+    }
+
+    public void DenyLease(
+        string userId,
+        string comment,
+        DateTime nowUtc)
+    {
+        CheckReviewable();
+
+        RequireComment(comment);
+
+        SetStatus(
+            ApplicationStatus.Denied,
+            userId,
+            nowUtc,
+            comment);
+    }
+
     private void CheckEditable()
     {
         if (!IsEditable)
             throw new RuleException($"An application that is {Status} cannot be edited.");
+    }
 
+    private void CheckReviewable()
+    {
+        if (!CanReview)
+        {
+            throw new RuleException("The application must be submitted before it can be reviewed.");
+        }
+    }
+
+    private void RequireComment(string? comment)
+    {
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            throw new RuleException("A comment is required!");
+        }
     }
 
     private static void SetResidence(

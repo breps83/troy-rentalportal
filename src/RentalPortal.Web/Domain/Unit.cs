@@ -19,4 +19,6 @@ public class Unit
     public UnitType UnitType { get; set; } = null!;
 
     public List<RentalApplication> Applications { get; set; } = new List<RentalApplication>();
+
+    public List<Lease> Leases { get; set; } = new List<Lease>();
 }

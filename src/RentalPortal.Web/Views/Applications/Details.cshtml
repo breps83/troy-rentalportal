@@ -3,16 +3,6 @@
 @{
     ViewData["Title"] = $"Application for {Model.PropertyName} – Unit {Model.UnitNumber}";
 
-    // Bootstrap badge color per status; terminal statuses use muted or outcome colors.
-    var statusBadge = Model.Status switch
-    {
-        ApplicationStatus.Draft => "text-bg-secondary",
-        ApplicationStatus.Submitted => "text-bg-primary",
-        ApplicationStatus.Returned => "text-bg-warning",
-        ApplicationStatus.Approved => "text-bg-success",
-        ApplicationStatus.Denied => "text-bg-danger",
-        _ => "text-bg-light border"
-    };
 
     var current = Model.CurrentSection;
     var sectionEditable = Model.IsSectionEditable(current);
@@ -25,12 +15,14 @@
     </ol>
 </nav>
 
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
+<div class="row g-3 align-items-center mb-4">
+    <div class="col-md-7 col-lg-8">
         <h1 class="h3 mb-0">@Model.PropertyName – Unit @Model.UnitNumber</h1>
         <div class="text-muted">@Model.MonthlyRent.ToString("C0") per month</div>
     </div>
-    <span class="badge fs-6 @statusBadge">@Model.Status</span>
+    <div class="col-md-5 col-lg-4">
+        @await Component.InvokeAsync("ApplicationStatus", new { applicationId = Model.Id })
+    </div>
 </div>
 
 <ol class="list-group list-group-horizontal-md mb-4">

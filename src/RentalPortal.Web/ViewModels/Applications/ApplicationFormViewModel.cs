@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using RentalPortal.Web.Enums;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Applications;
 
 public class ApplicationFormViewModel
 {

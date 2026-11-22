@@ -1,0 +1,29 @@
+﻿@model ApplicationStatusViewModel
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <span class="fw-semibold">Application status</span>
+        <partial name="_ApplicationStatus" model="Model.Status" />
+    </div>
+    <div class="card-body py-2">
+        <dl class="row small mb-0">
+            <dt class="col-5 fw-normal text-muted">Applicant</dt>
+            <dd class="col-7 mb-1">@Model.ApplicantName</dd>
+
+            <dt class="col-5 fw-normal text-muted">Started</dt>
+            <dd class="col-7 mb-1">@Model.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</dd>
+
+            <dt class="col-5 fw-normal text-muted">Submitted</dt>
+            <dd class="col-7 mb-0">
+                @if (Model.SubmittedAtUtc.HasValue)
+                {
+                    @Model.SubmittedAtUtc.Value.ToLocalTime().ToString("MMM d, yyyy")
+                }
+                else
+                {
+                    <span class="text-muted">Not yet</span>
+                }
+            </dd>
+        </dl>
+    </div> 
+</div>

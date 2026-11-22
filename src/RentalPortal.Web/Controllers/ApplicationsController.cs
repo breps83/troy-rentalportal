@@ -8,16 +8,44 @@ using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
 using RentalPortal.Web.Extensions;
 using RentalPortal.Web.Services;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.ViewModels.Applications;
 
 namespace RentalPortal.Web.Controllers;
 
-[Authorize]
+[Authorize(Roles = $"{Roles.Applicant},{Roles.PropertyManager}")]
 public class ApplicationsController(
     AppDbContext db,
     RentalApplicationService applicationService,
     UserManager<ApplicationUser> userManager) : Controller
 {
+    public async Task<IActionResult> Index()
+    {
+        var query = db.RentalApplications.AsNoTracking();
+
+        if (!User.IsPropertyManager())
+        {
+            var userId = User.GetUserId();
+
+            query = query.Where(a => a.ApplicantId == userId);
+        }
+
+        var applications = await query
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .Select(a => new ApplicationRowViewModel
+            {
+                Id = a.Id,
+                PropertyName = a.Unit.Property.Name,
+                UnitNumber = a.Unit.UnitNumber,
+                ApplicantName = a.Applicant.FirstName + " " + a.Applicant.LastName,
+                Status = a.Status,
+                CreatedAtUtc = a.CreatedAtUtc,
+                SubmittedAtUtc = a.SubmittedAtUtc
+            })
+            .ToListAsync();
+
+        return View(applications);
+    }
+
     [HttpPost, Authorize(Roles = Roles.Applicant)]
     public async Task<IActionResult> Apply(int unitId)
     {

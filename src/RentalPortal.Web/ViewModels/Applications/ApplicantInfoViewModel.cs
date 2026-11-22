@@ -2,7 +2,7 @@
 using RentalPortal.Web.Domain;
 using System.ComponentModel.DataAnnotations;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Applications;
 
 public class ApplicantInfoViewModel
 {

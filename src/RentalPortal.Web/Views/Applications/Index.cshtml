@@ -1,0 +1,59 @@
+﻿@model IReadOnlyList<ApplicationRowViewModel>
+@{
+    var isManager = User.IsPropertyManager();
+
+    ViewData["Title"] = "Applications";
+}
+
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-light border">
+        No applications yet.
+        @if (!isManager)
+        {
+            <a asp-controller="Listings" asp-action="Index">Browse available units</a>
+        }
+    </div>
+}
+else
+{
+    <div class="card">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Property / Unit</th>
+                    @if (isManager)
+                    {
+                        <th>Applicant</th>
+                    }
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Submitted</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var application in Model)
+                {
+                    <tr>
+                        <td>@application.Id</td>
+                        <td>@application.PropertyName &middot; Unit @application.UnitNumber</td>
+                        @if (isManager)
+                        {
+                            <td>@application.ApplicantName</td>
+                        }
+                        <td><partial name="_ApplicationStatus" model="application.Status" /></td>
+                        <td>@application.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</td>
+                        <td>@(application.SubmittedAtUtc?.ToLocalTime().ToString("MMM d, yyyy") ?? "—")</td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@application.Id" class="btn btn-sm btn-outline-primary">Open</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

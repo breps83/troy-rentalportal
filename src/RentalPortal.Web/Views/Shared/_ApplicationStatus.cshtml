@@ -1,0 +1,14 @@
+﻿@model ApplicationStatus
+@{
+    // Bootstrap badge color per status; terminal statuses use muted or outcome colors.
+    var statusBadge = Model switch
+    {
+        ApplicationStatus.Draft => "text-bg-secondary",
+        ApplicationStatus.Submitted => "text-bg-primary",
+        ApplicationStatus.Returned => "text-bg-warning",
+        ApplicationStatus.Approved => "text-bg-success",
+        ApplicationStatus.Denied => "text-bg-danger",
+        _ => "text-bg-light border"
+    };
+}
+<span class="badge @statusBadge">@Model</span>

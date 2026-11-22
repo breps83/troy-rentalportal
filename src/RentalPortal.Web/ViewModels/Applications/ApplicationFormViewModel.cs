@@ -7,7 +7,7 @@ public class ApplicationFormViewModel
 {
 
     public const string Continue = "continue";
-    
+
     public const string Back = "back";
 
     public const string Submit = "submit";
@@ -32,7 +32,7 @@ public class ApplicationFormViewModel
     [ValidateNever]
     public bool IsEditable { get; set; }
 
-    [ValidateNever] 
+    [ValidateNever]
     public bool CanSubmit { get; set; }
 
     [ValidateNever]

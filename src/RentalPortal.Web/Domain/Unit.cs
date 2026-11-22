@@ -15,7 +15,7 @@ public class Unit
     public decimal MonthlyRent { get; set; }
 
     public int UnitTypeId { get; set; }
-    
+
     public UnitType UnitType { get; set; } = null!;
 
     public List<RentalApplication> Applications { get; set; } = new List<RentalApplication>();

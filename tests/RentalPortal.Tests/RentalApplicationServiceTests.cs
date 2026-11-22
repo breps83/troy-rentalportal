@@ -109,5 +109,5 @@ public class RentalApplicationServiceTests
         Assert.Equal(ApplicationStatus.Submitted, application.Status);
         Assert.Equal(2, application.StatusHistory.Count);
     }
-       
+
 }

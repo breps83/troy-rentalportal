@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.ViewModels.Shared;
+using RentalPortal.Web.ViewModels.Units;
 
 namespace RentalPortal.Web.Controllers;
 
@@ -133,13 +134,13 @@ public class UnitsController(AppDbContext db) : Controller
     {
         var unit = await db.Units.FindAsync(id);
 
-        if (unit is null)        
-            return NotFound();        
+        if (unit is null)
+            return NotFound();
 
         // Checked again on POST: an application may have been started since the modal opened.
         if (await GetDeleteBlockerAsync(id) is { } error)
             return PartialView("_ConfirmDelete", BuildDeleteModel(unit, error));
-        
+
         db.Units.Remove(unit);
 
         await db.SaveChangesAsync();
@@ -180,7 +181,7 @@ public class UnitsController(AppDbContext db) : Controller
             var duplicate = await db.Units.AnyAsync(u =>
                 u.PropertyId == model.PropertyId && u.UnitNumber == unitNumber && u.Id != model.Id);
 
-            if (duplicate)            
+            if (duplicate)
                 ModelState.AddModelError(nameof(model.UnitNumber), "This property already has a unit with that number.");
         }
     }

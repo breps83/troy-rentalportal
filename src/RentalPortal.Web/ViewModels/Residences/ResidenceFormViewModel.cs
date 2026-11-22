@@ -1,7 +1,7 @@
 ﻿using RentalPortal.Web.Domain;
 using System.ComponentModel.DataAnnotations;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Residences;
 
 public class ResidenceFormViewModel : IValidatableObject
 {
@@ -19,7 +19,7 @@ public class ResidenceFormViewModel : IValidatableObject
     [Required, Phone, StringLength(25), Display(Name = "Landlord phone")]
     public string? LandlordPhone { get; set; }
 
-    [Required, DataType(DataType.Date), Display(Name ="Move In Date")]
+    [Required, DataType(DataType.Date), Display(Name = "Move In Date")]
     public DateOnly? MoveInDate { get; set; }
 
     [Required, DataType(DataType.Date), Display(Name = "Move Out Date")]
@@ -27,7 +27,7 @@ public class ResidenceFormViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(MoveInDate > MoveOutDate)
+        if (MoveInDate > MoveOutDate)
         {
             yield return new ValidationResult("Move Out date can't be before Move In Date", [nameof(MoveOutDate)]);
         }

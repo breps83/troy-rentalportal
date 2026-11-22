@@ -19,5 +19,4 @@ public static class ClaimsPrincipalExtensions
         user.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? throw new InvalidOperationException("The current user is not signed in.");
 
-
 }

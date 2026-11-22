@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.ViewModels.Shared;
 
 namespace RentalPortal.Web.Controllers;
 
@@ -10,7 +10,6 @@ public class HomeController : Controller
     {
         return View();
     }
-
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

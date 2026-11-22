@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.Enums;
 
 public enum AccountType
 {

@@ -9,7 +9,7 @@ public class ApplicantInfoViewModel
     [Required, StringLength(100), Display(Name = "First Name")]
     public string? FirstName { get; set; }
 
-    [Required, StringLength(100), Display(Name ="Last Name")]
+    [Required, StringLength(100), Display(Name = "Last Name")]
     public string? LastName { get; set; }
 
     [Required, Phone, StringLength(25)]

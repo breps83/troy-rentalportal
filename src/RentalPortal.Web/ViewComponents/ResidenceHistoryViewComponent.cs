@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
-using RentalPortal.Web.ViewModels;
-using System.Reflection.Metadata.Ecma335;
+using RentalPortal.Web.ViewModels.Residences;
 
 namespace RentalPortal.Web.ViewComponents;
 

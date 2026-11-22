@@ -2,19 +2,19 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Units;
 
 public class UnitFormViewModel
 {
 
     public int Id { get; set; }
-    
+
     public int PropertyId { get; set; }
 
     [Required, StringLength(20), Display(Name = "Unit number")]
     public string UnitNumber { get; set; } = string.Empty;
 
-    [Required, Range(0,10)]
+    [Required, Range(0, 10)]
     public int? Bedrooms { get; set; }
 
     // Range(typeof(decimal), ...) compares as decimal. The Range(int, int) overload converts the value

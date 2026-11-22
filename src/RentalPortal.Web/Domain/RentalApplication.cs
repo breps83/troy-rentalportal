@@ -40,13 +40,13 @@ public class RentalApplication
 
     public List<ApplicationStatusHistory> StatusHistory { get; } = new List<ApplicationStatusHistory>();
 
-    public bool IsEditable => 
-        Status is ApplicationStatus.Draft 
+    public bool IsEditable =>
+        Status is ApplicationStatus.Draft
         or ApplicationStatus.Returned;
 
-    public bool IsTerminal => 
-        Status is ApplicationStatus.Approved 
-        or ApplicationStatus.Denied 
+    public bool IsTerminal =>
+        Status is ApplicationStatus.Approved
+        or ApplicationStatus.Denied
         or ApplicationStatus.Withdrawn;
 
     public bool CanSubmit => IsEditable && ApplicantInfoCompleted && ResidenceHistoryCompleted;
@@ -54,8 +54,8 @@ public class RentalApplication
     public bool CanWithdraw => !IsTerminal;
 
     public static RentalApplication NewApplication(
-        int unitId, 
-        ApplicationUser applicant, 
+        int unitId,
+        ApplicationUser applicant,
         DateTime createdUtc)
     {
         var application = new RentalApplication
@@ -113,11 +113,11 @@ public class RentalApplication
         var residence = new Residence();
 
         SetResidence(
-            residence, 
-            address, 
-            landlordName, 
-            landlordPhone, 
-            moveIn, 
+            residence,
+            address,
+            landlordName,
+            landlordPhone,
+            moveIn,
             moveOut);
 
         Residences.Add(residence);
@@ -125,7 +125,7 @@ public class RentalApplication
         ResidenceHistoryCompleted = false;
 
         return residence;
-        
+
     }
 
     public void UpdateResidence(
@@ -133,7 +133,7 @@ public class RentalApplication
         string address,
         string landlordName,
         string landlordPhone,
-        DateOnly moveIn, 
+        DateOnly moveIn,
         DateOnly moveOut)
     {
         CheckEditable();
@@ -162,16 +162,16 @@ public class RentalApplication
     {
         CheckEditable();
 
-        if (!Residences.Any())        
-            throw new RuleException("Please add at least one prior residence.");        
+        if (!Residences.Any())
+            throw new RuleException("Please add at least one prior residence.");
 
         ResidenceHistoryCompleted = true;
     }
 
     public void Submit(string userId, DateTime nowUtc)
     {
-        if (!CanSubmit)        
-            throw new RuleException("The application is not fully complete.");        
+        if (!CanSubmit)
+            throw new RuleException("The application is not fully complete.");
 
         SubmittedAtUtc = nowUtc;
 
@@ -189,21 +189,21 @@ public class RentalApplication
 
     private void CheckEditable()
     {
-        if (!IsEditable)        
+        if (!IsEditable)
             throw new RuleException($"An application that is {Status} cannot be edited.");
-       
+
     }
 
     private static void SetResidence(
-        Residence residence, 
-        string address, 
-        string landlordName, 
-        string landlordPhone, 
-        DateOnly moveIn, 
+        Residence residence,
+        string address,
+        string landlordName,
+        string landlordPhone,
+        DateOnly moveIn,
         DateOnly moveOut)
     {
-        if (moveOut < moveIn)        
-            throw new RuleException("Move Out date cannot be before the Move In date.");        
+        if (moveOut < moveIn)
+            throw new RuleException("Move Out date cannot be before the Move In date.");
 
         residence.Address = address.Trim();
 
@@ -221,9 +221,9 @@ public class RentalApplication
         ?? throw new RuleException("Residence not found on this application.");
 
     private void SetStatus(
-        ApplicationStatus status, 
-        string userId, 
-        DateTime nowUtc, 
+        ApplicationStatus status,
+        string userId,
+        DateTime nowUtc,
         string? comment = null)
     {
         StatusHistory.Add(new ApplicationStatusHistory

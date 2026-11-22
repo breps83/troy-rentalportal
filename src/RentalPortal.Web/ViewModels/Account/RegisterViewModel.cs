@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RentalPortal.Web.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Account;
 
 public class RegisterViewModel
 {
@@ -21,6 +22,5 @@ public class RegisterViewModel
 
     [Required(ErrorMessage = "Choose an account type."), Display(Name = "Account Type")]
     public AccountType? AccountType { get; set; }
-
 
 }

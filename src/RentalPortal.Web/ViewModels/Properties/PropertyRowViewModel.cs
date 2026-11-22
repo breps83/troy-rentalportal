@@ -1,4 +1,4 @@
-﻿namespace RentalPortal.Web.ViewModels;
+﻿namespace RentalPortal.Web.ViewModels.Properties;
 
 public class PropertyRowViewModel
 {

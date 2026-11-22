@@ -287,6 +287,7 @@ public class RentalApplicationTests
         {
             FillApplicantInfo(application);
         }
+
         if (saveResidenceHistory)
         {
             AddResidence(application);

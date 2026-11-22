@@ -23,7 +23,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     {
         base.OnModelCreating(builder);
 
-        
         builder.Entity<ApplicationUser>(user =>
         {
             user.Property(u => u.FirstName)
@@ -57,10 +56,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
         {
             unit.Property(u => u.UnitNumber)
                 .HasMaxLength(20);
-            
+
             unit.Property(u => u.MonthlyRent)
                 .HasPrecision(10, 2);
-            
+
             unit.HasIndex(u => new { u.PropertyId, u.UnitNumber }).IsUnique();
 
             unit.HasOne(u => u.Property)

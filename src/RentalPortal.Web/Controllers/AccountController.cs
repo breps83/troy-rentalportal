@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RentalPortal.Web.Domain;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.Enums;
+using RentalPortal.Web.ViewModels.Account;
 
 namespace RentalPortal.Web.Controllers;
 
@@ -22,13 +23,12 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             _ => null
         };
 
-        if (role is null)        
+        if (role is null)
             ModelState.AddModelError(nameof(model.AccountType), "Choose a valid account type.");
-        
 
         if (!ModelState.IsValid)
             return View(model);
-        
+
         var user = new ApplicationUser
         {
             UserName = model.Email,
@@ -62,9 +62,9 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
-        if (!ModelState.IsValid)        
+        if (!ModelState.IsValid)
             return View(model);
-        
+
         // Define a generic error message for invalid login attempts
         // use the same message for both cases to avoid revealing whether the email exists or not
         string invalidLoginMessage = "Invalid login attempt.";
@@ -81,7 +81,7 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
 
         // Attempt to sign in the user
         var result = await signInManager.PasswordSignInAsync(user, model.Password!, model.RememberMe, lockoutOnFailure: true);
-        
+
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, result.IsLockedOut

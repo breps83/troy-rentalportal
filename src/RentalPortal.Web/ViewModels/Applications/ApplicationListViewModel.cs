@@ -9,9 +9,9 @@ public class ApplicationListViewModel
 
     public int? PropertyId { get; init; }
 
-    public IReadOnlyList<SelectListItem> Properties { get; init; } 
+    public IReadOnlyList<SelectListItem> Properties { get; init; }
         = new List<SelectListItem>();
 
-    public IReadOnlyList<ApplicationRowViewModel> Applications { get; init; } 
+    public IReadOnlyList<ApplicationRowViewModel> Applications { get; init; }
         = new List<ApplicationRowViewModel>();
 }

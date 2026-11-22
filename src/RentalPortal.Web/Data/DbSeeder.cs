@@ -13,7 +13,7 @@ public class DbSeeder
     public const string DefaultPassword = "Password1**";
     public const string FakerCulture = "en_US";
 
-    public static readonly (string Name, bool IsActive)[] UnitTypes = 
+    public static readonly (string Name, bool IsActive)[] UnitTypes =
         [
             ("Studio", true),
             ("Apartment", true),
@@ -23,7 +23,6 @@ public class DbSeeder
             // seeded units that already use it, so the "inactive" rule can be demoed.
             ("Penthouse", false)
         ];
-    
 
     /// <summary>
     /// Migrates the database and seeds default roles and demo users.
@@ -46,10 +45,9 @@ public class DbSeeder
         await SeedDemoUsersAsync(userManager, faker);
 
         await SeedUnitTypesAsync(db);
-        
+
         await SeedPropertiesAsync(db, faker);
 
-       
     }
 
     /// <summary>
@@ -58,7 +56,7 @@ public class DbSeeder
     /// <param name="roleManager">The role manager used to check for and create roles.</param>
     /// <returns>A task that represents the asynchronous seeding operation.</returns>
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
-    { 
+    {
         foreach (var role in new[] { Roles.Applicant, Roles.PropertyManager })
         {
             if (!await roleManager.RoleExistsAsync(role))
@@ -77,7 +75,6 @@ public class DbSeeder
     /// <returns>A task that represents the asynchronous seeding operation.</returns>
     private static async Task SeedDemoUsersAsync(UserManager<ApplicationUser> userManager, Faker faker)
     {
-        
 
         var propertyManagers = new List<ApplicationUser>()
         {
@@ -100,7 +97,6 @@ public class DbSeeder
 
     }
 
-
     /// <summary>
     /// Seeds the database with property records when none exist.
     /// </summary>
@@ -109,7 +105,7 @@ public class DbSeeder
     /// <returns>A task that represents the asynchronous seed operation.</returns>
     private static async Task SeedPropertiesAsync(AppDbContext db, Faker faker)
     {
-        if(await db.Properties.AnyAsync())
+        if (await db.Properties.AnyAsync())
             return;
 
         var types = await db.UnitTypes.ToDictionaryAsync(t => t.Name);
@@ -147,11 +143,11 @@ public class DbSeeder
                 property.Units.Add(new Unit
                 {
                     // 101, 102, 103, 104, 201, 202, 203, 204, etc.
-                    UnitNumber = $"{i / 4 + 1}{i % 4 + 1:00}", 
+                    UnitNumber = $"{i / 4 + 1}{i % 4 + 1:00}",
                     Bedrooms = bedrooms,
                     // Rent is 950, plus 375 per bedroom, plus a random 0–200 in steps of 10.
                     // $950 for studio, $1325 for 1BR, $1700 for 2BR, $2075 for 3BR, plus a random amount up to $200
-                    MonthlyRent = 950 + bedrooms * 375 + faker.Random.Int(0, 20) * 10, 
+                    MonthlyRent = 950 + bedrooms * 375 + faker.Random.Int(0, 20) * 10,
                     UnitTypeId = type.Id
                 });
             }
@@ -178,9 +174,6 @@ public class DbSeeder
 
         await db.SaveChangesAsync();
     }
-
-    
-
 
     /// <summary>
     /// Ensures that a user with the specified email address exists and assigns the specified role.

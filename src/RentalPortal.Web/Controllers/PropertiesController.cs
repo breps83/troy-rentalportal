@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.ViewModels.Properties;
+using RentalPortal.Web.ViewModels.Shared;
 
 namespace RentalPortal.Web.Controllers;
 
@@ -127,9 +128,9 @@ public class PropertiesController(AppDbContext db) : Controller
     {
         var property = await db.Properties.FindAsync(id);
 
-        if (property is null)        
+        if (property is null)
             return NotFound();
-        
+
         // Checked again on POST: an application may have been started since the modal opened.
         if (await GetDeleteBlockerAsync(id) is { } error)
         {

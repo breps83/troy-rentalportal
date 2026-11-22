@@ -9,8 +9,8 @@ using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
 using RentalPortal.Web.Extensions;
 using RentalPortal.Web.Services;
-using RentalPortal.Web.ViewModels;
 using RentalPortal.Web.ViewModels.Applications;
+using RentalPortal.Web.ViewModels.Shared;
 
 namespace RentalPortal.Web.Controllers;
 
@@ -31,11 +31,11 @@ public class ApplicationsController(
             query = query.Where(a => a.ApplicantId == userId);
         }
 
-        if (status.HasValue)        
-            query = query.Where(a => a.Status == status.Value);        
+        if (status.HasValue)
+            query = query.Where(a => a.Status == status.Value);
 
-        if (propertyId.HasValue)        
-            query = query.Where(a => a.Unit.PropertyId == propertyId.Value);        
+        if (propertyId.HasValue)
+            query = query.Where(a => a.Unit.PropertyId == propertyId.Value);
 
         var applications = await query
             .OrderByDescending(a => a.CreatedAtUtc)
@@ -53,8 +53,8 @@ public class ApplicationsController(
 
         var properties = await db.Properties
             .AsNoTracking()
-            .OrderBy(p=>p.Name)
-            .Select(p=> new SelectListItem(p.Name, p.Id.ToString()))
+            .OrderBy(p => p.Name)
+            .Select(p => new SelectListItem(p.Name, p.Id.ToString()))
             .ToListAsync();
 
         return View(new ApplicationListViewModel
@@ -71,18 +71,18 @@ public class ApplicationsController(
     {
         var user = await userManager.GetUserAsync(User);
 
-        if(user is null)
+        if (user is null)
             return Challenge();
 
         var application = await applicationService.StartApplicationAsync(unitId, user);
 
-        if(application is null)
+        if (application is null)
         {
             // show error in alert
             TempData["Error"] = "This unit is not available.";
             return RedirectToAction("Index", "Listings");
         }
-        
+
         return RedirectToAction("Details", new { id = application.Id });
     }
 
@@ -115,14 +115,14 @@ public class ApplicationsController(
         switch (command)
         {
             case ApplicationFormViewModel.Back:
-                
+
                 if (!application.UserCanView(User))
                     return Forbid();
 
                 return RedirectToAction("Details", new { id, section = section.PreviousSection() });
 
             case ApplicationFormViewModel.Continue when section == Enums.ApplicationSection.Info:
-                
+
                 rejected = RejectEditActionResult(application);
 
                 if (rejected != null)
@@ -145,7 +145,7 @@ public class ApplicationsController(
                 return RedirectToAction("Details", new { id, section = section.NextSection() });
 
             case ApplicationFormViewModel.Continue when section == ApplicationSection.ResidenceHistory:
-               
+
                 rejected = RejectEditActionResult(application);
 
                 if (rejected != null)
@@ -165,7 +165,7 @@ public class ApplicationsController(
                 await db.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Details), new { id, section = section.NextSection() });
-            
+
             case ApplicationFormViewModel.Submit when section == ApplicationSection.Summary:
 
                 rejected = RejectEditActionResult(application);
@@ -189,14 +189,14 @@ public class ApplicationsController(
             default:
                 return BadRequest();
         }
-        
+
     }
 
     [HttpGet, Authorize(Roles = Roles.Applicant)]
     public async Task<IActionResult> Withdraw(int id)
     {
         var application = await db.RentalApplications.FindAsync(id);
-        
+
         if (application is null)
             return NotFound();
 
@@ -216,7 +216,7 @@ public class ApplicationsController(
     public async Task<IActionResult> WithdrawConfirmed(int id)
     {
         var application = await db.RentalApplications.FindAsync(id);
-        
+
         if (application is null)
             return NotFound();
 
@@ -258,9 +258,9 @@ public class ApplicationsController(
         if (!application.IsEditable)
         {
             // appears in alert
-            TempData["Error"] = 
+            TempData["Error"] =
                 $"This application is {application.Status} and can no longer be edited.";
-            
+
             return RedirectToAction("Details", new { id = application.Id });
         }
 
@@ -268,9 +268,9 @@ public class ApplicationsController(
     }
 
     private ApplicationFormViewModel CreateForm(
-        RentalApplication application, 
-        ApplicationSection section, 
-        ApplicantInfoViewModel? applicantInfo = null) 
+        RentalApplication application,
+        ApplicationSection section,
+        ApplicantInfoViewModel? applicantInfo = null)
     {
         var isOwner = application.ApplicantId == User.GetUserId();
 
@@ -309,8 +309,4 @@ public class ApplicationsController(
     private static bool IsValid(ModelStateDictionary modelState, string prefix) =>
         modelState.FindKeysWithPrefix(prefix).All(entry => entry.Value.ValidationState != ModelValidationState.Invalid);
 
-    
-    
-
-    
 }

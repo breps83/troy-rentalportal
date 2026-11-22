@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.ViewModels.Units;
 
 namespace RentalPortal.Web.ViewComponents;
 

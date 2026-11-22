@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
 using RentalPortal.Web.Extensions;
-using RentalPortal.Web.ViewModels;
+using RentalPortal.Web.ViewModels.Shared;
+using RentalPortal.Web.ViewModels.Residences;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace RentalPortal.Web.Controllers;
@@ -47,7 +48,7 @@ public class ResidencesController(AppDbContext db) : Controller
 
         var rejected = RejectEditActionResult(application);
 
-        if(rejected != null)
+        if (rejected != null)
             return rejected;
 
         if (!ModelState.IsValid)
@@ -126,7 +127,7 @@ public class ResidencesController(AppDbContext db) : Controller
         await db.SaveChangesAsync();
 
         return Json(new { success = true });
-                
+
     }
 
     [HttpGet]
@@ -148,7 +149,7 @@ public class ResidencesController(AppDbContext db) : Controller
                 Message = $"Delete {residence.Address} from history?",
                 ActionUrl = Url.Action(nameof(Delete), new { id })!
             });
-    
+
     }
 
     [HttpPost, ActionName(nameof(Delete))]
@@ -168,7 +169,6 @@ public class ResidencesController(AppDbContext db) : Controller
         return Json(new { success = true });
     }
 
-
     private Task<RentalApplication?> GetApplicationAsync(int applicationId)
     {
         return db.RentalApplications
@@ -180,7 +180,7 @@ public class ResidencesController(AppDbContext db) : Controller
     {
         return db.RentalApplications
             .Include(a => a.Residences)
-            .FirstOrDefaultAsync(a => 
+            .FirstOrDefaultAsync(a =>
                 a.Residences.Any(r => r.Id == residenceId));
     }
 

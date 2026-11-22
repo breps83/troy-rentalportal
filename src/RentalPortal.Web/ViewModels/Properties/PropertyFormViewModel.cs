@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using RentalPortal.Web.Domain;
 
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Properties;
 
 public class PropertyFormViewModel
 {

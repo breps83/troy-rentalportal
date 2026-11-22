@@ -1,4 +1,4 @@
-namespace RentalPortal.Web.ViewModels;
+namespace RentalPortal.Web.ViewModels.Shared;
 
 public class ErrorViewModel
 {

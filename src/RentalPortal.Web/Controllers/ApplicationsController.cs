@@ -8,6 +8,7 @@ using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
 using RentalPortal.Web.Extensions;
 using RentalPortal.Web.Services;
+using RentalPortal.Web.ViewModels;
 using RentalPortal.Web.ViewModels.Applications;
 
 namespace RentalPortal.Web.Controllers;
@@ -172,6 +173,57 @@ public class ApplicationsController(
         
     }
 
+    [HttpGet, Authorize(Roles = Roles.Applicant)]
+    public async Task<IActionResult> Withdraw(int id)
+    {
+        var application = await db.RentalApplications.FindAsync(id);
+        
+        if (application is null)
+            return NotFound();
+
+        if (application.ApplicantId != User.GetUserId())
+            return Forbid();
+
+        string? error = null;
+
+        if (!application.CanWithdraw)
+            error = $"This application is {application.Status} and can no longer be withdrawn.";
+
+        return PartialView("_ConfirmWithdraw", WithdrawConfirmation(id, error));
+    }
+
+    [HttpPost, Authorize(Roles = Roles.Applicant)]
+    [ActionName(nameof(Withdraw))]
+    public async Task<IActionResult> WithdrawConfirmed(int id)
+    {
+        var application = await db.RentalApplications.FindAsync(id);
+        
+        if (application is null)
+            return NotFound();
+
+        if (application.ApplicantId != User.GetUserId())
+            return Forbid();
+
+        var result = await applicationService.WithdrawApplicationAsync(
+            application, User.GetUserId());
+
+        if (!result.Succeeded)
+            return PartialView("_ConfirmWithdraw", WithdrawConfirmation(id, result.Error));
+
+        TempData["Success"] = "Your application was withdrawn.";
+
+        return Json(new { success = true, redirectUrl = Url.Action(nameof(Index)) });
+    }
+
+    private ConfirmDeleteViewModel WithdrawConfirmation(int id, string? error) =>
+        new ConfirmDeleteViewModel
+        {
+            Title = "Withdraw application",
+            Message = "Are you sure you want to withdraw this application? This can't be undone.",
+            ActionUrl = Url.Action(nameof(Withdraw), new { id })!,
+            Error = error
+        };
+
     private Task<RentalApplication?> GetApplicationAsync(int id) =>
         db.RentalApplications
             .Include(a => a.Unit)
@@ -187,7 +239,8 @@ public class ApplicationsController(
         if (!application.IsEditable)
         {
             // appears in alert
-            TempData["Error"] = $"This application is {application.Status} and can no longer be edited.";
+            TempData["Error"] = 
+                $"This application is {application.Status} and can no longer be edited.";
             
             return RedirectToAction("Details", new { id = application.Id });
         }
@@ -200,6 +253,9 @@ public class ApplicationsController(
         ApplicationSection section, 
         ApplicantInfoViewModel? applicantInfo = null) 
     {
+        var isOwner = application.ApplicantId == User.GetUserId();
+
+        var isEditable = application.UserCanEdit(User);
 
         var form = new ApplicationFormViewModel
         {
@@ -210,8 +266,10 @@ public class ApplicationsController(
             PropertyName = application.Unit.Property.Name,
             UnitNumber = application.Unit.UnitNumber,
             MonthlyRent = application.Unit.MonthlyRent,
-            IsEditable = application.UserCanEdit(User),
-            CanSubmit = application.UserCanEdit(User) && application.CanSubmit,
+            IsOwner = isOwner,
+            IsEditable = isEditable,
+            CanSubmit = isEditable && application.CanSubmit,
+            CanWithdraw = isOwner && application.CanWithdraw,
             ApplicantInfoCompleted = application.ApplicantInfoCompleted,
             ResidenceHistoryCompleted = application.ResidenceHistoryCompleted
         };
@@ -227,7 +285,7 @@ public class ApplicationsController(
       : !application.ResidenceHistoryCompleted ? ApplicationSection.ResidenceHistory
       : ApplicationSection.Summary;
 
-    // only validate the section fields
+    // only validate the section fields based on the section prefix
     // claude helped with this
     private static bool IsValid(ModelStateDictionary modelState, string prefix) =>
         modelState.FindKeysWithPrefix(prefix).All(entry => entry.Value.ValidationState != ModelValidationState.Invalid);

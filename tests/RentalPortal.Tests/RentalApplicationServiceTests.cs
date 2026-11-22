@@ -3,6 +3,7 @@ using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
 using RentalPortal.Web.Services;
+using System.Reflection.Metadata;
 
 namespace RentalPortal.Tests;
 
@@ -108,4 +109,5 @@ public class RentalApplicationServiceTests
         Assert.Equal(ApplicationStatus.Submitted, application.Status);
         Assert.Equal(2, application.StatusHistory.Count);
     }
+       
 }

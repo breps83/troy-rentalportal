@@ -27,10 +27,16 @@ public class ApplicationFormViewModel
     public decimal MonthlyRent { get; set; }
 
     [ValidateNever]
+    public bool IsOwner { get; set; }
+
+    [ValidateNever]
     public bool IsEditable { get; set; }
 
     [ValidateNever] 
     public bool CanSubmit { get; set; }
+
+    [ValidateNever]
+    public bool CanWithdraw { get; set; }
 
     [ValidateNever]
     public bool ApplicantInfoCompleted { get; set; }

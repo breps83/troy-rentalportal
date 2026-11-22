@@ -42,20 +42,31 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
 
     public async Task<Result> SubmitAsync(RentalApplication application, string userId)
     {
-        if (application.ApplicantId != userId)
-        {
-            return Result.Failure("Failed. This may not be your application.");
-        }
+        if (application.ApplicantId != userId)        
+            return Result.Failure("Failed. This may not be your application.");        
 
-        if (!application.CanSubmit)
-        {
+        if (!application.CanSubmit)        
             return Result.Failure("Please complete both sections before submitting.");
-        }
-
+        
         application.Submit(userId, Now);
 
         await db.SaveChangesAsync();
         
+        return Result.Success();
+    }
+
+    public async Task<Result> WithdrawApplicationAsync(RentalApplication application, string userId)
+    {
+        if (application.ApplicantId != userId)        
+            return Result.Failure("You can only withdraw your own application.");
+        
+        if (!application.CanWithdraw)
+            return Result.Failure($"An application that is {application.Status} can't be withdrawn.");
+        
+        application.Withdraw(userId, Now);
+
+        await db.SaveChangesAsync();
+
         return Result.Success();
     }
 

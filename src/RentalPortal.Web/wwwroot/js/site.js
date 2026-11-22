@@ -3,7 +3,8 @@
 // Any element with data-modal-url opens the shared modal with the partial view returned from that URL.
 // Forms inside the modal are posted with fetch. The server either returns the same partial with
 // validation errors (re-rendered in place) or JSON { success: true }, in which case the modal closes
-// and the element named by data-refresh-target is reloaded from data-refresh-url.
+// and the element named by data-refresh-target is reloaded from data-refresh-url. If the JSON includes
+// redirectUrl, the page navigates there instead.
 //
 // A redirect response (e.g. an expired login sending the user to the login page) navigates the whole
 // page instead of rendering inside the modal. Error responses show a message instead.
@@ -159,6 +160,11 @@
 
             const contentType = response.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
+                const data = await response.json();
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                    return;
+                }
                 modal.hide();
                 await refreshTarget();
             } else {

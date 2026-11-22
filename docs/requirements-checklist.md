@@ -12,16 +12,19 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
     - [x] Navbar and homepage links by role (Properties for managers; Available Units when logged in)
     - [ ] Application, review, and list pages
       - [x] Application page: Apply only for applicants (`Listings/Index.cshtml`); Continue, Submit,
-            and residence buttons only when editable (`IsSectionEditable`, `CanSubmit`)
-      - [ ] Review and list pages
+            and residence buttons only when editable (`IsSectionEditable`, `CanSubmit`); Withdraw
+            only for the owner while withdrawable (`ApplicationFormViewModel.CanWithdraw`)
+      - [x] List page: Applicant column only for property managers (`Applications/Index.cshtml`)
+      - [ ] Review page
 - [ ] **Applicant** can:
   - [ ] Create, fill out, and submit an application for an available unit
     - [x] Create (`ApplicationsController.Apply`), fill out both sections, and submit
           (`ApplicationsController.Details` POST, `RentalApplicationService.SubmitAsync`)
     - [ ] Only for available units (needs `Lease`; see FR 2.c)
-  - [ ] Withdraw an application
+  - [x] Withdraw an application
     - [x] Rule in the domain (`Withdraw`)
-    - [ ] Withdraw action and button
+    - [x] Withdraw action and button (`ApplicationsController.Withdraw`, `_ConfirmWithdraw`,
+          `RentalApplicationService.WithdrawApplicationAsync`)
   - [ ] Correct and resubmit a returned application
 - [ ] **Property Manager** can:
   - [x] Maintain properties and units
@@ -36,7 +39,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Controllers, view models, Razor views
   - [x] Partial views
   - [x] View components (`UnitListViewComponent` on the property Details page,
-        `ResidenceHistoryViewComponent` on the application page)
+        `ResidenceHistoryViewComponent` and `ApplicationStatusViewComponent` on the application page)
 - [ ] **1.b** Modals are populated from partial views returned by controller actions
   - [x] Shared modal and script (`_Layout.cshtml`, `wwwroot/js/site.js`)
   - [x] Validation failure re-renders the same partial in the modal
@@ -44,6 +47,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Properties: add, edit, remove
   - [x] Units: add, edit, remove
   - [x] Residences: add, edit, remove (`ResidencesController`, `_ResidenceForm`, `_ConfirmDelete`)
+  - [x] Withdraw confirmation (`ApplicationsController.Withdraw`, `_ConfirmWithdraw`)
   - [ ] Review modal
 - [ ] **1.c** Structure and styling follow best practices
 
@@ -159,11 +163,11 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 ### FR 5. Application List
 
-- [ ] **5.a** Application list
-  - [ ] Filter by status and property
-  - [ ] Filtering done in the database, not in memory
-  - [ ] Applicants see only their own applications
-  - [ ] Property managers see all applications
+- [x] **5.a** Application list (`ApplicationsController.Index`, `Applications/Index.cshtml`)
+  - [x] Filter by status and property
+  - [x] Filtering done in the database, not in memory (`Where` on the query before `ToListAsync`)
+  - [x] Applicants see only their own applications (filtered by `ApplicantId` on the server)
+  - [x] Property managers see all applications
 
 ## Bonus (optional)
 

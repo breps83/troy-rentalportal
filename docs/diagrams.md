@@ -3,7 +3,7 @@
 Mermaid diagrams for [requirements.md](requirements.md), with the current implementation status.
 Requirement IDs (for example **FR 3.b**) match [requirements-checklist.md](requirements-checklist.md).
 
-**Status as of 2026-11-21.** Colors used in the diagrams:
+**Status as of 2026-11-22.** Colors used in the diagrams:
 
 | Color | Meaning |
 |---|---|
@@ -40,7 +40,7 @@ flowchart LR
         FR2c["FR 2.c<br/>Leases"]:::todo
         FR3["FR 3<br/>Rental application"]:::partial
         FR4["FR 4<br/>Review"]:::todo
-        FR5["FR 5<br/>Application list"]:::todo
+        FR5["FR 5<br/>Application list"]:::done
     end
 
     subgraph DL["Deliverables"]
@@ -51,12 +51,13 @@ flowchart LR
 
 | Area | Status | What's left |
 |---|---|---|
-| TR 1.b | In progress | Modals done for properties, units, and residences; the review modal remains |
+| TR 1.b | In progress | Modals done for properties, units, residences, and withdrawal; the review modal remains |
 | TR 2.b.ii | In progress | Roles, users, unit types, properties, units seeded; applications in every status and leases remain |
 | TR 2.c | In progress | `UnitTypeTests`, `RentalApplicationTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (44 passing); review, lease, and submit-with-lease tests remain |
 | FR 2.a | In progress | Manager side done and applicants can start an application; Available Units lists every unit until leases exist |
 | FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
 | FR 3 | In progress | 3.a–3.d done (single-page form, residence modals, Submit, server-side edit checks); the active lease check (3.e) remains |
+| FR 5 | Done | `ApplicationsController.Index` filters by status and property in the database; applicants see only their own |
 
 ---
 
@@ -82,25 +83,25 @@ flowchart LR
     A --> Start["Start an application"]:::done
     A --> Fill["Fill out sections"]:::done
     A --> Submit["Submit"]:::partial
-    A --> Withdraw["Withdraw"]:::partial
+    A --> Withdraw["Withdraw"]:::done
     A --> Resubmit["Correct and resubmit<br/>a returned application"]:::todo
-    A --> OwnList["See own applications"]:::todo
+    A --> OwnList["See own applications"]:::done
 
     PM --> Props["Add, edit, remove properties"]:::done
     PM --> Units["Add, edit, remove units"]:::done
     PM --> Review["Review: Approve, Return, Deny"]:::todo
     PM --> History["See status history"]:::todo
-    PM --> AllList["See all applications"]:::todo
+    PM --> AllList["See all applications"]:::done
 ```
 
-"Withdraw" is amber because the rule exists in `RentalApplication` and is unit tested, but there's
-no controller action or button for it yet. "Submit" is amber because it works from the Summary but
+"Submit" is amber because it works from the Summary but
 doesn't check for an active lease yet (FR 3.e). "Browse available units" is amber because the page
 exists (`ListingsController`) but can't filter out leased units until `Lease` exists.
 `PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`,
 `ResidencesController` to `Roles.Applicant`, and `ApplicationsController` checks ownership and
-status on every save; the navbar shows Properties only to property managers, and Available Units to
-anyone logged in.
+status on every save and on Withdraw (`Roles.Applicant` plus an owner check); its list action
+filters to the applicant's own applications on the server. The navbar shows Properties only to
+property managers, and Available Units and the application list to anyone logged in.
 
 ---
 
@@ -290,7 +291,9 @@ The controller rejects posts that aren't allowed (FR 3.d), not just hides the bu
 
 ## 6. Modal request flow (TR 1.b) — done
 
-How every modal in the app works: properties, units, and residences today, review later.
+How every modal in the app works: properties, units, residences, and withdrawal today, review
+later. The withdraw confirmation returns JSON with `redirectUrl`, so the page navigates to the
+application list instead of refreshing a target.
 Implemented in `wwwroot/js/site.js` and the `Create`/`Edit`/`Delete` actions.
 
 ```mermaid

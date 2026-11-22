@@ -179,3 +179,24 @@
         }
     });
 })();
+
+// Re-check a field that shows an error as soon as its value changes (paste, autofill, date picker,
+// dropdown), not only when it loses focus. Otherwise the error disappears on the mousedown of the
+// Save click, the layout shifts, and the click misses the button. Applies to every form, including
+// the modals and the application page.
+(function () {
+    function revalidateChangedField(event) {
+        const field = event.target;
+
+        if (!field.form || !field.classList.contains('input-validation-error')) {
+            return;
+        }
+
+        if (window.jQuery && jQuery(field.form).data('validator')) {
+            jQuery(field).valid();
+        }
+    }
+
+    document.addEventListener('input', revalidateChangedField);
+    document.addEventListener('change', revalidateChangedField);
+})();

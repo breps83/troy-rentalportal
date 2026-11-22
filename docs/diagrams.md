@@ -28,7 +28,7 @@ flowchart LR
         TR1b["TR 1.b<br/>Modals from partial views"]:::done
         TR2a["TR 2.a<br/>ASP.NET Identity"]:::done
         TR2b1["TR 2.b.i<br/>Migrate on start"]:::done
-        TR2b2["TR 2.b.ii<br/>Idempotent Bogus seeding"]:::partial
+        TR2b2["TR 2.b.ii<br/>Idempotent Bogus seeding"]:::done
         TR2c["TR 2.c<br/>Unit tests"]:::done
         TR3["TR 3.a<br/>SQL Server, EF Core code-first"]:::done
     end
@@ -44,7 +44,7 @@ flowchart LR
     end
 
     subgraph DL["Deliverables"]
-        README["README.md"]:::todo
+        README["README.md"]:::partial
         GH["GitHub repository"]:::todo
     end
 ```
@@ -52,7 +52,7 @@ flowchart LR
 | Area | Status | What's left |
 |---|---|---|
 | TR 1.b | Done | Modals for properties, units, residences, withdrawal, and review (`_ReviewForm`) |
-| TR 2.b.ii | In progress | Roles, users, unit types, properties, units seeded; applications in every status and leases remain |
+| TR 2.b.ii | Done | Roles, users, unit types, properties, units, and applications in every status with leases for approvals (`DbSeeder.SeedApplicationsAsync`) |
 | TR 2.c | Done | `UnitTypeTests`, `RentalApplicationTests`, `LeaseTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (81 passing) |
 | FR 2.a | Done | Available Units lists only units with no lease covering today (`ListingsController.Index`) |
 | FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
@@ -60,6 +60,7 @@ flowchart LR
 | FR 3 | Done | 3.e checks for an active lease at Submit (`RentalApplication.Submit`) and at approval |
 | FR 4 | Done | Review modal (Approve, Return, Deny; comment required for Return and Deny) and status history for property managers |
 | FR 5 | Done | `ApplicationsController.Index` filters by status and property in the database; applicants see only their own |
+| README.md | In progress | Testing section written; setup instructions (demo logins, connection string) remain |
 
 ---
 

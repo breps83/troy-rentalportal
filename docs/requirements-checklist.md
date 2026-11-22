@@ -1,7 +1,8 @@
 # Requirements Checklist
 
 Progress tracker for [requirements.md](requirements.md). IDs match the sections there (for example
-**FR 3.b**). Check items off as they are done and verified in the running app.
+**FR 3.b**). Check items off as they are done and verified in the running app. Which browser tests
+verify each item is in [e2e-coverage.md](e2e-coverage.md).
 
 ## Roles and permissions (Challenge)
 
@@ -61,7 +62,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 - [x] **2.a** ASP.NET Identity for user and role management
 - [x] **2.b.i** Database created and migrations applied on start
-- [ ] **2.b.ii** Idempotent seeding on start, using Bogus
+- [x] **2.b.ii** Idempotent seeding on start, using Bogus
   - [x] Roles
   - [x] Property managers and applicants
   - [x] Properties
@@ -70,8 +71,11 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
     - [x] Inactive unit type, used by existing units (`Penthouse` in `DbSeeder.UnitTypes`, on about 30%
           of 3-bedroom units)
   - [x] Units (5–8 per property)
-  - [ ] Applications in **every** status (Draft, Submitted, Returned, Approved, Denied, Withdrawn)
-  - [ ] Leases for approved applications
+  - [x] Applications in **every** status (Draft, Submitted, Returned, Approved, Denied, Withdrawn)
+        (`DbSeeder.SeedApplicationsAsync`: 10 applications through the domain methods, only when none
+        exist; one Draft left blank)
+  - [x] Leases for approved applications (`ApproveApplicationForLease` in the seeder; both seeded
+        leases cover today, so those units aren't listed as available)
 - [x] **2.c** Unit tests for business logic
   - [x] Unit type selection rule (`UnitTypeTests`: `UnitType.IsSelectableFor`)
   - [x] Application rules (`RentalApplicationTests`): create, sections, residences, submit, withdraw,
@@ -208,6 +212,8 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 ## Deliverables
 
 - [ ] `README.md` with any non-standard setup instructions (demo logins, connection string, etc.)
+  - [x] Testing: unit and E2E tests, building to a temp folder, the E2E report (`README.md`, Testing)
+  - [ ] Setup: demo logins, connection string, LocalDB
 - [ ] Code pushed to a GitHub repository
 - [ ] Link sent in reply to the assessment email
 

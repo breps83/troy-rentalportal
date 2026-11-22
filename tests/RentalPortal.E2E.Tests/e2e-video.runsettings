@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Opt-in video recording for Visual Studio Test Explorer.
+  Test > Configure Run Settings > Select Solution Wide runsettings File > choose this file.
+  Choose it again (or "Auto Detect") to go back to no videos.
+  Videos and traces go to TestResults/e2e/<timestamp>/ at the repo root.
+-->
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <E2E_VIDEO>1</E2E_VIDEO>
+      <!-- Uncomment to watch the browser while tests run. -->
+      <!-- <E2E_HEADED>1</E2E_HEADED> -->
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

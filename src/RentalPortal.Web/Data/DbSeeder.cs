@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Domain;
+using RentalPortal.Web.Enums;
 
 namespace RentalPortal.Web.Data;
 
@@ -13,6 +14,7 @@ public class DbSeeder
     public const string DefaultPassword = "Password1**";
     public const string FakerCulture = "en_US";
 
+    public const int TotalApplicants = 8;
     public static readonly (string Name, bool IsActive)[] UnitTypes =
         [
             ("Studio", true),
@@ -25,28 +27,68 @@ public class DbSeeder
         ];
 
     /// <summary>
-    /// Migrates the database and seeds default roles and demo users.
+    /// Seeds the database with roles and demo application data.
     /// </summary>
-    /// <param name="services">The application's service provider.</param>
-    /// <returns>A task that represents the asynchronous seed operation.</returns>
+    /// <remarks>Applies pending migrations and rolls back all seeded changes if an exception
+    /// occurs.</remarks>
+    /// <param name="services">The service provider used to resolve database and identity services.</param>
+    /// <returns>A task that represents the asynchronous seeding operation.</returns>
     public static async Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
+
         var provider = scope.ServiceProvider;
+
+        var environment = provider.GetRequiredService<IHostEnvironment>();
+
         var db = provider.GetRequiredService<AppDbContext>();
-        var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
-        var faker = new Faker(FakerCulture) { Random = new Randomizer(4021) };
 
         await db.Database.MigrateAsync();
 
-        await SeedRolesAsync(roleManager);
 
-        await SeedDemoUsersAsync(userManager, faker);
+        var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        await SeedUnitTypesAsync(db);
+        var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        await SeedPropertiesAsync(db, faker);
+        var faker = new Faker(FakerCulture) { Random = new Randomizer(4021) };
+
+        var now = provider.GetRequiredService<TimeProvider>()
+            .GetUtcNow()
+            .UtcDateTime;
+
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        try
+        {
+            await SeedRolesAsync(roleManager);
+
+            await SeedUnitTypesAsync(db);
+
+            // only seed demo content in development
+            if (environment.IsDevelopment())
+            {
+                // seed demo users if none exist
+                var seedResult = await SeedDemoUsersAsync(userManager, faker);
+
+                if (seedResult.seedDatabase)
+                {
+                    await SeedPropertiesAsync(db, faker);
+
+                    await SeedApplicationsAsync(db,
+                        faker,
+                        (seedResult.propertyManagers, seedResult.applicants),
+                        now);
+                }
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+
+            throw;
+        }
 
     }
 
@@ -67,33 +109,80 @@ public class DbSeeder
     }
 
     /// <summary>
-    /// Seeds demo property managers and applicants in the identity store.
+    /// Creates demo property managers and applicants in the user store.
     /// </summary>
-    /// <remarks>Uses deterministic generated applicant names and fixed test credentials.</remarks>
-    /// <param name="userManager">The user manager used to create and configure demo users.</param>
-    /// <param name="faker">The faker instance used to generate deterministic test data.</param>
-    /// <returns>A task that represents the asynchronous seeding operation.</returns>
-    private static async Task SeedDemoUsersAsync(UserManager<ApplicationUser> userManager, Faker faker)
+    /// <param name="userManager">The user manager used to ensure demo accounts exist.</param>
+    /// <param name="faker">The faker used to generate names for additional applicant accounts.</param>
+    /// <returns>The demo property managers and applicants.</returns>
+    private static async Task<
+        (bool seedDatabase, List<ApplicationUser> propertyManagers, List<ApplicationUser> applicants)>
+        SeedDemoUsersAsync(UserManager<ApplicationUser> userManager, Faker faker)
     {
+        // don't seed if users already exist
+        if (await userManager.Users.AnyAsync())
+            return (false, [], []);
 
         var propertyManagers = new List<ApplicationUser>()
         {
-            await EnsureUserAsync(userManager, "manager@rentalportal.test", "Bernie", "Lomax", Roles.PropertyManager),
-            await EnsureUserAsync(userManager, "manager2@rentalportal.test", "Bill", "Lumbergh", Roles.PropertyManager)
+            await EnsureUserAsync(
+                userManager,
+                "manager@rentalportal.test",
+                "Bernie",
+                "Lomax",
+                Roles.PropertyManager),
+
+            await EnsureUserAsync(
+                userManager,
+                "manager2@rentalportal.test",
+                "Bill",
+                "Lumbergh",
+                Roles.PropertyManager)
         };
 
+        // 4 controlled applicants, const TotalApplicants = 8
         var applicants = new List<ApplicationUser>()
         {
-            await EnsureUserAsync(userManager, "applicant@rentalportal.test", "Arnold", "Schwarzenegger", Roles.Applicant),
-            await EnsureUserAsync(userManager, "applicant2@rentalportal.test", "Sylvester", "Stallone", Roles.Applicant),
-            await EnsureUserAsync(userManager, "applicant3@rentalportal.test", "Bruce", "Willis", Roles.Applicant),
-            await EnsureUserAsync(userManager, "applicant4@rentalportal.test", "Chuck", "Norris", Roles.Applicant)
+            await EnsureUserAsync(
+                userManager,
+                "applicant@rentalportal.test",
+                "Arnold",
+                "Schwarzenegger",
+                Roles.Applicant),
+
+            await EnsureUserAsync(
+                userManager,
+                "applicant2@rentalportal.test",
+                "Sylvester",
+                "Stallone",
+                Roles.Applicant),
+
+            await EnsureUserAsync(
+                userManager,
+                "applicant3@rentalportal.test",
+                "Bruce",
+                "Willis",
+                Roles.Applicant),
+
+            await EnsureUserAsync(
+                userManager,
+                "applicant4@rentalportal.test",
+                "Chuck",
+                "Norris",
+                Roles.Applicant)
         };
 
-        for (var i = 4; i <= 8; i++)
+        // remaining applicants (random)
+        for (var i = applicants.Count + 1; i <= TotalApplicants; i++)
         {
-            applicants.Add(await EnsureUserAsync(userManager, $"applicant{i}@rentalportal.test", faker.Name.FirstName(), faker.Name.LastName(), Roles.Applicant));
+            applicants.Add(await EnsureUserAsync(
+                userManager,
+                $"applicant{i}@rentalportal.test",
+                faker.Name.FirstName(),
+                faker.Name.LastName(),
+                Roles.Applicant));
         }
+
+        return (true, propertyManagers, applicants);
 
     }
 
@@ -175,16 +264,120 @@ public class DbSeeder
         await db.SaveChangesAsync();
     }
 
+    private static async Task SeedApplicationsAsync(
+        AppDbContext db,
+        Faker faker,
+        (List<ApplicationUser> propertyManagers, List<ApplicationUser> applicants) users,
+        DateTime now)
+    {
+        if (await db.RentalApplications.AnyAsync())
+            return;
+
+        var units = await db.Units.OrderBy(u => u.Id).ToListAsync();
+
+        var plan = new (ApplicationStatus Status, int Applicant, int Unit)[]
+        {
+            (ApplicationStatus.Draft, 0, 0),
+            (ApplicationStatus.Draft, 1, 1),
+            (ApplicationStatus.Submitted, 0, 2),
+            (ApplicationStatus.Submitted, 2, 2),
+            (ApplicationStatus.Submitted, 3, 3),
+            (ApplicationStatus.Returned, 0, 4),
+            (ApplicationStatus.Approved, 1, 5),
+            (ApplicationStatus.Approved, 4, 6),
+            (ApplicationStatus.Denied, 2, 7),
+            (ApplicationStatus.Withdrawn, 3, 8)
+        };
+
+        for (var i = 0; i < plan.Length; i++)
+        {
+            var (status, applicantIndex, unitIndex) = plan[i];
+
+            var applicant = users.applicants[applicantIndex];
+
+            var manager = users.propertyManagers[i % users.propertyManagers.Count];
+
+            var createdAt = now.AddDays(-1 * faker.Random.Int(14, 60));
+
+            var application = RentalApplication.NewApplication(
+                units[unitIndex].Id,
+                applicant,
+                createdAt);
+
+            // leave 1 blank application (i != 1)
+            if (i != 1)
+            {
+                SeedApplication(
+                    application,
+                    applicant,
+                    faker,
+                    createdAt);
+            }
+
+            if (status != ApplicationStatus.Draft)
+            {
+                var submittedDate = createdAt.AddDays(1);
+
+                var reviewedDate = createdAt.AddDays(3);
+
+                var reviewedToday = DateOnly.FromDateTime(reviewedDate);
+
+                application.Submit(
+                    applicant.Id,
+                    submittedDate,
+                    DateOnly.FromDateTime(submittedDate),
+                    []);
+
+                switch (status)
+                {
+                    case ApplicationStatus.Returned:
+                        application.ReturnLease(
+                            manager.Id,
+                            "Return Lease Test Comment from Seeder.",
+                            reviewedDate);
+                        break;
+                    case ApplicationStatus.Approved:
+                        application.ApproveApplicationForLease(
+                            manager.Id,
+                            "Approved Lease Test Comment from Seeder.",
+                            reviewedDate,
+                            reviewedToday,
+                            reviewedToday,
+                            []);
+                        break;
+                    case ApplicationStatus.Denied:
+                        application.DenyLease(
+                            manager.Id,
+                            "Denied Lease Test Comment from Seeder.",
+                            reviewedDate);
+                        break;
+                    case ApplicationStatus.Withdrawn:
+                        application.Withdraw(
+                            applicant.Id, reviewedDate);
+                        break;
+
+                }
+            }
+
+            db.RentalApplications.Add(application);
+
+        }
+
+        await db.SaveChangesAsync();
+    }
+
     /// <summary>
-    /// Ensures that a user with the specified email address exists and assigns the specified role.
+    /// Ensures a user exists and belongs to the specified role.
     /// </summary>
-    /// <param name="userManager">The user manager used to find, create, and manage user roles.</param>
-    /// <param name="email">The email address used to identify the user.</param>
+    /// <remarks>Role membership is checked on every invocation so missing role assignments are
+    /// repaired.</remarks>
+    /// <param name="userManager">The user manager used to find, create, and assign the user.</param>
+    /// <param name="email">The user's email address and username.</param>
     /// <param name="firstName">The user's first name.</param>
     /// <param name="lastName">The user's last name.</param>
-    /// <param name="role">The role to assign to a newly created user.</param>
+    /// <param name="role">The role to assign to the user.</param>
     /// <returns>The existing or newly created application user.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the user cannot be created.</exception>
+    /// <exception cref="InvalidOperationException">The user could not be created or assigned to the specified role.</exception>
     private static async Task<ApplicationUser> EnsureUserAsync(UserManager<ApplicationUser> userManager, string email, string firstName, string lastName, string role)
     {
         var user = await userManager.FindByEmailAsync(email);
@@ -219,5 +412,44 @@ public class DbSeeder
 
         return user;
     }
+
+    private static void SeedApplication(
+        RentalApplication application,
+        ApplicationUser applicant,
+        Faker faker,
+        DateTime createdAtUtc)
+    {
+        application.UpdateApplicant(
+            applicant.FirstName,
+            applicant.LastName,
+            faker.Phone.PhoneNumber(),
+            applicant.Email!,
+            GetAddress(faker));
+
+        var moveOut = DateOnly.FromDateTime(createdAtUtc)
+                        .AddDays(-1 * faker.Random.Int(0, 30));
+
+        var residenceCount = faker.Random.Int(1, 3);
+
+        for (var r = 0; r < residenceCount; r++)
+        {
+            var moveIn = moveOut.AddMonths(-1 * faker.Random.Int(12, 36));
+
+            application.AddResidence(
+                GetAddress(faker),
+                faker.Name.FullName(),
+                faker.Phone.PhoneNumber(),
+                moveIn,
+                moveOut);
+
+            moveOut = moveIn.AddDays(-1);
+
+        }
+
+        application.SetResidenceHistoryCompleted();
+    }
+
+    private static string GetAddress(Faker faker) =>
+        $"{faker.Address.StreetAddress()}, {faker.Address.City()}, {faker.Address.StateAbbr()} {faker.Address.ZipCode("#####")}";
 
 }

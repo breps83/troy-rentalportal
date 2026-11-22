@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="CLAUDE.md" />
+    <File Path="README.md" />
     <File Path="Directory.Build.props" />
   </Folder>
   <Folder Name="/docs/">
@@ -10,11 +11,14 @@
     <File Path="docs/diagrams.md" />
     <File Path="docs/ef-commands.md" />
     <File Path="docs/interview-prep.md" />
+    <File Path="docs/e2e-tests.md" />
+    <File Path="docs/e2e-coverage.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/RentalPortal.Web/RentalPortal.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/RentalPortal.E2E.Tests/RentalPortal.E2E.Tests.csproj" Id="8ce62d09-881b-4ae1-bae0-3a45336fb901" />
     <Project Path="tests/RentalPortal.Tests/RentalPortal.Tests.csproj" />
   </Folder>
 </Solution>

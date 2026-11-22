@@ -12,6 +12,9 @@ partial views, and view components, with no single-page application framework.
 - Spec: `docs/requirements.md` (requirement IDs such as FR 3.b and TR 1.b)
 - Progress: `docs/requirements-checklist.md`, with status diagrams in `docs/diagrams.md`
 - App: `src/RentalPortal.Web`. Tests: `tests/RentalPortal.Tests` (xUnit)
+- E2E tests: `tests/RentalPortal.E2E.Tests` (xUnit + Playwright, own `RentalPortalE2E` database). Guide in
+  `docs/e2e-tests.md`, requirement coverage in `docs/e2e-coverage.md`. Skills: `e2e-tests` (write and
+  maintain) and `run-e2e-tests` (run with videos and report)
 - Database: SQL Server LocalDB (`RentalPortalDb`), EF Core code-first. The app applies
   migrations and reseeds on startup (`Data/DbSeeder.cs`), so the dev database is disposable.
 
@@ -50,10 +53,21 @@ partial views, and view components, with no single-page application framework.
 
 ```bash
 dotnet build RentalPortal.slnx
-dotnet test RentalPortal.slnx
 dotnet ef migrations add <Name> --project src/RentalPortal.Web
 dotnet ef migrations has-pending-model-changes --project src/RentalPortal.Web
 ```
 
 When the app is running, it locks `bin/`; to check that the code compiles, build to another
 folder instead: `dotnet build src/RentalPortal.Web -o <temp folder>`.
+
+**Always build the tests to a temp folder**, never `bin/`, so they work while the app is running:
+
+```powershell
+# Unit tests
+dotnet build tests/RentalPortal.Tests -o $env:TEMP/RentalPortal.Tests
+dotnet test $env:TEMP/RentalPortal.Tests/RentalPortal.Tests.dll
+
+# E2E tests (the script builds to $env:TEMP/RentalPortal.E2E.Tests itself)
+./tests/RentalPortal.E2E.Tests/run-e2e.ps1               # with videos (-NoVideo, -Filter "Requirement=FR 3.b", -Open)
+# Report with every test's video: TestResults/e2e/latest/index.html
+```

@@ -1,6 +1,6 @@
 ﻿@using RentalPortal.Web.Domain
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
 <div class="text-center py-5">
@@ -14,7 +14,6 @@
     {
         <p class="mb-4">Welcome back, @User.Identity.Name!</p>
 
-        @* Same order and names as the navbar (Views/Shared/_Layout.cshtml). *@
         <div class="d-flex justify-content-center flex-wrap gap-2">
             @if (User.IsInRole(Roles.PropertyManager))
             {
@@ -24,6 +23,15 @@
             else
             {
                 <a asp-controller="Listings" asp-action="Index" class="btn btn-primary btn-lg">Browse Available Units</a>
+            }
+
+            @if (User.IsInRole(Roles.PropertyManager))
+            {
+                <a asp-controller="Applications" asp-action="Index" class="btn btn-primary btn-lg">Applications</a>
+            }
+            @if (User.IsInRole(Roles.Applicant))
+            {
+                <a asp-controller="Applications" asp-action="Index" class="btn btn-primary btn-lg">My Applications</a>  
             }
         </div>
     }

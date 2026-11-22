@@ -51,12 +51,12 @@ flowchart LR
 
 | Area | Status | What's left |
 |---|---|---|
-| TR 1.b | In progress | Modals done for properties and units; residences and review modals remain |
+| TR 1.b | In progress | Modals done for properties, units, and residences; the review modal remains |
 | TR 2.b.ii | In progress | Roles, users, unit types, properties, units seeded; applications in every status and leases remain |
-| TR 2.c | In progress | `UnitTypeTests` and `RentalApplicationTests` (23 passing); review, lease, and submit-with-lease tests remain |
-| FR 2.a | In progress | Manager side done; Available Units page exists but lists every unit until leases exist; starting an application remains |
+| TR 2.c | In progress | `UnitTypeTests`, `RentalApplicationTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (44 passing); review, lease, and submit-with-lease tests remain |
+| FR 2.a | In progress | Manager side done and applicants can start an application; Available Units lists every unit until leases exist |
 | FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
-| FR 3 | In progress | `RentalApplication` domain model, EF mapping, and tests exist; migration, controller, and views remain |
+| FR 3 | In progress | 3.a–3.d done (single-page form, residence modals, Submit, server-side edit checks); the active lease check (3.e) remains |
 
 ---
 
@@ -79,8 +79,8 @@ flowchart LR
     Anyone --> LogIn["Log in and log out"]:::done
 
     A --> Browse["Browse available units"]:::partial
-    A --> Start["Start an application"]:::partial
-    A --> Fill["Fill out sections"]:::partial
+    A --> Start["Start an application"]:::done
+    A --> Fill["Fill out sections"]:::done
     A --> Submit["Submit"]:::partial
     A --> Withdraw["Withdraw"]:::partial
     A --> Resubmit["Correct and resubmit<br/>a returned application"]:::todo
@@ -93,11 +93,14 @@ flowchart LR
     PM --> AllList["See all applications"]:::todo
 ```
 
-Amber here means the rule exists in `RentalApplication` and is unit tested, but there's no
-controller or page for it yet. "Browse available units" is amber because the page exists
-(`ListingsController`) but can't filter out leased units until `Lease` exists.
-`PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`; the navbar
-shows Properties only to property managers, and Available Units to anyone logged in.
+"Withdraw" is amber because the rule exists in `RentalApplication` and is unit tested, but there's
+no controller action or button for it yet. "Submit" is amber because it works from the Summary but
+doesn't check for an active lease yet (FR 3.e). "Browse available units" is amber because the page
+exists (`ListingsController`) but can't filter out leased units until `Lease` exists.
+`PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`,
+`ResidencesController` to `Roles.Applicant`, and `ApplicationsController` checks ownership and
+status on every save; the navbar shows Properties only to property managers, and Available Units to
+anyone logged in.
 
 ---
 
@@ -156,6 +159,9 @@ classDiagram
         +bool ResidenceHistoryCompleted
         +UpdateApplicant()
         +AddResidence()
+        +UpdateResidence()
+        +RemoveResidence()
+        +SetResidenceHistoryCompleted()
         +Submit()
         +Withdraw()
         +Return() planned
@@ -164,7 +170,7 @@ classDiagram
     }
 
     class Residence {
-        <<In progress>>
+        <<Done>>
         +int Id
         +string Address
         +string LandlordName
@@ -249,39 +255,42 @@ Every transition is recorded in `StatusHistory` with who, when, and an optional 
 ## 5. Application page flow (FR 3.b)
 
 One page, one view model, one form posting to one action. The button clicked decides what happens.
-**Not started** as a page; the save rules behind it exist in `RentalApplication`.
+**Done** (`ApplicationsController.Details`, `Details.cshtml`), except the active lease check at
+Submit (FR 3.e), shown in amber.
 
 ```mermaid
 flowchart TD
-    classDef todo fill:#eceff1,stroke:#78909c,color:#263238
+    classDef done fill:#c8e6c9,stroke:#2e7d32,color:#1b3d1f
+    classDef partial fill:#ffe0b2,stroke:#ef6c00,color:#4e2a00
     classDef decision fill:#fff8e1,stroke:#f9a825,color:#3e2f00
 
-    Open(["Open application"]):::todo --> Editable{"Editable?<br/>Draft or Returned,<br/>decided on the server"}:::decision
-    Editable -- No --> ReadOnly["All sections read-only"]:::todo
-    Editable -- Yes --> S1["Section 1<br/>Applicant Information"]:::todo
+    Open(["Open application"]):::done --> Editable{"Editable?<br/>Draft or Returned,<br/>decided on the server"}:::decision
+    Editable -- No --> ReadOnly["All sections read-only"]:::done
+    Editable -- Yes --> S1["Section 1<br/>Applicant Information"]:::done
 
     S1 -- Continue --> V1{"Valid?"}:::decision
     V1 -- No --> S1
-    V1 -- Yes, save --> S2["Section 2<br/>Residence History<br/>(residences via modal)"]:::todo
+    V1 -- Yes, save --> S2["Section 2<br/>Residence History<br/>(residences via modal)"]:::done
 
     S2 -- Back, no save --> S1
     S2 -- Continue --> V2{"At least one residence?"}:::decision
     V2 -- No --> S2
-    V2 -- Yes, save --> Sum["Summary<br/>read-only view of both sections"]:::todo
+    V2 -- Yes, save --> Sum["Summary<br/>read-only view of both sections"]:::done
 
     Sum -- Back --> S2
-    Sum -- Submit --> V3{"Both sections saved<br/>and no active lease?"}:::decision
+    Sum -- Submit --> V3{"Both sections saved<br/>and no active lease?"}:::partial
     V3 -- No --> Sum
-    V3 -- Yes --> Done(["Submitted"]):::todo
+    V3 -- Yes --> Done(["Submitted"]):::done
 ```
 
-The controller must reject posts that aren't allowed (FR 3.d), not just hide the buttons.
+The controller rejects posts that aren't allowed (FR 3.d), not just hides the buttons
+(`RejectEditActionResult`).
 
 ---
 
 ## 6. Modal request flow (TR 1.b) — done
 
-How every modal in the app works: properties and units today, residences and review later.
+How every modal in the app works: properties, units, and residences today, review later.
 Implemented in `wwwroot/js/site.js` and the `Create`/`Edit`/`Delete` actions.
 
 ```mermaid

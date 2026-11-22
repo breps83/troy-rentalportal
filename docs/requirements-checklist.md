@@ -11,9 +11,17 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] UI shows only the actions the current role can perform
     - [x] Navbar and homepage links by role (Properties for managers; Available Units when logged in)
     - [ ] Application, review, and list pages
+      - [x] Application page: Apply only for applicants (`Listings/Index.cshtml`); Continue, Submit,
+            and residence buttons only when editable (`IsSectionEditable`, `CanSubmit`)
+      - [ ] Review and list pages
 - [ ] **Applicant** can:
   - [ ] Create, fill out, and submit an application for an available unit
+    - [x] Create (`ApplicationsController.Apply`), fill out both sections, and submit
+          (`ApplicationsController.Details` POST, `RentalApplicationService.SubmitAsync`)
+    - [ ] Only for available units (needs `Lease`; see FR 2.c)
   - [ ] Withdraw an application
+    - [x] Rule in the domain (`Withdraw`)
+    - [ ] Withdraw action and button
   - [ ] Correct and resubmit a returned application
 - [ ] **Property Manager** can:
   - [x] Maintain properties and units
@@ -27,14 +35,15 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 - [x] **1.a** Uses controllers, view models, Razor views, partial views, and view components
   - [x] Controllers, view models, Razor views
   - [x] Partial views
-  - [x] View components (`UnitListViewComponent` on the property Details page)
+  - [x] View components (`UnitListViewComponent` on the property Details page,
+        `ResidenceHistoryViewComponent` on the application page)
 - [ ] **1.b** Modals are populated from partial views returned by controller actions
   - [x] Shared modal and script (`_Layout.cshtml`, `wwwroot/js/site.js`)
   - [x] Validation failure re-renders the same partial in the modal
   - [x] Success closes the modal and refreshes the affected part of the page
   - [x] Properties: add, edit, remove
   - [x] Units: add, edit, remove
-  - [ ] Residences: add, edit, remove
+  - [x] Residences: add, edit, remove (`ResidencesController`, `_ResidenceForm`, `_ConfirmDelete`)
   - [ ] Review modal
 - [ ] **1.c** Structure and styling follow best practices
 
@@ -57,6 +66,9 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Unit type selection rule (`UnitTypeTests`: `UnitType.IsSelectableFor`)
   - [x] Application rules (`RentalApplicationTests`): create, sections, residences, submit, withdraw,
         read-only after submit
+  - [x] Section navigation for Continue and Back (`ApplicationSectionExtensionsTests`)
+  - [x] Submit rejected for another user, incomplete sections, or a second submit
+        (`RentalApplicationServiceTests`)
   - [ ] Return, Approve, Deny, and resubmit
   - [ ] Active lease checks at submit and approval, and `Lease` term and coverage
 
@@ -82,7 +94,8 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [ ] Applicants can browse available units
     - [x] Available Units page (`ListingsController`), linked from the navbar and homepage
     - [ ] Only units with no lease covering today are listed (needs `Lease`; see FR 2.c)
-  - [ ] Applicants can start an application from a unit
+  - [x] Applicants can start an application from a unit (Apply for Unit button,
+        `ApplicationsController.Apply`, reopens an existing open application)
 - [x] **2.b** Unit Type lookup with Active and Inactive values
   - [x] Unit type stored as a lookup table, not free text
   - [x] Inactive type still displays on units that already use it (marked "inactive" in the unit list)
@@ -97,28 +110,33 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 - [x] Domain model and database: `RentalApplication`, `Residence`, `ApplicationStatusHistory`,
       `AddApplication` migration
-- [ ] **3.a** Application is for one unit, with two sections and a summary
-  - [ ] Applicant Information: name, phone, email, current address
-  - [ ] Residence History: prior residences with address, landlord name and phone, move-in and
-        move-out dates
-  - [ ] Summary: read-only view of both sections, with Submit
-- [ ] **3.b** Single page, one section shown at a time
-  - [ ] One view model drives the page
-  - [ ] Each section renders through its own partial view or view component
-  - [ ] One form posts to one action; the clicked button decides what happens
-  - [ ] **Continue** validates, saves only when valid, then shows the next section or the Summary
-  - [ ] **Continue** re-renders the section with errors when invalid
-  - [ ] **Back** returns to the previous section without saving
-  - [ ] **Submit** is available from the Summary only after both sections are saved
+- [x] **3.a** Application is for one unit, with two sections and a summary
+  - [x] Applicant Information: name, phone, email, current address (`_ApplicantInfo`,
+        `ApplicantInfoViewModel`)
+  - [x] Residence History: prior residences with address, landlord name and phone, move-in and
+        move-out dates (`ResidenceHistoryViewComponent`, `ResidenceFormViewModel`)
+  - [x] Summary: read-only view of both sections, with Submit (`Details.cshtml`, Summary case)
+- [x] **3.b** Single page, one section shown at a time
+  - [x] One view model drives the page (`ApplicationFormViewModel`)
+  - [x] Each section renders through its own partial view or view component
+  - [x] One form posts to one action; the clicked button decides what happens
+        (`ApplicationsController.Details` POST, `switch (command)`)
+  - [x] **Continue** validates, saves only when valid, then shows the next section or the Summary
+  - [x] **Continue** re-renders the section with errors when invalid (field errors on Applicant
+        Information; an alert on Residence History when no residences were added)
+  - [x] **Back** returns to the previous section without saving
+  - [x] **Submit** is available from the Summary only after both sections are saved
     - [x] Rule in the domain (`CanSubmit`, `Submit`)
-    - [ ] Summary page and button
-- [ ] **3.c** Residences are added, edited, and removed through a modal
-- [ ] **3.d** Editable or read-only is a server-side decision
-  - [ ] Same section partial renders both modes
-  - [ ] Editable only for the applicant, and only in Draft or Returned status
+    - [x] Summary page and button
+- [x] **3.c** Residences are added, edited, and removed through a modal (`ResidencesController`)
+- [x] **3.d** Editable or read-only is a server-side decision
+  - [x] Same section partial renders both modes (`_ApplicantInfo` and `ResidenceHistory` take
+        `IsEditable`)
+  - [x] Editable only for the applicant, and only in Draft or Returned status
     - [x] Status rule in the domain (`IsEditable`; edit methods throw otherwise)
-    - [ ] Ownership check (only the applicant who owns it)
-  - [ ] Controllers reject posts that aren't allowed
+    - [x] Ownership check (only the applicant who owns it) (`UserCanEdit`, `RejectEditActionResult`)
+  - [x] Controllers reject posts that aren't allowed (`RejectEditActionResult` in
+        `ApplicationsController` and `ResidencesController`)
 - [ ] **3.e** Active lease check
   - [ ] Submit is rejected with an error when the unit has an active lease
   - [ ] Approval is rejected with an error when the unit has an active lease (prevents a second lease)

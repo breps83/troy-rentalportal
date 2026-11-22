@@ -72,7 +72,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Units (5–8 per property)
   - [ ] Applications in **every** status (Draft, Submitted, Returned, Approved, Denied, Withdrawn)
   - [ ] Leases for approved applications
-- [ ] **2.c** Unit tests for business logic
+- [x] **2.c** Unit tests for business logic
   - [x] Unit type selection rule (`UnitTypeTests`: `UnitType.IsSelectableFor`)
   - [x] Application rules (`RentalApplicationTests`): create, sections, residences, submit, withdraw,
         read-only after submit
@@ -82,11 +82,12 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Return, Approve, Deny, and resubmit (`RentalApplicationTests`: `Approve_*`, `Return_*`,
         `Deny_*`, `ReturnOrDeny_WithoutComment_IsRejected`,
         `ReturnedApplication_IsEditable_AndCanBeResubmitted`)
-  - [ ] Active lease checks at submit and approval, and `Lease` term and coverage
+  - [x] Active lease checks at submit and approval, and `Lease` term and coverage
     - [x] Approval rejected for an active or overlapping lease (`Approve_UnitHasActiveLease_IsRejected`,
           `Approve_OverlapsAFutureLease_IsRejected`)
     - [x] `Lease` term and coverage (`LeaseTests`)
-    - [ ] Submit rejected for an active lease (not in the code yet; see FR 3.e)
+    - [x] Submit rejected for an active lease (`Submit_UnitHasActiveLease_IsRejected`,
+          `Submit_NoActiveLeaseOnThisUnit_IsAllowed`; the query in `SubmitAsync` isn't tested)
 
 ### TR 3. Database
 
@@ -155,8 +156,9 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
     - [x] Ownership check (only the applicant who owns it) (`UserCanEdit`, `RejectEditActionResult`)
   - [x] Controllers reject posts that aren't allowed (`RejectEditActionResult` in
         `ApplicationsController` and `ResidencesController`)
-- [ ] **3.e** Active lease check
-  - [ ] Submit is rejected with an error when the unit has an active lease
+- [x] **3.e** Active lease check
+  - [x] Submit is rejected with an error when the unit has an active lease (`RentalApplication.Submit`;
+        `SubmitAsync` loads the unit's active leases)
   - [x] Approval is rejected with an error when the unit has an active lease (prevents a second lease)
         (`ApproveApplicationForLease`, which also rejects an overlapping future lease)
   - [x] Other open applications for the unit are left unchanged (`ReviewApplicationAsync` changes only

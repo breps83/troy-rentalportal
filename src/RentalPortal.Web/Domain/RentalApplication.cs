@@ -170,10 +170,20 @@ public class RentalApplication
         ResidenceHistoryCompleted = true;
     }
 
-    public void Submit(string userId, DateTime nowUtc)
+    public void Submit(
+        string userId,
+        DateTime nowUtc,
+        DateOnly today,
+        IEnumerable<Lease> unitLeases)
     {
         if (!CanSubmit)
             throw new RuleException("The application is not fully complete.");
+
+        foreach (var existing in unitLeases.Where(l => l.UnitId == UnitId))
+        {
+            if (existing.IsActive(today))
+                throw new RuleException("This unit already has an active lease.");
+        }
 
         SubmittedAtUtc = nowUtc;
 

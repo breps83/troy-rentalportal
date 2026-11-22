@@ -18,6 +18,7 @@ public class RentalApplicationTests
 {
     private static readonly DateTime _createdUtc = new(2026, 11, 1, 9, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime _submittedUtc = new(2026, 11, 2, 10, 0, 0, DateTimeKind.Utc);
+    private static readonly DateOnly _submittedToday = new(2026, 11, 2);
     private static readonly DateTime _withdrawnUtc = new(2026, 11, 3, 11, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime _reviewedUtc = new(2026, 11, 4, 12, 0, 0, DateTimeKind.Utc);
     private static readonly DateOnly _reviewedToday = new(2026, 11, 4);
@@ -65,7 +66,7 @@ public class RentalApplicationTests
     private static RentalApplication NewSubmitted()
     {
         var application = NewCompleteDraft();
-        application.Submit("applicant-1", _submittedUtc);
+        application.Submit("applicant-1", _submittedUtc, _submittedToday, _noLeases);
         return application;
     }
 
@@ -300,7 +301,8 @@ public class RentalApplicationTests
 
         // Act & Assert
         Assert.False(application.CanSubmit);
-        Assert.Throws<RuleException>(() => application.Submit("applicant-1", _submittedUtc));
+        Assert.Throws<RuleException>(() =>
+            application.Submit("applicant-1", _submittedUtc, _submittedToday, _noLeases));
         Assert.Equal(ApplicationStatus.Draft, application.Status);
         Assert.Null(application.SubmittedAtUtc);
     }
@@ -313,7 +315,7 @@ public class RentalApplicationTests
         Assert.True(application.CanSubmit);
 
         // Act
-        application.Submit("applicant-1", _submittedUtc);
+        application.Submit("applicant-1", _submittedUtc, _submittedToday, _noLeases);
 
         // Assert
         Assert.Equal(ApplicationStatus.Submitted, application.Status);
@@ -334,7 +336,45 @@ public class RentalApplicationTests
 
         // Act & Assert
         Assert.False(application.CanSubmit);
-        Assert.Throws<RuleException>(() => application.Submit("applicant-1", _submittedUtc));
+        Assert.Throws<RuleException>(() =>
+            application.Submit("applicant-1", _submittedUtc, _submittedToday, _noLeases));
+    }
+
+    /// <summary>FR 3.e: submit is rejected when the unit has a lease covering today.</summary>
+    [Fact]
+    public void Submit_UnitHasActiveLease_IsRejected()
+    {
+        // Arrange
+        var application = NewCompleteDraft();
+
+        // Active on Nov 2, 2026 (Jan 1 through Dec 31, 2026).
+        var active = ExistingLease(new DateOnly(2026, 1, 1));
+
+        // Act & Assert
+        Assert.Throws<RuleException>(() =>
+            application.Submit("applicant-1", _submittedUtc, _submittedToday, [active]));
+        Assert.Equal(ApplicationStatus.Draft, application.Status);
+        Assert.Null(application.SubmittedAtUtc);
+    }
+
+    /// <summary>
+    /// FR 3.e: leases that aren't active today (ended, or not started yet) and leases on other units
+    /// don't block submit.
+    /// </summary>
+    [Fact]
+    public void Submit_NoActiveLeaseOnThisUnit_IsAllowed()
+    {
+        // Arrange
+        var application = NewCompleteDraft();
+        var ended = ExistingLease(new DateOnly(2025, 1, 1));
+        var future = ExistingLease(new DateOnly(2026, 12, 1));
+        var otherUnit = ExistingLease(new DateOnly(2026, 1, 1), unitId: 8);
+
+        // Act
+        application.Submit("applicant-1", _submittedUtc, _submittedToday, [ended, future, otherUnit]);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Submitted, application.Status);
     }
 
     // ---- Read-only once submitted (FR 3.d) ----
@@ -416,7 +456,8 @@ public class RentalApplicationTests
         Assert.False(application.CanWithdraw);
         Assert.False(application.CanSubmit);
         Assert.Throws<RuleException>(() => application.Withdraw("applicant-1", _withdrawnUtc));
-        Assert.Throws<RuleException>(() => application.Submit("applicant-1", _withdrawnUtc));
+        Assert.Throws<RuleException>(() =>
+            application.Submit("applicant-1", _withdrawnUtc, DateOnly.FromDateTime(_withdrawnUtc), _noLeases));
         Assert.Throws<RuleException>(() => FillApplicantInfo(application));
     }
 
@@ -520,7 +561,7 @@ public class RentalApplicationTests
         // Act
         Assert.True(application.IsEditable);
         Assert.True(application.CanSubmit);
-        application.Submit("applicant-1", _reviewedUtc.AddDays(1));
+        application.Submit("applicant-1", _reviewedUtc.AddDays(1), _reviewedToday.AddDays(1), _noLeases);
 
         // Assert
         Assert.Equal(ApplicationStatus.Submitted, application.Status);

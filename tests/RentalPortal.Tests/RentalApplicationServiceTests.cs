@@ -99,7 +99,8 @@ public class RentalApplicationServiceTests
         // Arrange
         var service = NewService();
         var application = NewCompleteDraft();
-        application.Submit(OwnerId, new DateTime(2026, 11, 2, 10, 0, 0, DateTimeKind.Utc));
+        application.Submit(
+            OwnerId, new DateTime(2026, 11, 2, 10, 0, 0, DateTimeKind.Utc), new DateOnly(2026, 11, 2), []);
 
         // Act
         var result = await service.SubmitAsync(application, OwnerId);

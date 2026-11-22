@@ -48,13 +48,27 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
 
     public async Task<Result> SubmitAsync(RentalApplication application, string userId)
     {
+        var today = time.GetToday();
+
         if (application.ApplicantId != userId)
             return Result.Failure("Failed. This may not be your application.");
 
         if (!application.CanSubmit)
             return Result.Failure("Please complete both sections before submitting.");
 
-        application.Submit(userId, Now);
+        var unitLeases = await db.Leases
+            .Where(l => l.UnitId == application.UnitId &&
+                l.StartDate <= today && today <= l.EndDate)
+            .ToListAsync();
+
+        try
+        {
+            application.Submit(userId, Now, today, unitLeases);
+        }
+        catch (RuleException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
 
         await db.SaveChangesAsync();
 

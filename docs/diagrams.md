@@ -29,7 +29,7 @@ flowchart LR
         TR2a["TR 2.a<br/>ASP.NET Identity"]:::done
         TR2b1["TR 2.b.i<br/>Migrate on start"]:::done
         TR2b2["TR 2.b.ii<br/>Idempotent Bogus seeding"]:::partial
-        TR2c["TR 2.c<br/>Unit tests"]:::partial
+        TR2c["TR 2.c<br/>Unit tests"]:::done
         TR3["TR 3.a<br/>SQL Server, EF Core code-first"]:::done
     end
 
@@ -38,7 +38,7 @@ flowchart LR
         FR2a["FR 2.a<br/>Properties and units"]:::done
         FR2b["FR 2.b<br/>Unit type lookup"]:::done
         FR2c["FR 2.c<br/>Leases"]:::done
-        FR3["FR 3<br/>Rental application"]:::partial
+        FR3["FR 3<br/>Rental application"]:::done
         FR4["FR 4<br/>Review"]:::done
         FR5["FR 5<br/>Application list"]:::done
     end
@@ -53,11 +53,11 @@ flowchart LR
 |---|---|---|
 | TR 1.b | Done | Modals for properties, units, residences, withdrawal, and review (`_ReviewForm`) |
 | TR 2.b.ii | In progress | Roles, users, unit types, properties, units seeded; applications in every status and leases remain |
-| TR 2.c | In progress | `UnitTypeTests`, `RentalApplicationTests`, `LeaseTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (79 passing); the submit-with-active-lease test remains |
+| TR 2.c | Done | `UnitTypeTests`, `RentalApplicationTests`, `LeaseTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (81 passing) |
 | FR 2.a | Done | Available Units lists only units with no lease covering today (`ListingsController.Index`) |
 | FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
 | FR 2.c | Done | Approval creates a twelve-month `Lease` starting on the approval date |
-| FR 3 | In progress | 3.a–3.d done; 3.e done at approval, but Submit doesn't check for an active lease yet |
+| FR 3 | Done | 3.e checks for an active lease at Submit (`RentalApplication.Submit`) and at approval |
 | FR 4 | Done | Review modal (Approve, Return, Deny; comment required for Return and Deny) and status history for property managers |
 | FR 5 | Done | `ApplicationsController.Index` filters by status and property in the database; applicants see only their own |
 
@@ -84,7 +84,7 @@ flowchart LR
     A --> Browse["Browse available units"]:::done
     A --> Start["Start an application"]:::done
     A --> Fill["Fill out sections"]:::done
-    A --> Submit["Submit"]:::partial
+    A --> Submit["Submit"]:::done
     A --> Withdraw["Withdraw"]:::done
     A --> Resubmit["Correct and resubmit<br/>a returned application"]:::done
     A --> OwnList["See own applications"]:::done
@@ -96,8 +96,6 @@ flowchart LR
     PM --> AllList["See all applications"]:::done
 ```
 
-"Submit" is amber because it works from the Summary but
-doesn't check for an active lease yet (FR 3.e).
 `PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`,
 `ResidencesController` to `Roles.Applicant`, and `ApplicationsController` checks ownership and
 status on every save and on Withdraw (`Roles.Applicant` plus an owner check); `Review` is
@@ -247,11 +245,11 @@ stateDiagram-v2
 | Transition | Status |
 |---|---|
 | Start → Draft | Done (`NewApplication`) |
-| Draft → Submitted | Done, except the active lease check (FR 3.e) |
+| Draft → Submitted | Done (`Submit`; rejects an active lease, FR 3.e) |
 | Draft / Submitted / Returned → Withdrawn | Done (`Withdraw`) |
 | Submitted → Returned, Denied | Done (`ReturnLease`, `DenyLease`; comment required) |
 | Submitted → Approved | Done (`ApproveApplicationForLease`; rejects an active or overlapping lease) |
-| Returned → Submitted | Done (`Submit`; same active lease gap as Draft → Submitted) |
+| Returned → Submitted | Done (`Submit`; same active lease check as Draft → Submitted) |
 
 Every transition is recorded in `StatusHistory` with who, when, and an optional comment (FR 4.c).
 
@@ -260,8 +258,8 @@ Every transition is recorded in `StatusHistory` with who, when, and an optional 
 ## 5. Application page flow (FR 3.b)
 
 One page, one view model, one form posting to one action. The button clicked decides what happens.
-**Done** (`ApplicationsController.Details`, `Details.cshtml`), except the active lease check at
-Submit (FR 3.e), shown in amber.
+**Done** (`ApplicationsController.Details`, `Details.cshtml`, and `RentalApplication.Submit` for the
+active lease check, FR 3.e).
 
 ```mermaid
 flowchart TD
@@ -283,7 +281,7 @@ flowchart TD
     V2 -- Yes, save --> Sum["Summary<br/>read-only view of both sections"]:::done
 
     Sum -- Back --> S2
-    Sum -- Submit --> V3{"Both sections saved<br/>and no active lease?"}:::partial
+    Sum -- Submit --> V3{"Both sections saved<br/>and no active lease?"}:::decision
     V3 -- No --> Sum
     V3 -- Yes --> Done(["Submitted"]):::done
 ```
@@ -370,5 +368,5 @@ sequenceDiagram
     end
 ```
 
-Other open applications for the same unit are left as they are (FR 3.e). Submit doesn't yet reject
-them when the unit has an active lease.
+Other open applications for the same unit are left as they are (FR 3.e); once the lease is active,
+Submit rejects them (`Submit`).

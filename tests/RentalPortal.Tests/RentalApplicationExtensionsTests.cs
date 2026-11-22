@@ -52,7 +52,7 @@ public class RentalApplicationExtensionsTests
         application.AddResidence("10 Oak Ave, Springfield, IL", "Pat Landlord", "555-0199",
             new DateOnly(2022, 1, 1), new DateOnly(2024, 6, 30));
         application.SetResidenceHistoryCompleted();
-        application.Submit(OwnerId, _submittedUtc);
+        application.Submit(OwnerId, _submittedUtc, DateOnly.FromDateTime(_submittedUtc), []);
         return application;
     }
 

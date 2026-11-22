@@ -5,31 +5,36 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 ## Roles and permissions (Challenge)
 
-- [ ] Only two roles: Applicant and Property Manager
+- [x] Only two roles: Applicant and Property Manager
   - [x] Roles defined and seeded
-  - [ ] Permissions enforced in every controller
-  - [ ] UI shows only the actions the current role can perform
+  - [x] Permissions enforced in every controller (`[Authorize(Roles = ...)]` on each controller or
+        action, plus ownership and status checks; `Review` is `Roles.PropertyManager` only)
+  - [x] UI shows only the actions the current role can perform
     - [x] Navbar and homepage links by role (Properties for managers; Available Units when logged in)
-    - [ ] Application, review, and list pages
+    - [x] Application, review, and list pages
       - [x] Application page: Apply only for applicants (`Listings/Index.cshtml`); Continue, Submit,
             and residence buttons only when editable (`IsSectionEditable`, `CanSubmit`); Withdraw
             only for the owner while withdrawable (`ApplicationFormViewModel.CanWithdraw`)
       - [x] List page: Applicant column only for property managers (`Applications/Index.cshtml`)
-      - [ ] Review page
-- [ ] **Applicant** can:
-  - [ ] Create, fill out, and submit an application for an available unit
+      - [x] Review: Review button and status history only for property managers, the button only
+            while Submitted (`ApplicationStatusViewComponent`: `CanReview`, `ShowHistory`)
+- [x] **Applicant** can:
+  - [x] Create, fill out, and submit an application for an available unit
     - [x] Create (`ApplicationsController.Apply`), fill out both sections, and submit
           (`ApplicationsController.Details` POST, `RentalApplicationService.SubmitAsync`)
-    - [ ] Only for available units (needs `Lease`; see FR 2.c)
+    - [x] Only for available units (`RentalApplicationService.StartApplicationAsync` refuses a unit
+          with a lease covering today)
   - [x] Withdraw an application
     - [x] Rule in the domain (`Withdraw`)
     - [x] Withdraw action and button (`ApplicationsController.Withdraw`, `_ConfirmWithdraw`,
           `RentalApplicationService.WithdrawApplicationAsync`)
-  - [ ] Correct and resubmit a returned application
-- [ ] **Property Manager** can:
+  - [x] Correct and resubmit a returned application (Returned is editable through `IsEditable`, and
+        `CanSubmit` allows resubmitting; `ReturnedApplication_IsEditable_AndCanBeResubmitted`)
+- [x] **Property Manager** can:
   - [x] Maintain properties and units
-  - [ ] Review submitted applications
-  - [ ] Approve an application, issuing a twelve-month lease
+  - [x] Review submitted applications (`ApplicationsController.Review`, `_ReviewForm`)
+  - [x] Approve an application, issuing a twelve-month lease (`ApproveApplicationForLease`,
+        `Lease.CreateFromApplication`)
 
 ## Technical Requirements
 
@@ -40,7 +45,7 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Partial views
   - [x] View components (`UnitListViewComponent` on the property Details page,
         `ResidenceHistoryViewComponent` and `ApplicationStatusViewComponent` on the application page)
-- [ ] **1.b** Modals are populated from partial views returned by controller actions
+- [x] **1.b** Modals are populated from partial views returned by controller actions
   - [x] Shared modal and script (`_Layout.cshtml`, `wwwroot/js/site.js`)
   - [x] Validation failure re-renders the same partial in the modal
   - [x] Success closes the modal and refreshes the affected part of the page
@@ -48,7 +53,8 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Units: add, edit, remove
   - [x] Residences: add, edit, remove (`ResidencesController`, `_ResidenceForm`, `_ConfirmDelete`)
   - [x] Withdraw confirmation (`ApplicationsController.Withdraw`, `_ConfirmWithdraw`)
-  - [ ] Review modal
+  - [x] Review modal (`ApplicationsController.Review`, `_ReviewForm`; refreshes `#application-status`
+        through `ApplicationsController.Status`)
 - [ ] **1.c** Structure and styling follow best practices
 
 ### TR 2. Backend (.NET 10)
@@ -73,8 +79,14 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Section navigation for Continue and Back (`ApplicationSectionExtensionsTests`)
   - [x] Submit rejected for another user, incomplete sections, or a second submit
         (`RentalApplicationServiceTests`)
-  - [ ] Return, Approve, Deny, and resubmit
+  - [x] Return, Approve, Deny, and resubmit (`RentalApplicationTests`: `Approve_*`, `Return_*`,
+        `Deny_*`, `ReturnOrDeny_WithoutComment_IsRejected`,
+        `ReturnedApplication_IsEditable_AndCanBeResubmitted`)
   - [ ] Active lease checks at submit and approval, and `Lease` term and coverage
+    - [x] Approval rejected for an active or overlapping lease (`Approve_UnitHasActiveLease_IsRejected`,
+          `Approve_OverlapsAFutureLease_IsRejected`)
+    - [x] `Lease` term and coverage (`LeaseTests`)
+    - [ ] Submit rejected for an active lease (not in the code yet; see FR 3.e)
 
 ### TR 3. Database
 
@@ -89,15 +101,15 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
 
 ### FR 2. Properties and Units
 
-- [ ] **2.a** Property manager adds, edits, and removes properties and units through modals
+- [x] **2.a** Property manager adds, edits, and removes properties and units through modals
   - [x] Properties
   - [x] Removing a property removes its units (cascade delete)
   - [x] Units listed per property (Details page)
   - [x] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
   - [x] Deleting a property or unit is refused with a message when it has rental applications
-  - [ ] Applicants can browse available units
+  - [x] Applicants can browse available units
     - [x] Available Units page (`ListingsController`), linked from the navbar and homepage
-    - [ ] Only units with no lease covering today are listed (needs `Lease`; see FR 2.c)
+    - [x] Only units with no lease covering today are listed (`ListingsController.Index`)
   - [x] Applicants can start an application from a unit (Apply for Unit button,
         `ApplicationsController.Apply`, reopens an existing open application)
 - [x] **2.b** Unit Type lookup with Active and Inactive values
@@ -106,9 +118,11 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
   - [x] Inactive type can't be selected for any other unit
   - [x] Enforced on the server, not just hidden in the UI (`UnitsController.ValidateUnitAsync`)
   - [x] Seed data includes an inactive type (`Penthouse`; see TR 2.b.ii)
-- [ ] **2.c** Leases
-  - [ ] Approval creates a lease with a start date and a twelve-month term
-  - [ ] A unit whose lease term covers today is not available
+- [x] **2.c** Leases
+  - [x] Approval creates a lease with a start date and a twelve-month term (`Lease.CreateFromApplication`,
+        `DefaultTermMonths`; starts on the approval date; `AddLeases` migration)
+  - [x] A unit whose lease term covers today is not available (`ListingsController.Index`,
+        `StartApplicationAsync`)
 
 ### FR 3. Rental Application
 
@@ -143,23 +157,26 @@ Progress tracker for [requirements.md](requirements.md). IDs match the sections 
         `ApplicationsController` and `ResidencesController`)
 - [ ] **3.e** Active lease check
   - [ ] Submit is rejected with an error when the unit has an active lease
-  - [ ] Approval is rejected with an error when the unit has an active lease (prevents a second lease)
-  - [ ] Other open applications for the unit are left unchanged
+  - [x] Approval is rejected with an error when the unit has an active lease (prevents a second lease)
+        (`ApproveApplicationForLease`, which also rejects an overlapping future lease)
+  - [x] Other open applications for the unit are left unchanged (`ReviewApplicationAsync` changes only
+        the reviewed application)
 
 ### FR 4. Review
 
-- [ ] **4.a** Review modal for a submitted application
-  - [ ] Outcomes: Approve, Return, Deny
-  - [ ] Comment required for Return and Deny
-- [ ] **4.b** Statuses: Draft, Submitted, Returned, Approved, Denied, Withdrawn
+- [x] **4.a** Review modal for a submitted application (`_ReviewForm`, only while `CanReview`)
+  - [x] Outcomes: Approve, Return, Deny (`ApplicationReviewStatus`)
+  - [x] Comment required for Return and Deny (`ReviewViewModel.Validate`; `RequireComment` in the domain)
+- [x] **4.b** Statuses: Draft, Submitted, Returned, Approved, Denied, Withdrawn
   - [x] All six statuses defined (`ApplicationStatus`)
   - [x] Approved, Denied, and Withdrawn are terminal (`IsTerminal`)
   - [x] Withdraw (Draft, Submitted, Returned to Withdrawn)
-  - [ ] Return, Approve, Deny transitions
-- [ ] **4.c** Property managers see a history of status changes and review outcomes (who, when,
+  - [x] Return, Approve, Deny transitions (`ReturnLease`, `DenyLease`, `ApproveApplicationForLease`)
+- [x] **4.c** Property managers see a history of status changes and review outcomes (who, when,
       comment)
   - [x] Every status change is recorded with who, when, and comment (`StatusHistory`)
-  - [ ] History shown on the application page, to property managers only
+  - [x] History shown on the application page, to property managers only
+        (`ApplicationStatusViewComponent`, loaded only for `IsPropertyManager`)
 
 ### FR 5. Application List
 

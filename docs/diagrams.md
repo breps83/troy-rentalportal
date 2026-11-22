@@ -25,7 +25,7 @@ flowchart LR
 
     subgraph TR["Technical requirements"]
         TR1a["TR 1.a<br/>Controllers, view models,<br/>partials, view components"]:::done
-        TR1b["TR 1.b<br/>Modals from partial views"]:::partial
+        TR1b["TR 1.b<br/>Modals from partial views"]:::done
         TR2a["TR 2.a<br/>ASP.NET Identity"]:::done
         TR2b1["TR 2.b.i<br/>Migrate on start"]:::done
         TR2b2["TR 2.b.ii<br/>Idempotent Bogus seeding"]:::partial
@@ -35,11 +35,11 @@ flowchart LR
 
     subgraph FR["Functional requirements"]
         FR1["FR 1<br/>Sign up, log in, log out"]:::done
-        FR2a["FR 2.a<br/>Properties and units"]:::partial
+        FR2a["FR 2.a<br/>Properties and units"]:::done
         FR2b["FR 2.b<br/>Unit type lookup"]:::done
-        FR2c["FR 2.c<br/>Leases"]:::todo
+        FR2c["FR 2.c<br/>Leases"]:::done
         FR3["FR 3<br/>Rental application"]:::partial
-        FR4["FR 4<br/>Review"]:::todo
+        FR4["FR 4<br/>Review"]:::done
         FR5["FR 5<br/>Application list"]:::done
     end
 
@@ -51,12 +51,14 @@ flowchart LR
 
 | Area | Status | What's left |
 |---|---|---|
-| TR 1.b | In progress | Modals done for properties, units, residences, and withdrawal; the review modal remains |
+| TR 1.b | Done | Modals for properties, units, residences, withdrawal, and review (`_ReviewForm`) |
 | TR 2.b.ii | In progress | Roles, users, unit types, properties, units seeded; applications in every status and leases remain |
-| TR 2.c | In progress | `UnitTypeTests`, `RentalApplicationTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (44 passing); review, lease, and submit-with-lease tests remain |
-| FR 2.a | In progress | Manager side done and applicants can start an application; Available Units lists every unit until leases exist |
+| TR 2.c | In progress | `UnitTypeTests`, `RentalApplicationTests`, `LeaseTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (79 passing); the submit-with-active-lease test remains |
+| FR 2.a | Done | Available Units lists only units with no lease covering today (`ListingsController.Index`) |
 | FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
-| FR 3 | In progress | 3.a–3.d done (single-page form, residence modals, Submit, server-side edit checks); the active lease check (3.e) remains |
+| FR 2.c | Done | Approval creates a twelve-month `Lease` starting on the approval date |
+| FR 3 | In progress | 3.a–3.d done; 3.e done at approval, but Submit doesn't check for an active lease yet |
+| FR 4 | Done | Review modal (Approve, Return, Deny; comment required for Return and Deny) and status history for property managers |
 | FR 5 | Done | `ApplicationsController.Index` filters by status and property in the database; applicants see only their own |
 
 ---
@@ -79,27 +81,27 @@ flowchart LR
     Anyone --> SignUp["Sign up, choosing a role"]:::done
     Anyone --> LogIn["Log in and log out"]:::done
 
-    A --> Browse["Browse available units"]:::partial
+    A --> Browse["Browse available units"]:::done
     A --> Start["Start an application"]:::done
     A --> Fill["Fill out sections"]:::done
     A --> Submit["Submit"]:::partial
     A --> Withdraw["Withdraw"]:::done
-    A --> Resubmit["Correct and resubmit<br/>a returned application"]:::todo
+    A --> Resubmit["Correct and resubmit<br/>a returned application"]:::done
     A --> OwnList["See own applications"]:::done
 
     PM --> Props["Add, edit, remove properties"]:::done
     PM --> Units["Add, edit, remove units"]:::done
-    PM --> Review["Review: Approve, Return, Deny"]:::todo
-    PM --> History["See status history"]:::todo
+    PM --> Review["Review: Approve, Return, Deny"]:::done
+    PM --> History["See status history"]:::done
     PM --> AllList["See all applications"]:::done
 ```
 
 "Submit" is amber because it works from the Summary but
-doesn't check for an active lease yet (FR 3.e). "Browse available units" is amber because the page
-exists (`ListingsController`) but can't filter out leased units until `Lease` exists.
+doesn't check for an active lease yet (FR 3.e).
 `PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`,
 `ResidencesController` to `Roles.Applicant`, and `ApplicationsController` checks ownership and
-status on every save and on Withdraw (`Roles.Applicant` plus an owner check); its list action
+status on every save and on Withdraw (`Roles.Applicant` plus an owner check); `Review` is
+`Roles.PropertyManager` only and accepts only Submitted applications. Its list action
 filters to the applicant's own applications on the server. The navbar shows Properties only to
 property managers, and Available Units and the application list to anyone logged in.
 
@@ -148,7 +150,7 @@ classDiagram
     }
 
     class RentalApplication {
-        <<In progress>>
+        <<Done>>
         +int Id
         +ApplicationStatus Status
         +string FirstName
@@ -165,9 +167,9 @@ classDiagram
         +SetResidenceHistoryCompleted()
         +Submit()
         +Withdraw()
-        +Return() planned
-        +Approve() planned
-        +Deny() planned
+        +ReturnLease()
+        +ApproveApplicationForLease() Lease
+        +DenyLease()
     }
 
     class Residence {
@@ -181,7 +183,7 @@ classDiagram
     }
 
     class ApplicationStatusHistory {
-        <<In progress>>
+        <<Done>>
         +ApplicationStatus FromStatus
         +ApplicationStatus ToStatus
         +string ChangedById
@@ -190,11 +192,13 @@ classDiagram
     }
 
     class Lease {
-        <<Not started>>
+        <<Done>>
         +int Id
         +DateOnly StartDate
         +DateOnly EndDate
-        +Covers(date) bool
+        +CreateFromApplication(application, startDate) Lease
+        +IsActive(date) bool
+        +Overlaps(startDate, endDate) bool
     }
 
     Property "1" --> "*" Unit : cascade delete
@@ -203,8 +207,8 @@ classDiagram
     ApplicationUser "1" --> "*" RentalApplication : applicant
     RentalApplication "1" --> "*" Residence : cascade delete
     RentalApplication "1" --> "*" ApplicationStatusHistory : status history
-    RentalApplication "1" --> "0..1" Lease : approval creates
-    Unit "1" --> "*" Lease : planned
+    RentalApplication "1" --> "0..1" Lease : approval creates, restrict
+    Unit "1" --> "*" Lease : restrict
 ```
 
 Delete rules:
@@ -216,8 +220,8 @@ Delete rules:
 
 ## 4. Application status lifecycle (FR 4.b)
 
-Green states can be reached with today's `RentalApplication`; gray states need Return, Approve, or
-Deny. Approved, Denied, and Withdrawn are terminal.
+All states can be reached with today's `RentalApplication`. Approved, Denied, and Withdrawn are
+terminal.
 
 ```mermaid
 stateDiagram-v2
@@ -237,8 +241,7 @@ stateDiagram-v2
     Denied --> [*]
     Withdrawn --> [*]
 
-    class Draft, Submitted, Withdrawn done
-    class Returned, Approved, Denied todo
+    class Draft, Submitted, Withdrawn, Returned, Approved, Denied done
 ```
 
 | Transition | Status |
@@ -246,8 +249,9 @@ stateDiagram-v2
 | Start → Draft | Done (`NewApplication`) |
 | Draft → Submitted | Done, except the active lease check (FR 3.e) |
 | Draft / Submitted / Returned → Withdrawn | Done (`Withdraw`) |
-| Submitted → Returned, Denied, Approved | Not started |
-| Returned → Submitted | Supported by `Submit` already; needs `Return` to reach Returned |
+| Submitted → Returned, Denied | Done (`ReturnLease`, `DenyLease`; comment required) |
+| Submitted → Approved | Done (`ApproveApplicationForLease`; rejects an active or overlapping lease) |
+| Returned → Submitted | Done (`Submit`; same active lease gap as Draft → Submitted) |
 
 Every transition is recorded in `StatusHistory` with who, when, and an optional comment (FR 4.c).
 
@@ -291,8 +295,7 @@ The controller rejects posts that aren't allowed (FR 3.d), not just hides the bu
 
 ## 6. Modal request flow (TR 1.b) — done
 
-How every modal in the app works: properties, units, residences, and withdrawal today, review
-later. The withdraw confirmation returns JSON with `redirectUrl`, so the page navigates to the
+How every modal in the app works: properties, units, residences, withdrawal, and review. The withdraw confirmation returns JSON with `redirectUrl`, so the page navigates to the
 application list instead of refreshing a target.
 Implemented in `wwwroot/js/site.js` and the `Create`/`Edit`/`Delete` actions.
 
@@ -330,42 +333,42 @@ sequenceDiagram
 
 ---
 
-## 7. Review and approval (FR 4.a, FR 2.c, FR 3.e) — not started
+## 7. Review and approval (FR 4.a, FR 2.c, FR 3.e) — done
 
-The planned flow for approving an application. The serializable transaction makes sure two managers
-approving at the same moment can't create two leases for the same unit.
+`ApplicationsController.Review` and `RentalApplicationService.ReviewApplicationAsync`. The lease
+starts on the approval date. There is no transaction around the lease check, so two managers
+approving at the same moment could still both pass it.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor PM as Property Manager
-    participant Ctrl as Review action
+    participant Ctrl as Review action and service
     participant App as RentalApplication
     participant DB as Database
 
     PM->>Ctrl: Open review modal for a Submitted application
-    Ctrl-->>PM: Review form: outcome, comment, lease start
+    Ctrl-->>PM: Review form: decision and comment
 
-    PM->>Ctrl: POST outcome
+    PM->>Ctrl: POST decision
     alt Return or Deny
-        Ctrl->>App: Return or Deny with comment
+        Ctrl->>App: ReturnLease or DenyLease with comment
         Note right of App: Comment required
         Ctrl->>DB: Save status and history
     else Approve
-        Ctrl->>DB: Begin serializable transaction
-        Ctrl->>DB: Any lease overlapping the new term?
-        DB-->>Ctrl: Yes or no
-        Ctrl->>App: Approve(start, hasConflictingLease)
-        alt Conflict
+        Ctrl->>DB: Load the unit's leases
+        DB-->>Ctrl: Leases
+        Ctrl->>App: ApproveApplicationForLease(today, unitLeases)
+        alt Active or overlapping lease
             App-->>Ctrl: RuleException
             Ctrl-->>PM: Error in the modal, nothing saved
         else No conflict
             App-->>Ctrl: New lease, 12-month term
-            Ctrl->>DB: Save status, history, and lease, then commit
-            Ctrl-->>PM: JSON success, modal closes
+            Ctrl->>DB: Save status, history, and lease
+            Ctrl-->>PM: JSON success, modal closes, status panel refreshes
         end
     end
 ```
 
-Other open applications for the same unit are left as they are (FR 3.e). They can still be
-submitted only while the unit has no active lease.
+Other open applications for the same unit are left as they are (FR 3.e). Submit doesn't yet reject
+them when the unit has an active lease.

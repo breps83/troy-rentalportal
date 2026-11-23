@@ -1,7 +1,4 @@
 ﻿using RentalPortal.Web.Domain;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RentalPortal.Tests;
 

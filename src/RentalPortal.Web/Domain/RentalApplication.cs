@@ -34,9 +34,9 @@ public class RentalApplication
 
     public DateTime? SubmittedAtUtc { get; private set; }
 
-    public List<Residence> Residences { get; } = new List<Residence>();
+    public List<Residence> Residences { get; } = [];
 
-    public List<ApplicationStatusHistory> StatusHistory { get; } = new List<ApplicationStatusHistory>();
+    public List<ApplicationStatusHistory> StatusHistory { get; } = [];
 
     public Lease? Lease { get; private set; }
 
@@ -275,7 +275,7 @@ public class RentalApplication
             throw new RuleException("The application must be submitted before it can be reviewed.");
     }
 
-    private void RequireComment(string? comment)
+    private static void RequireComment(string? comment)
     {
         if (string.IsNullOrWhiteSpace(comment))
             throw new RuleException("A comment is required!");

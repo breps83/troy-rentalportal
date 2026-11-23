@@ -67,15 +67,15 @@ public class DbSeeder
             if (environment.IsDevelopment())
             {
                 // seed demo users if none exist
-                var seedResult = await SeedDemoUsersAsync(userManager, faker);
+                var (seedDatabase, propertyManagers, applicants) = await SeedDemoUsersAsync(userManager, faker);
 
-                if (seedResult.seedDatabase)
+                if (seedDatabase)
                 {
                     await SeedPropertiesAsync(db, faker);
 
                     await SeedApplicationsAsync(db,
                         faker,
-                        (seedResult.propertyManagers, seedResult.applicants),
+                        (propertyManagers, applicants),
                         now);
                 }
             }
@@ -190,6 +190,7 @@ public class DbSeeder
     /// </summary>
     /// <remarks>Uses a fixed seed and generates eight property records.</remarks>
     /// <param name="db">The database context used to seed and persist property records.</param>
+    /// <param name="faker"></param>
     /// <returns>A task that represents the asynchronous seed operation.</returns>
     private static async Task SeedPropertiesAsync(AppDbContext db, Faker faker)
     {

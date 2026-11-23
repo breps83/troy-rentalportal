@@ -23,9 +23,11 @@ public class UnitsController(AppDbContext db) : Controller
         if (!await db.Properties.AnyAsync(p => p.Id == propertyId))
             return NotFound();
 
-        var model = new UnitFormViewModel { PropertyId = propertyId };
-
-        model.UnitTypes = await GetUnitTypeOptionsAsync(null);
+        var model = new UnitFormViewModel()
+        { 
+            PropertyId = propertyId,
+            UnitTypes = await GetUnitTypeOptionsAsync(null)
+        };
 
         return PartialView("_UnitForm", model);
     }
@@ -75,10 +77,9 @@ public class UnitsController(AppDbContext db) : Controller
             UnitNumber = unit.UnitNumber,
             Bedrooms = unit.Bedrooms,
             MonthlyRent = unit.MonthlyRent,
-            UnitTypeId = unit.UnitTypeId
+            UnitTypeId = unit.UnitTypeId,
+            UnitTypes = await GetUnitTypeOptionsAsync(unit.UnitTypeId)
         };
-
-        model.UnitTypes = await GetUnitTypeOptionsAsync(unit.UnitTypeId);
 
         return PartialView("_UnitForm", model);
     }

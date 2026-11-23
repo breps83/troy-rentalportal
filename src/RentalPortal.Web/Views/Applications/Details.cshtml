@@ -149,8 +149,10 @@
     <script>
         // Disable Submit after the first click so a double-click doesn't post twice.
         document.addEventListener('submit', function (event) {
-            if (event.submitter && event.submitter.id === 'submit-application') {
-                setTimeout(function () { event.submitter.disabled = true; });
+            const button = event.submitter;
+            if (button instanceof HTMLButtonElement && button.id === 'submit-application')
+            {
+                setTimeout(function () { button.disabled = true; });
             }
         });
     </script>

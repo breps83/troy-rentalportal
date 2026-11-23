@@ -308,7 +308,7 @@ public class ApplicationsController(
     }
 
     private ConfirmDeleteViewModel WithdrawConfirmation(int id, string? error) =>
-        new ConfirmDeleteViewModel
+        new ()
         {
             Title = "Withdraw application",
             Message = "Are you sure you want to withdraw this application? This can't be undone.",

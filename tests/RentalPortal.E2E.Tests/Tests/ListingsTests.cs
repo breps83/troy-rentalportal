@@ -65,7 +65,7 @@ public class ListingsTests(E2EFixture fixture, ITestOutputHelper output) : E2ETe
             .GetByRole(AriaRole.Button, new() { Name = "Apply for Unit" }).ClickAsync();
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = $"{property.Name} – Unit 101" }))
             .ToBeVisibleAsync();
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Draft");
+        await Expect(StatusBadge).ToHaveTextAsync("Draft");
         var breadcrumb = Page.GetByRole(AriaRole.Navigation, new() { Name = "breadcrumb" });
         await Expect(breadcrumb.GetByRole(AriaRole.Link, new() { Name = "My Applications" })).ToBeVisibleAsync();
         var firstUrl = Page.Url;

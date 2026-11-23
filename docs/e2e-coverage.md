@@ -11,9 +11,10 @@ Status as of 2026-11-23: 46 tests, all passing.
 
 ## Screens
 
-Every screen opens for each role that can see it (`SmokeTests`): Home, Log in, Register, Access
-denied, Available Units, Applications list, Application (all three sections), Properties, and Property
-details (units). Every modal is opened by at least one test below.
+Every screen opens for each role that can see it (`SmokeTests`): Home (logged in only), Log in,
+Register, Access denied, the 404 error page (logged out), Available Units, Applications list, Application
+(all three sections), Properties, and Property details (units). Every modal is opened by at least one
+test below.
 
 ## Roles and permissions
 

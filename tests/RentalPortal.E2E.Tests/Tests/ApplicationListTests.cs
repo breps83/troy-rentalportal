@@ -33,7 +33,7 @@ public class ApplicationListTests(E2EFixture fixture, ITestOutputHelper output) 
 
         await Step("FR 5.a", "Open goes to the application");
         await Rows.First.GetByRole(AriaRole.Link, new() { Name = "Open" }).ClickAsync();
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Submitted");
+        await Expect(StatusBadge).ToHaveTextAsync("Submitted");
     }
 
     [Fact]

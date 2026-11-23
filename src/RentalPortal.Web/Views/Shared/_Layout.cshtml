@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RentalPortal.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-dark border-bottom box-shadow mb-3" data-bs-theme="dark">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Rental Portal</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav"
@@ -19,32 +19,32 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div id="main-nav" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav flex-grow-1 nav-separated">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         
                         @if (User.IsInRole(Roles.PropertyManager))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Properties" asp-action="Index">Properties</a>
+                                <a class="nav-link" asp-area="" asp-controller="Properties" asp-action="Index">Properties</a>
                             </li>
                         }
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Listings" asp-action="Index">Available Units</a>
+                                <a class="nav-link" asp-area="" asp-controller="Listings" asp-action="Index">Available Units</a>
                             </li>
                             @if (User.IsInRole(Roles.PropertyManager))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Applications" asp-action="Index">Applications</a>
+                                    <a class="nav-link" asp-controller="Applications" asp-action="Index">Applications</a>
                                 </li>
                             }
                             @if (User.IsInRole(Roles.Applicant))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Applications" asp-action="Index">My Applications</a>
+                                    <a class="nav-link" asp-controller="Applications" asp-action="Index">My Applications</a>
                                 </li>
                             }
                         }
@@ -53,21 +53,21 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark">Hello, @User.Identity.Name</span>
+                                <span class="nav-link">@User.Identity.Name</span>
                             </li>
                             <li class="nav-item">
                                 <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Log out</button>
+                                    <button type="submit" class="btn btn-danger">Log out</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Log in</a>
+                                <a class="btn btn-primary" asp-area="" asp-controller="Account" asp-action="Login">Log in</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-outline-light" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                         }
                     </ul>
@@ -75,20 +75,20 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container flex-grow-1 d-flex flex-column">
+        <main role="main" class="pb-3 flex-grow-1 d-flex flex-column">
             <partial name="_Alerts" />
             @RenderBody()
         </main>
     </div>
 
-    <div class="modal fade" id="app-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="app-modal" tabindex="-1" aria-hidden="true" >
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content"></div>
         </div>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted text-center">
         <div class="container">
             &copy; 2026 - Rental Portal
         </div>

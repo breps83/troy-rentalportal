@@ -19,7 +19,6 @@ public class ApplicationStatusViewComponent(AppDbContext db) : ViewComponent
             {
                 ApplicationId = a.Id,
                 Status = a.Status,
-                ApplicantName = a.Applicant.FirstName + " " + a.Applicant.LastName,
                 CreatedAtUtc = a.CreatedAtUtc,
                 SubmittedAtUtc = a.SubmittedAtUtc,
                 LeaseStart = a.Lease != null ? a.Lease.StartDate : null,

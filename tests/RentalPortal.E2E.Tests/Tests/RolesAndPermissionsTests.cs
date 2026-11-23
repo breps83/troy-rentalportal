@@ -67,7 +67,7 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
 
         await Step("Roles", "Managers see an application read-only, with no edit or withdraw buttons");
         await Page.GotoAsync($"/Applications/Details/{draftId}");
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Draft");
+        await Expect(StatusBadge).ToHaveTextAsync("Draft");
         var breadcrumb = Page.GetByRole(AriaRole.Navigation, new() { Name = "breadcrumb" });
         await Expect(breadcrumb.GetByRole(AriaRole.Link, new() { Name = "Applications", Exact = true }))
             .ToBeVisibleAsync();

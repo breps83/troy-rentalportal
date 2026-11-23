@@ -38,7 +38,7 @@ public class WithdrawTests(E2EFixture fixture, ITestOutputHelper output) : E2ETe
 
         await Step("FR 4.b", "Withdrawn is terminal: no Withdraw button anymore");
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Withdrawn");
+        await Expect(StatusBadge).ToHaveTextAsync("Withdrawn");
         await Expect(WithdrawButton).ToHaveCountAsync(0);
     }
 
@@ -55,7 +55,7 @@ public class WithdrawTests(E2EFixture fixture, ITestOutputHelper output) : E2ETe
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
 
         await Step("FR 4.b", $"{status} is terminal: no Withdraw button");
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync(status.ToString());
+        await Expect(StatusBadge).ToHaveTextAsync(status.ToString());
         await Expect(WithdrawButton).ToHaveCountAsync(0);
     }
 }

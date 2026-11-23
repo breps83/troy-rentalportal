@@ -14,10 +14,7 @@ public class SmokeTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
     [Fact]
     public async Task AnonymousScreens_Load()
     {
-        await Step("Screens", "Home, Log in, and Register open without logging in");
-
-        await Page.GotoAsync("/");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Rental Portal" })).ToBeVisibleAsync();
+        await Step("Screens", "Log in and Register open without logging in");
 
         await Page.GotoAsync("/Account/Login");
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Log in" })).ToBeVisibleAsync();
@@ -25,10 +22,19 @@ public class SmokeTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
         await Page.GotoAsync("/Account/Register");
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Create an account" })).ToBeVisibleAsync();
 
-        await Step("Screens", "Pages that need an account send you to Log in");
+        await Step("Screens", "Home and pages that need an account send you to Log in");
+
+        await Page.GotoAsync("/");
+        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/Account/Login"));
 
         await Page.GotoAsync("/Listings");
         await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/Account/Login"));
+
+        await Step("Screens", "A missing page shows the error page, not Log in");
+
+        await Page.GotoAsync("/NoSuchPage");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "404 - Page not found." })).ToBeVisibleAsync();
+        await Expect(Page).Not.ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/Account/Login"));
     }
 
     [Fact]
@@ -39,6 +45,10 @@ public class SmokeTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
             property.Units[0].Id, TestUsers.Applicant, ApplicationStatus.Draft);
 
         await LoginAsAsync(TestUsers.Applicant);
+
+        await Step("Screens", "Home opens for an applicant");
+        await Page.GotoAsync("/");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Rental Portal" })).ToBeVisibleAsync();
 
         await Step("Screens", "Available Units opens for an applicant");
         await Page.GotoAsync("/Listings");
@@ -66,6 +76,10 @@ public class SmokeTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
 
         await LoginAsAsync(TestUsers.Manager);
 
+        await Step("Screens", "Home opens for a property manager");
+        await Page.GotoAsync("/");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Rental Portal" })).ToBeVisibleAsync();
+
         await Step("Screens", "Properties opens for a property manager");
         await Page.GotoAsync("/Properties");
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Properties" })).ToBeVisibleAsync();
@@ -82,6 +96,6 @@ public class SmokeTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
 
         await Step("Screens", "A submitted application opens for a property manager");
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Submitted");
+        await Expect(StatusBadge).ToHaveTextAsync("Submitted");
     }
 }

@@ -27,7 +27,7 @@ public class AccountTests(E2EFixture fixture, ITestOutputHelper output) : E2ETes
         await Page.GetByRole(AriaRole.Button, new() { Name = "Register" }).ClickAsync();
 
         await Step("FR 1.a", "The new user is signed in");
-        await Expect(NavBar.GetByText($"Hello, {email}")).ToBeVisibleAsync();
+        await Expect(NavBar.GetByText(email, new() { Exact = true })).ToBeVisibleAsync();
 
         await Step("FR 1.a.i", "The navbar matches the chosen role");
         var propertiesLink = NavBar.GetByRole(AriaRole.Link, new() { Name = "Properties", Exact = true });
@@ -68,7 +68,7 @@ public class AccountTests(E2EFixture fixture, ITestOutputHelper output) : E2ETes
 
         await Step("FR 1.a", "Log in with the right password");
         await LoginAsAsync(TestUsers.Applicant);
-        await Expect(NavBar.GetByText($"Hello, {TestUsers.Applicant}")).ToBeVisibleAsync();
+        await Expect(NavBar.GetByText(TestUsers.Applicant, new() { Exact = true })).ToBeVisibleAsync();
 
         await Step("FR 1.a", "Log out");
         await Page.GetByRole(AriaRole.Button, new() { Name = "Log out" }).ClickAsync();

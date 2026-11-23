@@ -85,7 +85,7 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Step("FR 3.b", "Submit from the Summary");
         await Button("Submit").ClickAsync();
         await Expect(Alert("Thank you. Your application has been submitted!")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Submitted");
+        await Expect(StatusBadge).ToHaveTextAsync("Submitted");
     }
 
     [Fact]
@@ -145,6 +145,6 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Step("FR 3.e", "Submit is refused with an error when the unit has an active lease");
         await Button("Submit").ClickAsync();
         await Expect(Alert("This unit already has an active lease.")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#application-status")).ToContainTextAsync("Draft");
+        await Expect(StatusBadge).ToHaveTextAsync("Draft");
     }
 }

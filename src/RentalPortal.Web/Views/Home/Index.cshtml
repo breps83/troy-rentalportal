@@ -4,42 +4,39 @@
 
 <div class="text-center py-5">
     <h1 class="display-4 mb-3">Welcome to Rental Portal</h1>
-    <p class="lead mb-4">
-        Looking for your next home? Browse available rentals and apply online in minutes.
-        Managing properties? List your units, review applications, and keep everything in one place.
-    </p>
-
-    @if (User.Identity?.IsAuthenticated == true)
+    
+    @if (User.IsInRole(Roles.Applicant))
     {
-        <p class="mb-4">Welcome back, @User.Identity.Name!</p>
-
-        <div class="d-flex justify-content-center flex-wrap gap-2">
-            @if (User.IsInRole(Roles.PropertyManager))
-            {
-                <a asp-controller="Properties" asp-action="Index" class="btn btn-primary btn-lg">Manage Properties</a>
-                <a asp-controller="Listings" asp-action="Index" class="btn btn-primary btn-lg">Browse Available Units</a>
-            }
-            else
-            {
-                <a asp-controller="Listings" asp-action="Index" class="btn btn-primary btn-lg">Browse Available Units</a>
-            }
-
-            @if (User.IsInRole(Roles.PropertyManager))
-            {
-                <a asp-controller="Applications" asp-action="Index" class="btn btn-primary btn-lg">Applications</a>
-            }
-            @if (User.IsInRole(Roles.Applicant))
-            {
-                <a asp-controller="Applications" asp-action="Index" class="btn btn-success btn-lg">My Applications</a>
-            }
-        </div>
+        <p class="lead mb-4">
+            Browse available rentals and apply online in minutes.
+        </p>
     }
-    else
+
+    @if (User.IsInRole(Roles.PropertyManager))
     {
-        <div class="d-flex justify-content-center gap-2">
-            <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">Register</a>
-            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">Log in</a>
-        </div>
-        <p class="text-muted mt-3 mb-0">New here? Creating an account only takes a minute.</p>
+        <p class="lead mb-4">
+            List your units, review applications, and keep everything in one place.
+        </p>
     }
+
+    <div class="d-flex justify-content-center flex-wrap gap-2">
+        @if (User.IsInRole(Roles.PropertyManager))
+        {
+            <a asp-controller="Properties" asp-action="Index" class="btn btn-primary btn-lg">Manage Properties</a>
+            <a asp-controller="Listings" asp-action="Index" class="btn btn-primary btn-lg">Browse Available Units</a>
+        }
+        else
+        {
+            <a asp-controller="Listings" asp-action="Index" class="btn btn-primary btn-lg">Browse Available Units</a>
+        }
+
+        @if (User.IsInRole(Roles.PropertyManager))
+        {
+            <a asp-controller="Applications" asp-action="Index" class="btn btn-primary btn-lg">Applications</a>
+        }
+        @if (User.IsInRole(Roles.Applicant))
+        {
+            <a asp-controller="Applications" asp-action="Index" class="btn btn-success btn-lg">My Applications</a>
+        }
+    </div>
 </div>

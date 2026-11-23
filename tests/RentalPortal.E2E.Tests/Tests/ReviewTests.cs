@@ -46,7 +46,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Modal.SubmitAsync();
 
         await Step("FR 2.c", "Approval creates a lease starting today, for twelve months");
-        await Expect(Status).ToContainTextAsync("Approved");
+        await Expect(StatusBadge).ToHaveTextAsync("Approved");
         var today = DateTime.Today;
         var leaseText = today.ToString("MMM d, yyyy", CultureInfo.CurrentCulture) + " – " +
                         today.AddMonths(12).AddDays(-1).ToString("MMM d, yyyy", CultureInfo.CurrentCulture);
@@ -64,7 +64,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Step("FR 4.c", "The applicant sees the outcome but not the history");
         await SwitchUserAsync(TestUsers.Applicant);
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
-        await Expect(Status).ToContainTextAsync("Approved");
+        await Expect(StatusBadge).ToHaveTextAsync("Approved");
         await Expect(History).Not.ToBeAttachedAsync();
 
         await Step("FR 4.c", "Requesting the history section directly as the applicant returns no history");
@@ -98,7 +98,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Step("FR 4.b", "Return with a comment");
         await Modal.Field("Comment").EnterAsync("Please add a second prior residence.");
         await Modal.SubmitAsync();
-        await Expect(Status).ToContainTextAsync("Returned");
+        await Expect(StatusBadge).ToHaveTextAsync("Returned");
         await Expect(Status).ToContainTextAsync("Please add a second prior residence.");
 
         await Step("TR 1.b", "Status and history both refresh in place, without reloading the page");
@@ -120,7 +120,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Step("Roles", "And resubmit it");
         await Page.GetByRole(AriaRole.Button, new() { Name = "Submit" }).ClickAsync();
         await Expect(Alert("Thank you. Your application has been submitted!")).ToBeVisibleAsync();
-        await Expect(Status).ToContainTextAsync("Submitted");
+        await Expect(StatusBadge).ToHaveTextAsync("Submitted");
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Modal.SubmitAsync();
 
         await Step("FR 4.b", "Denied is terminal: no further review");
-        await Expect(Status).ToContainTextAsync("Denied");
+        await Expect(StatusBadge).ToHaveTextAsync("Denied");
         await Expect(ReviewButton).ToHaveCountAsync(0);
     }
 
@@ -161,11 +161,11 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Page.GotoAsync($"/Applications/Details/{firstId}");
         await ReviewAsync("Approve", comment: null);
         await Modal.SubmitAsync();
-        await Expect(Status).ToContainTextAsync("Approved");
+        await Expect(StatusBadge).ToHaveTextAsync("Approved");
 
         await Step("FR 3.e", "The other open application for the unit is left unchanged");
         await Page.GotoAsync($"/Applications/Details/{secondId}");
-        await Expect(Status).ToContainTextAsync("Submitted");
+        await Expect(StatusBadge).ToHaveTextAsync("Submitted");
 
         await Step("FR 3.e", "Approving it is refused with an error, preventing a second lease");
         await ReviewAsync("Approve", comment: null);

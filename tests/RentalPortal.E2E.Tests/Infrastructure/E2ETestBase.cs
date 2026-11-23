@@ -196,6 +196,12 @@ public abstract class E2ETestBase : IAsyncLifetime
     protected ILocator NavBar => Page.Locator("header nav");
 
     /// <summary>
+    /// The status badge on the application page. Check this rather than the whole status line, which
+    /// always contains the label "Submitted".
+    /// </summary>
+    protected ILocator StatusBadge => Page.Locator("#application-status .badge");
+
+    /// <summary>
     /// Posts a form the way a crafted request would, bypassing the UI. Uses the browser's cookies and
     /// the antiforgery token from the current page. Redirects aren't followed, so the response can be checked.
     /// </summary>

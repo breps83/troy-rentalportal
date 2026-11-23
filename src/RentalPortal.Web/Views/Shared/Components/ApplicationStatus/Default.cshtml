@@ -6,54 +6,57 @@
     var notesUrl = Url.Action("Notes", "Applications", new { id = Model.ApplicationId });
 }
 
-<div class="card shadow-sm">
-    <div class="card-header d-flex justify-content-between align-items-center gap-3">
-        <span class="fw-semibold">Current Application Status</span>
-        <partial name="_ApplicationStatus" model="Model.Status" />
+@* One status line under the page title; wraps on narrow screens. *@
+<dl class="status-line d-flex flex-wrap align-items-center column-gap-2 row-gap-2 mb-0">
+    <div>
+        <dt class="visually-hidden">Status</dt>
+        <dd class="mb-0"><partial name="_ApplicationStatus" model="Model.Status" /></dd>
     </div>
-    <div class="card-body py-2">
-        <dl class="row small mb-0">
-            <dt class="col-5 fw-normal text-muted">Applicant</dt>
-            <dd class="col-7 mb-1">@Model.ApplicantName</dd>
 
-            <dt class="col-5 fw-normal text-muted">Started</dt>
-            <dd class="col-7 mb-1">@Model.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</dd>
+    <div class="d-flex gap-1 px-2 py-1 rounded bg-body-secondary small">
+        <dt class="fw-normal text-muted">Started</dt>
+        <dd class="mb-0">@Model.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</dd>
+    </div>
 
-            <dt class="col-5 fw-normal text-muted">Submitted</dt>
-            <dd class="col-7 mb-1">
-                @if (Model.SubmittedAtUtc.HasValue)
-                {
-                    @Model.SubmittedAtUtc.Value.ToLocalTime().ToString("MMM d, yyyy")
-                }
-                else
-                {
-                    <span class="text-muted">Not yet</span>
-                }
+    <div class="d-flex gap-1 px-2 py-1 rounded bg-body-secondary small">
+        <dt class="fw-normal text-muted">Submitted</dt>
+        <dd class="mb-0">
+            @if (Model.SubmittedAtUtc.HasValue)
+            {
+                @Model.SubmittedAtUtc.Value.ToLocalTime().ToString("MMM d, yyyy")
+            }
+            else
+            {
+                <span class="text-muted">Not yet</span>
+            }
+        </dd>
+    </div>
+
+    @if (Model.LeaseStart.HasValue && Model.LeaseEnd.HasValue)
+    {
+        <div class="d-flex gap-1 px-2 py-1 rounded bg-body-secondary small">
+            <dt class="fw-normal text-muted">Lease</dt>
+            <dd class="mb-0">
+                @Model.LeaseStart.Value.ToString("MMM d, yyyy") – @Model.LeaseEnd.Value.ToString("MMM d, yyyy")
             </dd>
+        </div>
+    }
+</dl>
 
-            @if (Model.LeaseStart.HasValue && Model.LeaseEnd.HasValue)
-            {
-                <dt class="col-5 fw-normal text-muted">Lease</dt>
-                <dd class="col-7 mb-1">
-                    @Model.LeaseStart.Value.ToString("MMM d, yyyy") – @Model.LeaseEnd.Value.ToString("MMM d, yyyy")
-                </dd>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(Model.ReviewComment))
-            {
-                <dt class="col-5 fw-normal text-muted">Comment</dt>
-                <dd class="col-7 mb-1">@Model.ReviewComment</dd>
-            }
-        </dl>
-
-        @if (Model.CanReview)
-        {
-            <button type="button" class="btn btn-sm btn-primary mt-1 mb-1"
-                    data-modal-url="@reviewUrl"
-                    data-refresh-url="@statusUrl,@historyUrl,@notesUrl"
-                    data-refresh-target="#application-status,#application-history,#application-notes">
-                Review application
-            </button>
-        }
+@if (!string.IsNullOrWhiteSpace(Model.ReviewComment))
+{
+    <div class="alert alert-light border small mt-2 mb-0">
+        <div class="text-muted mb-1">Review comment</div>
+        <div class="review-comment" tabindex="0" aria-label="Review comment">@Model.ReviewComment</div>
     </div>
-</div>
+}
+
+@if (Model.CanReview)
+{
+    <button type="button" class="btn btn-sm btn-primary mt-2"
+            data-modal-url="@reviewUrl"
+            data-refresh-url="@statusUrl,@historyUrl,@notesUrl"
+            data-refresh-target="#application-status,#application-history,#application-notes">
+        Review application
+    </button>
+}

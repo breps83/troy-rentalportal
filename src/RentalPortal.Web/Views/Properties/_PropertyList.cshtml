@@ -14,41 +14,44 @@
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Address</th>
-                    <th scope="col">Units</th>
-                    <th scope="col"><span class="visually-hidden">Actions</span></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var property in Model)
-                {
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead>
                     <tr>
-                        <td><a asp-action="Details" asp-route-id="@property.Id">@property.Name</a></td>
-                        <td>@property.Address</td>
-                        <td class="text-center">@property.UnitCount</td>
-                        <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@property.Id">View Units</a>
-                            <button type="button" class="btn btn-sm btn-outline-primary"
-                                    data-modal-url="@Url.Action("Edit", new { id = property.Id })"
-                                    data-refresh-url="@Url.Action("List")"
-                                    data-refresh-target="#property-list">
-                                Edit
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                    data-modal-url="@Url.Action("Delete", new { id = property.Id })"
-                                    data-refresh-url="@Url.Action("List")"
-                                    data-refresh-target="#property-list">
-                                Delete
-                            </button>
-                        </td>
+                        <th scope="col">Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Units</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var property in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@property.Id">@property.Name</a></td>
+                            <td>@property.Address</td>
+                            <td class="text-center">@property.UnitCount</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Details"
+                                   asp-route-id="@property.Id">View Units</a>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-modal-url="@Url.Action("Edit", new { id = property.Id })"
+                                        data-refresh-url="@Url.Action("List")"
+                                        data-refresh-target="#property-list">
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-modal-url="@Url.Action("Delete", new { id = property.Id })"
+                                        data-refresh-url="@Url.Action("List")"
+                                        data-refresh-target="#property-list">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }

@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
 using RentalPortal.Web.ViewModels.Account;
 
 namespace RentalPortal.Web.Controllers;
 
-public class AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : Controller
+public class AccountController(
+    AppDbContext db,
+    UserManager<ApplicationUser> userManager, 
+    SignInManager<ApplicationUser> signInManager) : Controller
 {
     [HttpGet]
     public IActionResult Register() => View(new RegisterViewModel());
@@ -37,7 +41,12 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             LastName = model.LastName!.Trim()
         };
 
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
         var result = await userManager.CreateAsync(user, model.Password!);
+        
+        if(result.Succeeded)
+            await userManager.AddToRoleAsync(user, role!);
 
         if (!result.Succeeded)
         {
@@ -47,9 +56,9 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
             }
 
             return View(model);
-        }
+        }        
 
-        await userManager.AddToRoleAsync(user, role!);
+        await transaction.CommitAsync();
 
         await signInManager.SignInAsync(user, isPersistent: false);
 
@@ -80,7 +89,8 @@ public class AccountController(UserManager<ApplicationUser> userManager, SignInM
         }
 
         // Attempt to sign in the user
-        var result = await signInManager.PasswordSignInAsync(user, model.Password!, model.RememberMe, lockoutOnFailure: true);
+        var result = 
+            await signInManager.PasswordSignInAsync(user, model.Password!, model.RememberMe, lockoutOnFailure: true);
 
         if (!result.Succeeded)
         {

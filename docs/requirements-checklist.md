@@ -214,9 +214,9 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
 
 ## Deliverables
 
-- [ ] `README.md` with any non-standard setup instructions (demo logins, connection string, etc.)
+- [x] `README.md` with any non-standard setup instructions (demo logins, connection string, etc.)
   - [x] Testing: unit and E2E tests, building to a temp folder, the E2E report (`README.md`, Testing)
-  - [ ] Setup: demo logins, connection string, LocalDB
+  - [x] Setup: demo logins, connection string, LocalDB (`README.md`, Getting started)
 - [ ] Code pushed to a GitHub repository
 - [ ] Link sent in reply to the assessment email
 

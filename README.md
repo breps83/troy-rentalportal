@@ -3,8 +3,67 @@
 An ASP.NET Core MVC (.NET 10) rental portal. Property managers maintain properties and units and
 review rental applications; applicants browse available units and apply for them.
 
-- Requirements: [docs/requirements.md](docs/requirements.md)
-- Progress: [docs/requirements-checklist.md](docs/requirements-checklist.md)
+## Documentation
+
+| Doc | What it covers |
+|---|---|
+| [requirements.md](docs/requirements.md) | The assessment spec, with requirement IDs such as FR 3.b and TR 1.b |
+| [requirements-checklist.md](docs/requirements-checklist.md) | Progress against each requirement, naming the code that satisfies it |
+| [diagrams.md](docs/diagrams.md) | Progress by area, roles, domain model, status lifecycle, page and modal flows |
+| [e2e-tests.md](docs/e2e-tests.md) | How the E2E tests work, their settings, writing one, and troubleshooting |
+| [e2e-coverage.md](docs/e2e-coverage.md) | Which E2E test verifies each checklist item |
+| [ef-commands.md](docs/ef-commands.md) | EF Core CLI commands for migrations and the database, and pitfalls |
+| [interview-prep.md](docs/interview-prep.md) | What to expect in the technical interview, and the pre-interview checklist |
+| [claude-code.md](docs/claude-code.md) | Working with Claude Code: project skills and the built-in skills used here |
+
+## Getting started
+
+### Prerequisites
+
+- **.NET SDK 10.0.404** or a later 10.0 feature band. `global.json` pins the SDK, so an older one
+  fails at build time.
+- **SQL Server LocalDB**, instance `(localdb)\mssqllocaldb`. It comes with the Visual Studio "Data
+  storage and processing" workload or the SQL Server Express installer. LocalDB is Windows only; on
+  macOS or Linux, point the connection string at another SQL Server (for example, a Docker container).
+
+### Database
+
+- The connection string is `ConnectionStrings:DefaultConnection` in
+  `src/RentalPortal.Web/appsettings.json` and uses the `RentalPortalDb` database. To use a different
+  server without editing the file, set the `ConnectionStrings__DefaultConnection` environment variable.
+- **No `dotnet ef database update` is needed.** The app creates the database and applies migrations
+  on startup.
+- **Demo data is seeded only in the Development environment**, and only when the database has no
+  users yet. `dotnet run` and Visual Studio use Development through `launchSettings.json`. To start
+  over with fresh demo data, drop the database and run the app again:
+
+  ```powershell
+  dotnet ef database drop --project src/RentalPortal.Web
+  ```
+
+  This needs the EF Core CLI (`dotnet tool install --global dotnet-ef`). See
+  [docs/ef-commands.md](docs/ef-commands.md) for this and the other EF Core commands.
+
+### Run
+
+```powershell
+dotnet run --project src/RentalPortal.Web --launch-profile https
+```
+
+The app serves on https://localhost:7153 (and http://localhost:5164). On a new machine, trust the
+development HTTPS certificate first with `dotnet dev-certs https --trust`.
+
+### Demo logins
+
+Every demo account uses the password `Password1**`.
+
+| Role | Accounts |
+|---|---|
+| Property manager | `manager@rentalportal.test`, `manager2@rentalportal.test` |
+| Applicant | `applicant@rentalportal.test`, `applicant2@rentalportal.test` through `applicant8@rentalportal.test` |
+
+Email confirmation is turned off, so a newly registered account can sign in right away, and no email
+service needs to be configured.
 
 ## Testing
 
@@ -63,11 +122,4 @@ More detail:
 - [docs/e2e-tests.md](docs/e2e-tests.md): settings, how the tests work, how to write one, and
   troubleshooting
 - [docs/e2e-coverage.md](docs/e2e-coverage.md): which test verifies each checklist item
-
-### With Claude Code
-
-Two project skills in `.claude/skills` work with the E2E tests:
-
-- `/run-e2e-tests` runs them with video, opens the report, and summarizes the results by requirement.
-- `/e2e-tests` writes or updates tests when features or views change, and keeps
-  `docs/e2e-coverage.md` up to date.
+- [docs/claude-code.md](docs/claude-code.md): Claude Code skills that run and write the E2E tests

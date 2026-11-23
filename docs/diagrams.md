@@ -44,7 +44,7 @@ flowchart LR
     end
 
     subgraph DL["Deliverables"]
-        README["README.md"]:::partial
+        README["README.md"]:::done
         GH["GitHub repository"]:::todo
     end
 ```
@@ -60,7 +60,7 @@ flowchart LR
 | FR 3 | Done | 3.e checks for an active lease at Submit (`RentalApplication.Submit`) and at approval |
 | FR 4 | Done | Review modal (Approve, Return, Deny; comment required for Return and Deny) and status history for property managers |
 | FR 5 | Done | `ApplicationsController.Index` filters by status and property in the database; applicants see only their own |
-| README.md | In progress | Testing section written; setup instructions (demo logins, connection string) remain |
+| README.md | Done | Getting started (prerequisites, LocalDB, connection string, demo logins) and Testing sections |
 
 ---
 

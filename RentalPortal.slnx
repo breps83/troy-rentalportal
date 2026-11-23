@@ -8,6 +8,7 @@
   <Folder Name="/docs/">
     <File Path="docs/requirements.md" />
     <File Path="docs/requirements-checklist.md" />
+    <File Path="docs/claude-code.md" />
     <File Path="docs/diagrams.md" />
     <File Path="docs/ef-commands.md" />
     <File Path="docs/interview-prep.md" />

@@ -67,7 +67,9 @@ else
                                 <td class="text-end text-nowrap">
                                     <form asp-controller="Applications" asp-action="Apply"
                                           asp-route-unitId="@unit.Id" method="post">
-                                        <button type="submit" class="btn btn-sm btn-primary">Apply for Unit</button>
+                                        <button type="submit" class="btn btn-sm btn-primary" data-disable-on-submit>
+                                            Apply for Unit
+                                        </button>
                                     </form>
                                 </td>
                             }

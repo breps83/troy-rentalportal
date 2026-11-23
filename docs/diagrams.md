@@ -3,7 +3,7 @@
 Mermaid diagrams for [requirements.md](requirements.md), with the current implementation status.
 Requirement IDs (for example **FR 3.b**) match [requirements-checklist.md](requirements-checklist.md).
 
-**Status as of 2026-11-22.** Colors used in the diagrams:
+**Status as of 2026-11-23.** Colors used in the diagrams:
 
 | Color | Meaning |
 |---|---|
@@ -166,9 +166,9 @@ classDiagram
         +SetResidenceHistoryCompleted()
         +Submit()
         +Withdraw()
-        +ReturnLease()
+        +Return()
         +ApproveApplicationForLease() Lease
-        +DenyLease()
+        +Deny()
     }
 
     class Residence {
@@ -248,7 +248,7 @@ stateDiagram-v2
 | Start → Draft | Done (`NewApplication`) |
 | Draft → Submitted | Done (`Submit`; rejects an active lease, FR 3.e) |
 | Draft / Submitted / Returned → Withdrawn | Done (`Withdraw`) |
-| Submitted → Returned, Denied | Done (`ReturnLease`, `DenyLease`; comment required) |
+| Submitted → Returned, Denied | Done (`Return`, `Deny`; comment required) |
 | Submitted → Approved | Done (`ApproveApplicationForLease`; rejects an active or overlapping lease) |
 | Returned → Submitted | Done (`Submit`; same active lease check as Draft → Submitted) |
 
@@ -351,7 +351,7 @@ sequenceDiagram
 
     PM->>Ctrl: POST decision
     alt Return or Deny
-        Ctrl->>App: ReturnLease or DenyLease with comment
+        Ctrl->>App: Return or Deny with comment
         Note right of App: Comment required
         Ctrl->>DB: Save status and history
     else Approve

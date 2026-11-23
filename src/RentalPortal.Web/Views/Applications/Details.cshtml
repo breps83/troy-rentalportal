@@ -110,7 +110,7 @@
 
         @if (current == ApplicationSection.Summary && Model.CanSubmit)
         {
-            <button type="submit" class="btn btn-success" id="submit-application"
+            <button type="submit" class="btn btn-success" id="submit-application" data-disable-on-submit
                     name="command" value="@ApplicationFormViewModel.Submit">
                 Submit
             </button>
@@ -145,15 +145,4 @@
 @section Scripts {
 
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        // Disable Submit after the first click so a double-click doesn't post twice.
-        document.addEventListener('submit', function (event) {
-            const button = event.submitter;
-            if (button instanceof HTMLButtonElement && button.id === 'submit-application')
-            {
-                setTimeout(function () { button.disabled = true; });
-            }
-        });
-    </script>
 }

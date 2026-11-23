@@ -3,34 +3,36 @@
 {
     <section class="card mt-4 mb-4">
         <div class="card-header fw-semibold">History</div>
-        <table class="table mb-0">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Changed by</th>
-                    <th>Comment</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var change in Model)
-                {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
                     <tr>
-                        <td class="text-nowrap">
-                            @change.ChangedAtUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
-                        </td>
-                        <td class="text-nowrap">
-                            @if (change.FromStatus.HasValue)
-                            {
-                                <span class="text-muted">@change.FromStatus →</span>
-                            }
-                            <partial name="_ApplicationStatus" model="change.ToStatus" />
-                        </td>
-                        <td>@change.ChangedBy</td>
-                        <td>@change.Comment</td>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Changed by</th>
+                        <th>Comment</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var change in Model)
+                    {
+                        <tr>
+                            <td class="text-nowrap">
+                                @change.ChangedAtUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
+                            </td>
+                            <td class="text-nowrap">
+                                @if (change.FromStatus.HasValue)
+                                {
+                                    <span class="text-muted">@change.FromStatus →</span>
+                                }
+                                <partial name="_ApplicationStatus" model="change.ToStatus" />
+                            </td>
+                            <td>@change.ChangedBy</td>
+                            <td>@change.Comment</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 }

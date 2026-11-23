@@ -9,7 +9,8 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
 - [x] Only two roles: Applicant and Property Manager
   - [x] Roles defined and seeded
   - [x] Permissions enforced in every controller (`[Authorize(Roles = ...)]` on each controller or
-        action, plus ownership and status checks; `Review` is `Roles.PropertyManager` only)
+        action, plus ownership and status checks; `Review` is `Roles.PropertyManager` only; requests the
+        UI never offers are covered by `PermissionsTests` in the integration tests)
   - [x] UI shows only the actions the current role can perform
     - [x] Navbar and homepage links by role (Properties for managers; Available Units when logged in)
     - [x] Application, review, and list pages
@@ -114,6 +115,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [x] Units listed per property (Details page)
   - [x] Units: add, edit, remove (unit number, bedrooms, monthly rent, unit type)
   - [x] Deleting a property or unit is refused with a message when it has rental applications
+        (`GetDeleteBlockerAsync`; `DeleteTests` in the integration tests)
   - [x] Applicants can browse available units
     - [x] Available Units page (`ListingsController`), linked from the navbar and homepage
     - [x] Only units with no lease covering today are listed (`ListingsController.Index`)
@@ -179,7 +181,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [x] All six statuses defined (`ApplicationStatus`)
   - [x] Approved, Denied, and Withdrawn are terminal (`IsTerminal`)
   - [x] Withdraw (Draft, Submitted, Returned to Withdrawn)
-  - [x] Return, Approve, Deny transitions (`ReturnLease`, `DenyLease`, `ApproveApplicationForLease`)
+  - [x] Return, Approve, Deny transitions (`Return`, `Deny`, `ApproveApplicationForLease`)
 - [x] **4.c** Property managers see a history of status changes and review outcomes (who, when,
       comment)
   - [x] Every status change is recorded with who, when, and comment (`StatusHistory`)
@@ -215,7 +217,8 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
 ## Deliverables
 
 - [x] `README.md` with any non-standard setup instructions (demo logins, connection string, etc.)
-  - [x] Testing: unit and E2E tests, building to a temp folder, the E2E report (`README.md`, Testing)
+  - [x] Testing: unit, integration, and E2E tests, building to a temp folder, the E2E report
+        (`README.md`, Testing)
   - [x] Setup: demo logins, connection string, LocalDB (`README.md`, Getting started)
 - [ ] Code pushed to a GitHub repository
 - [ ] Link sent in reply to the assessment email

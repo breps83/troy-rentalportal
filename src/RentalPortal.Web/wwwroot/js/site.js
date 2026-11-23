@@ -205,3 +205,14 @@
     document.addEventListener('input', revalidateChangedField);
     document.addEventListener('change', revalidateChangedField);
 })();
+
+// prevent double clicking submit buttons
+document.addEventListener('submit', function (event) {
+    const button = event.submitter;
+    if (event.defaultPrevented || !(button instanceof HTMLButtonElement)) {
+        return;
+    }
+    if (button.hasAttribute('data-disable-on-submit')) {
+        setTimeout(function () { button.disabled = true; });
+    }
+});

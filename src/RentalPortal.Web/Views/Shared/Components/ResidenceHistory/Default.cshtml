@@ -1,6 +1,6 @@
 ﻿@model ResidenceHistoryViewModel
 @{
-    var refreshUrl = Url.Action("List", "Residences", 
+    var refreshUrl = Url.Action("List", "Residences",
         new { applicationId = Model.ApplicationId });
 
 }
@@ -8,18 +8,18 @@
 <section class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span class="fw-semibold">Residence History</span>
-        @if(Model.IsEditable)
+        @if (Model.IsEditable)
         {
             <button type="button" class="btn btn-sm btn-primary"
-            data-modal-url="@Url.Action("Create","Residences", 
-                new { applicationId = Model.ApplicationId })"
-            data-refresh-url="@refreshUrl"
-            data-refresh-target="#residence-history">
-            Add residence
-        </button>
+                    data-modal-url="@Url.Action("Create", "Residences",
+                    new { applicationId = Model.ApplicationId })"
+                    data-refresh-url="@refreshUrl"
+                    data-refresh-target="#residence-history">
+                Add residence
+            </button>
         }
     </div>
-    @if(Model.Residences.Count == 0)
+    @if (Model.Residences.Count == 0)
     {
         <div class="card-body text-muted">
             No prior residences have been added.
@@ -27,53 +27,55 @@
     }
     else
     {
-        <table class="table mb-0">
-            <thead>
-                <tr>
-                    <th>Address</th>
-                    <th>Landlord</th>
-                    <th>Moved In</th>
-                    <th>Moved Out</th>
-                    @if (Model.IsEditable)
-                    {
-                        <th> </th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var residence in Model.Residences)
-                {
-                 <tr>
-                     <td>@residence.Address</td>
-                     <td>
-                         <div>@residence.LandlordName</div>
-                         <div class="small text-muted">@residence.LandlordPhone</div>
-                     </td>
-                     <td>@residence.MoveInDate</td>
-                     <td>@residence.MoveOutDate</td>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Landlord</th>
+                        <th>Moved In</th>
+                        <th>Moved Out</th>
                         @if (Model.IsEditable)
                         {
-                            <td class="text-end text-nowrap">
-                                
-                                <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                        data-modal-url="@Url.Action("Edit", "Residences", new { id = residence.Id })" 
-                                        data-refresh-url="@refreshUrl" 
-                                        data-refresh-target="#residence-history">
-                                    Edit 
-                                </button>
-
-                                <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        data-modal-url="@Url.Action("Delete", "Residences", new { id = residence.Id })" 
-                                        data-refresh-url="@refreshUrl" 
-                                        data-refresh-target="#residence-history">
-                                    Delete
-                                </button>
-
-                            </td>
+                            <th> </th>
                         }
-                 </tr>    
-                }
-            </tbody>
-        </table>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var residence in Model.Residences)
+                    {
+                        <tr>
+                            <td>@residence.Address</td>
+                            <td>
+                                <div>@residence.LandlordName</div>
+                                <div class="small text-muted">@residence.LandlordPhone</div>
+                            </td>
+                            <td>@residence.MoveInDate</td>
+                            <td>@residence.MoveOutDate</td>
+                            @if (Model.IsEditable)
+                            {
+                                <td class="text-end text-nowrap">
+                                
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            data-modal-url="@Url.Action("Edit", "Residences", new { id = residence.Id })"
+                                            data-refresh-url="@refreshUrl"
+                                            data-refresh-target="#residence-history">
+                                        Edit
+                                    </button>
+
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-modal-url="@Url.Action("Delete", "Residences", new { id = residence.Id })"
+                                            data-refresh-url="@refreshUrl"
+                                            data-refresh-target="#residence-history">
+                                        Delete
+                                    </button>
+
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </section>

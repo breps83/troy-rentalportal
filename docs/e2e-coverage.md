@@ -5,7 +5,7 @@ in a real browser, or says why E2E doesn't apply and what verifies it instead. T
 `tests/RentalPortal.E2E.Tests/Tests` and carry `[Trait("Requirement", "...")]` with the same IDs, so
 `run-e2e.ps1 -Filter "Requirement=FR 3.b"` runs one requirement. See [e2e-tests.md](e2e-tests.md).
 
-Status as of 2026-11-22: 41 tests, all passing.
+Status as of 2026-11-22: 42 tests, all passing.
 
 **Legend:** ✅ covered by a passing E2E test · ➖ not E2E (verified another way) · ⬜ not covered yet
 
@@ -21,10 +21,10 @@ details (units). Every modal is opened by at least one test below.
 |---|---|---|
 | Two roles, seeded | ✅ | `AccountTests.Register_WithChosenAccountType_SignsInWithThatRole`; seeded logins used throughout |
 | Permissions enforced in every controller | ✅ | `RolesAndPermissionsTests`: `Applicant_SeesOnlyApplicantActions` (Properties refused), `OtherApplicant_CannotViewOrEditAnApplication` (crafted post refused), `SubmittedApplication_RejectsCraftedEdit`, `Anonymous_IsSentToLogin` |
-| Navbar and homepage links by role | ✅ | `RolesAndPermissionsTests.Applicant_SeesOnlyApplicantActions`, `Manager_SeesOnlyManagerActions`, `AccountTests.Register_*` |
+| Navbar, homepage, and breadcrumb links by role | ✅ | `RolesAndPermissionsTests.Applicant_SeesOnlyApplicantActions`, `Manager_SeesOnlyManagerActions`, `AccountTests.Register_*`; breadcrumb: `Manager_SeesOnlyManagerActions`, `ListingsTests.ApplyForUnit_*` |
 | Application page buttons by role and status | ✅ | `Manager_SeesOnlyManagerActions`, `ApplicationWizardTests.SubmittedApplication_IsReadOnly`, `WithdrawTests.TerminalApplication_CannotBeWithdrawn` |
 | List page: Applicant column only for managers | ✅ | `ApplicationListTests` (both tests) |
-| Review button and history only for managers, button only while Submitted | ✅ | `Manager_SeesOnlyManagerActions` (no button on Draft), `ReviewTests.Approve_*` (history hidden from applicant), `ReviewTests.Deny_*` (no button after) |
+| Review button and history only for managers, button only while Submitted | ✅ | `Manager_SeesOnlyManagerActions` (no button on Draft), `ReviewTests.Approve_*` (history hidden from applicant, also when `Applications/History` is requested directly), `ReviewTests.Deny_*` (no button after) |
 | Applicant: create, fill out, submit; only available units | ✅ | `ApplicationWizardTests.Applicant_CompletesBothSections_AndSubmits`, `ListingsTests.ApplyForUnit_*` |
 | Applicant: withdraw | ✅ | `WithdrawTests.Applicant_WithdrawsOpenApplication` (Draft, Submitted, Returned) |
 | Applicant: correct and resubmit a returned application | ✅ | `ReviewTests.Return_RequiresComment_ThenApplicantCorrectsAndResubmits` |
@@ -37,7 +37,7 @@ details (units). Every modal is opened by at least one test below.
 | Item | E2E | Tests or how it's verified |
 |---|---|---|
 | TR 1.a Controllers, view models, views, partials, view components | ➖ | Code structure. The pages they render are covered by `SmokeTests`; view components (unit list, residence history, application status) are exercised by `UnitsTests`, `ResidencesTests`, `ReviewTests` |
-| TR 1.b Modals from partial views | ✅ | Open: every modal test. Validation re-renders the partial: `UnitsTests.AddUnit_WithDuplicateNumber_ReRendersModalWithServerError` (server), `PropertiesTests.AddProperty_ThroughModal_AppearsInList` (client), `ResidencesTests`, `ReviewTests.Return_*`. Success closes and refreshes: `PropertiesTests`, `UnitsTests`, `ResidencesTests`, `ReviewTests` (`#application-status`), `WithdrawTests` (redirect) |
+| TR 1.b Modals from partial views | ✅ | Open: every modal test. Validation re-renders the partial: `UnitsTests.AddUnit_WithDuplicateNumber_ReRendersModalWithServerError` (server), `PropertiesTests.AddProperty_ThroughModal_AppearsInList` (client), `ResidencesTests`, `ReviewTests.Return_*`. Success closes and refreshes: `PropertiesTests`, `UnitsTests`, `ResidencesTests`, `ReviewTests` (`#application-status` and `#application-history` refreshed in place: `Return_*`), `ListingsTests.Manager_EditsAndDeletesUnit_*` (no target: page reload), `WithdrawTests` (redirect) |
 | TR 1.c Structure and styling | ➖ | Code review (unchecked in the checklist) |
 | TR 2.a ASP.NET Identity | ✅ | `AccountTests` |
 | TR 2.b.i Database created, migrations applied on start | ➖ | Exercised by every run: the E2E fixture drops `RentalPortalE2E` and the app's startup migrates it |
@@ -54,7 +54,7 @@ details (units). Every modal is opened by at least one test below.
 | FR 2.a Properties: add, edit, remove through modals | ✅ | `PropertiesTests.AddProperty_*`, `EditProperty_*`, `DeleteProperty_RemovesItAndItsUnits` |
 | FR 2.a Removing a property removes its units | ✅ | `PropertiesTests.DeleteProperty_RemovesItAndItsUnits` |
 | FR 2.a Units listed per property | ✅ | `UnitsTests.AddUnit_ThroughModal_AppearsInUnitList` |
-| FR 2.a Units: add, edit, remove | ✅ | `UnitsTests.AddUnit_*`, `EditAndDeleteUnit_ThroughModal` |
+| FR 2.a Units: add, edit, remove | ✅ | `UnitsTests.AddUnit_*`, `EditAndDeleteUnit_ThroughModal`; from Available Units: `ListingsTests.Manager_EditsAndDeletesUnit_FromAvailableUnits` |
 | FR 2.a Delete refused with a message when there are applications | ✅ | `PropertiesTests.DeleteProperty_WithApplications_IsRefusedWithMessage`, `UnitsTests.DeleteUnit_WithApplications_IsRefusedWithMessage` |
 | FR 2.a Applicants browse available units | ✅ | `ListingsTests.AvailableUnits_ListsUnitsFromNavbar` |
 | FR 2.a Only units with no lease covering today | ✅ | `ListingsTests.LeasedUnit_IsNotListed` |
@@ -82,7 +82,7 @@ details (units). Every modal is opened by at least one test below.
 | FR 4.a Comment required for Return and Deny | ✅ | `ReviewTests.Return_*`, `ReviewTests.Deny_*` |
 | FR 4.b All six statuses; Approved, Denied, Withdrawn terminal | ✅ | `WithdrawTests` (Draft, Submitted, Returned → Withdrawn; Approved and Denied can't be withdrawn), `ReviewTests` |
 | FR 4.b Return, Approve, Deny transitions | ✅ | `ReviewTests` |
-| FR 4.c History with who, when, comment; managers only | ✅ | `ReviewTests.Approve_IssuesTwelveMonthLease_AndRecordsHistory` |
+| FR 4.c History with who, when, comment; managers only | ✅ | `ReviewTests.Approve_IssuesTwelveMonthLease_AndRecordsHistory` (incl. direct `History` request as applicant), `Return_*` (history refreshes after a review) |
 | FR 5.a Filter by status and property | ✅ | `ApplicationListTests.Manager_SeesAllApplications_AndFiltersByStatusAndProperty` |
 | FR 5.a Filtering done in the database | ➖ | Code review (`Where` before `ToListAsync` in `ApplicationsController.Index`) |
 | FR 5.a Applicants see only their own | ✅ | `ApplicationListTests.Applicant_SeesOnlyOwnApplications` |

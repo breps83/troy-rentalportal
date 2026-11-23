@@ -34,6 +34,8 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
         await Page.GotoAsync("/Listings");
         var group = Page.Locator("tbody").Filter(new() { HasText = property.Name });
         await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Apply for Unit" })).ToBeVisibleAsync();
+        await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToHaveCountAsync(0);
+        await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Delete" })).ToHaveCountAsync(0);
 
         await Step("Roles", "Manager pages are refused for an applicant");
         await Page.GotoAsync("/Properties");
@@ -55,14 +57,20 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
         await Step("Roles", "Manager navbar includes Properties");
         await Expect(NavBar.GetByRole(AriaRole.Link, new() { Name = "Properties", Exact = true })).ToBeVisibleAsync();
 
-        await Step("Roles", "Managers can browse units but can't apply");
+        await Step("Roles", "Managers can browse units and edit or delete them, but can't apply");
         await Page.GotoAsync("/Listings");
-        await Expect(Page.GetByText(property.Name)).ToBeVisibleAsync();
+        var group = Page.Locator("tbody").Filter(new() { HasText = property.Name });
+        await Expect(group).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Apply for Unit" })).ToHaveCountAsync(0);
+        await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
+        await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Delete" })).ToBeVisibleAsync();
 
         await Step("Roles", "Managers see an application read-only, with no edit or withdraw buttons");
         await Page.GotoAsync($"/Applications/Details/{draftId}");
         await Expect(Page.Locator("#application-status")).ToContainTextAsync("Draft");
+        var breadcrumb = Page.GetByRole(AriaRole.Navigation, new() { Name = "breadcrumb" });
+        await Expect(breadcrumb.GetByRole(AriaRole.Link, new() { Name = "Applications", Exact = true }))
+            .ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Continue" })).ToHaveCountAsync(0);
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Withdraw application" })).ToHaveCountAsync(0);
 

@@ -66,6 +66,8 @@ public class ListingsTests(E2EFixture fixture, ITestOutputHelper output) : E2ETe
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = $"{property.Name} – Unit 101" }))
             .ToBeVisibleAsync();
         await Expect(Page.Locator("#application-status")).ToContainTextAsync("Draft");
+        var breadcrumb = Page.GetByRole(AriaRole.Navigation, new() { Name = "breadcrumb" });
+        await Expect(breadcrumb.GetByRole(AriaRole.Link, new() { Name = "My Applications" })).ToBeVisibleAsync();
         var firstUrl = Page.Url;
 
         await Step("FR 2.a", "Applying again reopens the same open application");
@@ -73,6 +75,36 @@ public class ListingsTests(E2EFixture fixture, ITestOutputHelper output) : E2ETe
         await UnitRow(PropertyGroup(property.Name), "101")
             .GetByRole(AriaRole.Button, new() { Name = "Apply for Unit" }).ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(Regex.Escape(new Uri(firstUrl).AbsolutePath)));
+    }
+
+    [Fact]
+    [Trait("Requirement", "FR 2.a")]
+    [Trait("Requirement", "TR 1.b")]
+    public async Task Manager_EditsAndDeletesUnit_FromAvailableUnits()
+    {
+        var property = await Data.CreatePropertyAsync(unitCount: 2);
+
+        await LoginAsAsync(TestUsers.Manager);
+        await Page.GotoAsync("/Listings");
+        var group = PropertyGroup(property.Name);
+
+        await Step("FR 2.a", "Edit a unit's rent from Available Units");
+        await Modal.OpenAsync(UnitRow(group, "101").GetByRole(AriaRole.Button, new() { Name = "Edit" }),
+            "Edit unit 101");
+        await Modal.Field("Monthly rent").EnterAsync("1999");
+        await Modal.SubmitAsync();
+
+        await Step("TR 1.b", "The page reloads and shows the new rent");
+        await Expect(UnitRow(group, "101")).ToContainTextAsync("$1,999");
+
+        await Step("FR 2.a", "Delete a unit from Available Units after confirming");
+        await Modal.OpenAsync(UnitRow(group, "102").GetByRole(AriaRole.Button, new() { Name = "Delete" }),
+            "Delete unit");
+        await Expect(Modal.Root).ToContainTextAsync("Delete unit 102?");
+        await Modal.SubmitAsync("Delete");
+        await Expect(UnitRow(group, "102")).ToHaveCountAsync(0);
+        await Expect(UnitRow(group, "101")).ToBeVisibleAsync();
+        Assert.Equal(1, await Data.CountUnitsAsync(property.Id));
     }
 
     [Fact]

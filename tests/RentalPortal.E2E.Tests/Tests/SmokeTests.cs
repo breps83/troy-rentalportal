@@ -17,7 +17,7 @@ public class SmokeTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
         await Step("Screens", "Home, Log in, and Register open without logging in");
 
         await Page.GotoAsync("/");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to RentalPortal" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Rental Portal" })).ToBeVisibleAsync();
 
         await Page.GotoAsync("/Account/Login");
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Log in" })).ToBeVisibleAsync();

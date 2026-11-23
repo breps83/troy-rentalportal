@@ -65,12 +65,20 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await SwitchUserAsync(TestUsers.Applicant);
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
         await Expect(Status).ToContainTextAsync("Approved");
-        await Expect(History.GetByText("History")).ToHaveCountAsync(0);
+        await Expect(History).ToBeAttachedAsync();
+        await Expect(History.Locator("tr")).ToHaveCountAsync(0);
+
+        await Step("FR 4.c", "Requesting the history section directly as the applicant returns no history");
+        var response = await Context.APIRequest.GetAsync($"/Applications/History/{applicationId}");
+        Assert.True(response.Ok, $"Expected 200 but got {response.Status}");
+        Assert.DoesNotContain("<tr", await response.TextAsync());
     }
 
     [Fact]
     [Trait("Requirement", "FR 4.a")]
     [Trait("Requirement", "FR 4.b")]
+    [Trait("Requirement", "FR 4.c")]
+    [Trait("Requirement", "TR 1.b")]
     [Trait("Requirement", "Roles")]
     public async Task Return_RequiresComment_ThenApplicantCorrectsAndResubmits()
     {
@@ -85,11 +93,22 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await ReviewAsync("Return", comment: null);
         await Modal.SubmitExpectingErrorAsync("A comment is required!");
 
+        // Marker on the window: it is lost if the page does a full reload instead of a partial refresh.
+        await Page.EvaluateAsync("() => window.e2eNoReload = true");
+
         await Step("FR 4.b", "Return with a comment");
         await Modal.Field("Comment").EnterAsync("Please add a second prior residence.");
         await Modal.SubmitAsync();
         await Expect(Status).ToContainTextAsync("Returned");
         await Expect(Status).ToContainTextAsync("Please add a second prior residence.");
+
+        await Step("TR 1.b", "Status and history both refresh in place, without reloading the page");
+        var lastChange = History.Locator("tbody tr").Last;
+        await Expect(lastChange).ToContainTextAsync("Submitted →");
+        await Expect(lastChange).ToContainTextAsync("Returned");
+        await Expect(lastChange).ToContainTextAsync("Please add a second prior residence.");
+        Assert.True(await Page.EvaluateAsync<bool>("() => window.e2eNoReload === true"),
+            "The page reloaded instead of refreshing the status and history sections.");
 
         await Step("Roles", "The applicant can edit the returned application again");
         await SwitchUserAsync(TestUsers.Applicant);

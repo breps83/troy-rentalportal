@@ -1,8 +1,6 @@
-@using RentalPortal.Web.Enums
 @model ApplicationFormViewModel
 @{
     ViewData["Title"] = $"Application for {Model.PropertyName} – Unit {Model.UnitNumber}";
-
 
     var current = Model.CurrentSection;
     var sectionEditable = Model.IsSectionEditable(current);
@@ -10,8 +8,14 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Listings" asp-action="Index">Available Units</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Application</li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Applications" asp-action="Index">
+                @(User.IsPropertyManager() ? "Applications" : "My Applications")
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Application
+        </li>
     </ol>
 </nav>
 
@@ -63,10 +67,10 @@
 
                 case ApplicationSection.ResidenceHistory:
                  
-                   <div id="residence-history">
-                        @await Component.InvokeAsync("ResidenceHistory", 
-                            new{applicationId = Model.Id, editable = Model.IsSectionEditable(current)})
-                   </div>
+                    <div id="residence-history">
+                        @await Component.InvokeAsync("ResidenceHistory",
+                            new { applicationId = Model.Id, editable = Model.IsSectionEditable(current) })
+                    </div>
                     break;
 
                 case ApplicationSection.Summary:
@@ -90,20 +94,26 @@
         @if (sectionEditable && current != ApplicationSection.Info)
         {
             <button type="submit" class="btn btn-outline-secondary" formnovalidate
-                    name="command" value="@ApplicationFormViewModel.Back">Back</button>
+                    name="command" value="@ApplicationFormViewModel.Back">
+                Back
+            </button>
         }
 
 
         @if (sectionEditable && current != ApplicationSection.Summary)
         {
             <button type="submit" class="btn btn-primary"
-                    name="command" value="@ApplicationFormViewModel.Continue">Continue</button>
+                    name="command" value="@ApplicationFormViewModel.Continue">
+                Continue
+            </button>
         }
 
         @if (current == ApplicationSection.Summary && Model.CanSubmit)
         {
             <button type="submit" class="btn btn-success" id="submit-application"
-                    name="command" value="@ApplicationFormViewModel.Submit">Submit</button>
+                    name="command" value="@ApplicationFormViewModel.Submit">
+                Submit
+            </button>
         }
     </div>
 </form>
@@ -113,19 +123,17 @@
     <div class="d-flex justify-content-end gap-2">
         @if (current != ApplicationSection.Info)
         {
-            <a
-                asp-action="Details"
-                asp-route-id="@Model.Id"
-                asp-route-section="@current.PreviousSection()"
-                class="btn btn-outline-secondary">Previous</a>
+            <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               asp-route-section="@current.PreviousSection()"
+               class="btn btn-outline-secondary">Previous</a>
         }
         @if (current != ApplicationSection.Summary)
         {
-            <a
-                asp-action="Details"
-                asp-route-id="@Model.Id"
-                asp-route-section="@current.NextSection()"
-                class="btn btn-outline-primary">Next</a>
+            <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               asp-route-section="@current.NextSection()"
+               class="btn btn-outline-primary">Next</a>
         }
     </div>
 

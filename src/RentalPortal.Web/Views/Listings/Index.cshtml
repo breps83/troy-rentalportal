@@ -7,7 +7,17 @@
 
     var canApply = User.IsApplicant();
 
-    var columnCount = canApply ? 5 : 4;
+    var propertyManager = User.IsPropertyManager();
+
+    var columnCount = 4;
+    if (canApply)
+    {
+        columnCount++;
+    }
+    if (propertyManager)
+    {
+        columnCount++;
+    }
 }
 
 <h1 class="h3 mb-4">Available Units</h1>
@@ -28,7 +38,11 @@ else
                     <th scope="col" class="text-center">Monthly rent</th>
                     @if (canApply)
                     {
-                        <th scope="col" style="width: 1%"><span class="visually-hidden">Apply</span></th>
+                        <th scope="col" class="col-fit"><span class="visually-hidden">Apply</span></th>
+                    }
+                    @if (propertyManager)
+                    {
+                        <th scope="col" class="col-fit"><span class="visually-hidden">Actions</span></th>
                     }
                 </tr>
             </thead>
@@ -55,6 +69,20 @@ else
                                           asp-route-unitId="@unit.Id" method="post">
                                         <button type="submit" class="btn btn-sm btn-primary">Apply for Unit</button>
                                     </form>
+                                </td>
+                            }
+                            @if (propertyManager)
+                            {
+                                @* No refresh target: site.js reloads the page after a save. *@
+                                <td class="text-end text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-modal-url="@Url.Action("Edit", "Units", new { id = unit.Id })">
+                                        Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-modal-url="@Url.Action("Delete", "Units", new { id = unit.Id })">
+                                        Delete
+                                    </button>
                                 </td>
                             }
                         </tr>

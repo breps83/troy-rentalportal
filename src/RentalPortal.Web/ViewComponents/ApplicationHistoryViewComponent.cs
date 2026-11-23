@@ -16,17 +16,17 @@ public class ApplicationHistoryViewComponent(AppDbContext db) : ViewComponent
 
         if (isPropertyManager)
         {
-             model = await db.ApplicationStatusChanges
-                .AsNoTracking()
-                .Where(c => c.RentalApplicationId == applicationId)
-                .OrderBy(c => c.ChangedAtUtc).ThenBy(c => c.Id)
-                .Select(c => new ReviewStatusChangeViewModel(
-                    c.FromStatus,
-                    c.ToStatus,
-                    $"{c.ChangedByUser.FirstName} {c.ChangedByUser.LastName}",
-                    c.ChangedAtUtc,
-                    c.Comment))
-                .ToListAsync();
+            model = await db.ApplicationStatusChanges
+               .AsNoTracking()
+               .Where(c => c.RentalApplicationId == applicationId)
+               .OrderBy(c => c.ChangedAtUtc).ThenBy(c => c.Id)
+               .Select(c => new ReviewStatusChangeViewModel(
+                   c.FromStatus,
+                   c.ToStatus,
+                   $"{c.ChangedByUser.FirstName} {c.ChangedByUser.LastName}",
+                   c.ChangedAtUtc,
+                   c.Comment))
+               .ToListAsync();
         }
 
         return View(model);

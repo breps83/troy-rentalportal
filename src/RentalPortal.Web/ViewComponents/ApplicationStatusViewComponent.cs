@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Extensions;
-using RentalPortal.Web.ViewModels;
 using RentalPortal.Web.ViewModels.Applications;
 
 namespace RentalPortal.Web.ViewComponents;

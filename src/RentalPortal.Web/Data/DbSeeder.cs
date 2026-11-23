@@ -45,7 +45,6 @@ public class DbSeeder
 
         await db.Database.MigrateAsync();
 
-
         var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
 
         var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();

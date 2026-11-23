@@ -1,10 +1,9 @@
-﻿@using RentalPortal.Web.Domain
-@{
+﻿@{
     ViewData["Title"] = "Home";
 }
 
 <div class="text-center py-5">
-    <h1 class="display-4 mb-3">Welcome to RentalPortal</h1>
+    <h1 class="display-4 mb-3">Welcome to Rental Portal</h1>
     <p class="lead mb-4">
         Looking for your next home? Browse available rentals and apply online in minutes.
         Managing properties? List your units, review applications, and keep everything in one place.
@@ -18,7 +17,7 @@
             @if (User.IsInRole(Roles.PropertyManager))
             {
                 <a asp-controller="Properties" asp-action="Index" class="btn btn-primary btn-lg">Manage Properties</a>
-                <a asp-controller="Listings" asp-action="Index" class="btn btn-outline-primary btn-lg">Browse Available Units</a>
+                <a asp-controller="Listings" asp-action="Index" class="btn btn-primary btn-lg">Browse Available Units</a>
             }
             else
             {
@@ -31,7 +30,7 @@
             }
             @if (User.IsInRole(Roles.Applicant))
             {
-                <a asp-controller="Applications" asp-action="Index" class="btn btn-primary btn-lg">My Applications</a>  
+                <a asp-controller="Applications" asp-action="Index" class="btn btn-success btn-lg">My Applications</a>
             }
         </div>
     }

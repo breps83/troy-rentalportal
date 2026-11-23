@@ -18,7 +18,8 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
             only for the owner while withdrawable (`ApplicationFormViewModel.CanWithdraw`)
       - [x] List page: Applicant column only for property managers (`Applications/Index.cshtml`)
       - [x] Review: Review button and status history only for property managers, the button only
-            while Submitted (`ApplicationStatusViewComponent`: `CanReview`, `ShowHistory`)
+            while Submitted (`ApplicationStatusViewComponent`: `CanReview`;
+            `ApplicationHistoryViewComponent` loads rows only for property managers)
 - [x] **Applicant** can:
   - [x] Create, fill out, and submit an application for an available unit
     - [x] Create (`ApplicationsController.Apply`), fill out both sections, and submit
@@ -45,7 +46,8 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [x] Controllers, view models, Razor views
   - [x] Partial views
   - [x] View components (`UnitListViewComponent` on the property Details page,
-        `ResidenceHistoryViewComponent` and `ApplicationStatusViewComponent` on the application page)
+        `ResidenceHistoryViewComponent`, `ApplicationStatusViewComponent`, and
+        `ApplicationHistoryViewComponent` on the application page)
 - [x] **1.b** Modals are populated from partial views returned by controller actions
   - [x] Shared modal and script (`_Layout.cshtml`, `wwwroot/js/site.js`)
   - [x] Validation failure re-renders the same partial in the modal
@@ -55,7 +57,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [x] Residences: add, edit, remove (`ResidencesController`, `_ResidenceForm`, `_ConfirmDelete`)
   - [x] Withdraw confirmation (`ApplicationsController.Withdraw`, `_ConfirmWithdraw`)
   - [x] Review modal (`ApplicationsController.Review`, `_ReviewForm`; refreshes `#application-status`
-        through `ApplicationsController.Status`)
+        and `#application-history` through `ApplicationsController.Status` and `History`)
 - [ ] **1.c** Structure and styling follow best practices
 
 ### TR 2. Backend (.NET 10)
@@ -182,7 +184,8 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
       comment)
   - [x] Every status change is recorded with who, when, and comment (`StatusHistory`)
   - [x] History shown on the application page, to property managers only
-        (`ApplicationStatusViewComponent`, loaded only for `IsPropertyManager`)
+        (`ApplicationHistoryViewComponent`, loaded only for `IsPropertyManager`; refreshed after a
+        review through `ApplicationsController.History`)
 
 ### FR 5. Application List
 

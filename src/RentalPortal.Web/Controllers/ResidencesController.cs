@@ -6,13 +6,13 @@ using RentalPortal.Web.Domain;
 using RentalPortal.Web.Extensions;
 using RentalPortal.Web.ViewModels.Shared;
 using RentalPortal.Web.ViewModels.Residences;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RentalPortal.Web.Controllers;
 
 [Authorize(Roles = Roles.Applicant)]
 public class ResidencesController(AppDbContext db) : Controller
 {
+    [HttpGet]
     public async Task<IActionResult> List(int applicationId)
     {
         var application = await db.RentalApplications.FindAsync(applicationId);

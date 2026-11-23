@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace RentalPortal.Web.Extensions;
+﻿namespace RentalPortal.Web.Extensions;
 
 public static class TimeProviderExtensions
 {

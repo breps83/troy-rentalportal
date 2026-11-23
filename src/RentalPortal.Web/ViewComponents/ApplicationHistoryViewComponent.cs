@@ -16,7 +16,7 @@ public class ApplicationHistoryViewComponent(AppDbContext db) : ViewComponent
 
         if (isPropertyManager)
         {
-            model = await db.ApplicationStatusChanges
+            model = await db.ApplicationStatusHistory
                .AsNoTracking()
                .Where(c => c.RentalApplicationId == applicationId)
                .OrderBy(c => c.ChangedAtUtc).ThenBy(c => c.Id)

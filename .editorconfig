@@ -24,6 +24,12 @@ dotnet_diagnostic.IDE2000.severity = warning
 # IDE2003: blank line required after a block (if, foreach, using, ...) before the next statement
 dotnet_style_allow_statement_immediately_after_block_experimental = false
 dotnet_diagnostic.IDE2003.severity = warning
+
+# ---- Usings ----
+
+# IDE0005: remove unnecessary usings (build reporting needs GenerateDocumentationFile, see Directory.Build.props)
+dotnet_diagnostic.IDE0005.severity = warning
+
 # ---- Naming rules ----
 
 # Required for naming rules to be reported by dotnet build (not just the IDE)

@@ -4,15 +4,15 @@ namespace RentalPortal.Web.Domain;
 
 public class RentalApplication
 {
-    public int Id { get; set; }
+    public int Id { get; private set; }
 
-    public int UnitId { get; set; }
+    public int UnitId { get; private set; }
 
-    public Unit Unit { get; set; } = null!;
+    public Unit Unit { get; private set; } = null!;
 
-    public string ApplicantId { get; set; } = null!;
+    public string ApplicantId { get; private set; } = null!;
 
-    public ApplicationUser Applicant { get; set; } = null!;
+    public ApplicationUser Applicant { get; private set; } = null!;
 
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Draft;
 
@@ -164,7 +164,7 @@ public class RentalApplication
     {
         CheckEditable();
 
-        if (Residences.Count() == 0)
+        if (Residences.Count == 0)
             throw new RuleException("Please add at least one prior residence.");
 
         ResidenceHistoryCompleted = true;
@@ -271,18 +271,14 @@ public class RentalApplication
 
     private void CheckReviewable()
     {
-        if (!CanReview)
-        {
+        if (!CanReview)        
             throw new RuleException("The application must be submitted before it can be reviewed.");
-        }
     }
 
     private void RequireComment(string? comment)
     {
         if (string.IsNullOrWhiteSpace(comment))
-        {
             throw new RuleException("A comment is required!");
-        }
     }
 
     private static void SetResidence(

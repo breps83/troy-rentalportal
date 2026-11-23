@@ -83,7 +83,7 @@ public class ApplicationsController(
             return RedirectToAction("Index", "Listings");
         }
 
-        return RedirectToAction("Details", new { id = application.Id });
+        return RedirectToAction(nameof(Details), new { id = application.Id });
     }
 
     [HttpGet]
@@ -119,7 +119,7 @@ public class ApplicationsController(
                 if (!application.UserCanView(User))
                     return Forbid();
 
-                return RedirectToAction("Details", new { id, section = section.PreviousSection() });
+                return RedirectToAction(nameof(Details), new { id, section = section.PreviousSection() });
 
             case ApplicationFormViewModel.Continue when section == Enums.ApplicationSection.Info:
 
@@ -142,7 +142,7 @@ public class ApplicationsController(
 
                 await db.SaveChangesAsync();
 
-                return RedirectToAction("Details", new { id, section = section.NextSection() });
+                return RedirectToAction(nameof(Details), new { id, section = section.NextSection() });
 
             case ApplicationFormViewModel.Continue when section == ApplicationSection.ResidenceHistory:
 
@@ -283,6 +283,7 @@ public class ApplicationsController(
         return Json(new { success = true });
     }
 
+    [HttpGet]
     public async Task<IActionResult> Status(int id)
     {
         var application = await db.RentalApplications.FindAsync(id);
@@ -294,6 +295,7 @@ public class ApplicationsController(
             new { applicationId = id }) : Forbid();
     }
 
+    [HttpGet]
     public async Task<IActionResult> History(int id)
     {
         var application = await db.RentalApplications.FindAsync(id);
@@ -332,7 +334,7 @@ public class ApplicationsController(
             TempData["Error"] =
                 $"This application is {application.Status} and can no longer be edited.";
 
-            return RedirectToAction("Details", new { id = application.Id });
+            return RedirectToAction(nameof(Details), new { id = application.Id });
         }
 
         return null;

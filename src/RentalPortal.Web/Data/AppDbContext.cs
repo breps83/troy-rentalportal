@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RentalPortal.Web.Domain;
-using System.Security.Policy;
 
 namespace RentalPortal.Web.Data;
 
@@ -17,7 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
     public DbSet<Residence> Residences => Set<Residence>();
 
-    public DbSet<ApplicationStatusHistory> ApplicationStatusChanges => Set<ApplicationStatusHistory>();
+    public DbSet<ApplicationStatusHistory> ApplicationStatusHistory => Set<ApplicationStatusHistory>();
 
     public DbSet<Lease> Leases => Set<Lease>();
 

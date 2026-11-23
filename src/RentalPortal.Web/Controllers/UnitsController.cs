@@ -13,7 +13,9 @@ namespace RentalPortal.Web.Controllers;
 public class UnitsController(AppDbContext db) : Controller
 {
 
-    public IActionResult List(int propertyId) => ViewComponent("UnitList", new { propertyId });
+    [HttpGet]
+    public IActionResult List(int propertyId) => 
+        ViewComponent("UnitList", new { propertyId });
 
     [HttpGet]
     public async Task<IActionResult> Create(int propertyId)
@@ -125,8 +127,8 @@ public class UnitsController(AppDbContext db) : Controller
             return NotFound();
         }
 
-        // Show the reason up front; _ConfirmDelete hides the Delete button when there's an error.
-        return PartialView("_ConfirmDelete", BuildDeleteModel(unit, await GetDeleteBlockerAsync(id)));
+        return PartialView("_ConfirmDelete", 
+            BuildDeleteModel(unit, await GetDeleteBlockerAsync(id)));
     }
 
     [HttpPost, ActionName(nameof(Delete))]

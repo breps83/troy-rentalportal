@@ -67,11 +67,12 @@ service needs to be configured.
 
 ## Testing
 
-There are two test projects, both xUnit:
+There are three test projects, all xUnit:
 
 | Project | What it checks | Database |
 |---|---|---|
 | `tests/RentalPortal.Tests` | Unit tests for the business rules in the domain and services | None |
+| `tests/RentalPortal.Integration.Tests` | The app in memory over HTTP (`WebApplicationFactory`): permissions on requests the UI doesn't offer, EF queries that repeat a domain rule, restricted deletes, modal responses, and antiforgery | Its own LocalDB database, `RentalPortalIntegration` |
 | `tests/RentalPortal.E2E.Tests` | End-to-end tests in a real browser (Playwright, Chromium): every screen, and every requirement in the checklist that a browser can verify | Its own LocalDB database, `RentalPortalE2E` |
 
 Build the tests to a temp folder, not `bin/`. A running copy of the app locks
@@ -83,6 +84,18 @@ Build the tests to a temp folder, not `bin/`. A running copy of the app locks
 dotnet build tests/RentalPortal.Tests -o $env:TEMP/RentalPortal.Tests
 dotnet test $env:TEMP/RentalPortal.Tests/RentalPortal.Tests.dll
 ```
+
+### Integration tests
+
+**You need:** SQL Server LocalDB. You don't need to start the app.
+
+```powershell
+dotnet build tests/RentalPortal.Integration.Tests -o $env:TEMP/RentalPortal.Integration.Tests
+dotnet test $env:TEMP/RentalPortal.Integration.Tests/RentalPortal.Integration.Tests.dll
+```
+
+Each run drops and recreates `RentalPortalIntegration`, and the app's startup migrates and seeds it.
+Tests create their own properties, units, and applications.
 
 ### End-to-end tests
 

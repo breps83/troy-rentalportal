@@ -100,7 +100,7 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
             ["CurrentSection"] = "Info",
             ["ApplicantInfo.FirstName"] = "Mallory",
             ["ApplicantInfo.LastName"] = "Intruder",
-            ["ApplicantInfo.Phone"] = "248-555-0111",
+            ["ApplicantInfo.Phone"] = "217-555-0111",
             ["ApplicantInfo.Email"] = "mallory@example.com",
             ["ApplicantInfo.CurrentAddress"] = "1 Hack St"
         });
@@ -130,7 +130,7 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
             ["CurrentSection"] = "Info",
             ["ApplicantInfo.FirstName"] = "Changed",
             ["ApplicantInfo.LastName"] = "Name",
-            ["ApplicantInfo.Phone"] = "248-555-0111",
+            ["ApplicantInfo.Phone"] = "217-555-0111",
             ["ApplicantInfo.Email"] = "changed@example.com",
             ["ApplicantInfo.CurrentAddress"] = "1 Changed St"
         });

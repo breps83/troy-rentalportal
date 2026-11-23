@@ -20,6 +20,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RentalPortal.E2E.Tests/RentalPortal.E2E.Tests.csproj" Id="8ce62d09-881b-4ae1-bae0-3a45336fb901" />
+    <Project Path="tests/RentalPortal.Integration.Tests/RentalPortal.Integration.Tests.csproj" />
     <Project Path="tests/RentalPortal.Tests/RentalPortal.Tests.csproj" />
   </Folder>
 </Solution>

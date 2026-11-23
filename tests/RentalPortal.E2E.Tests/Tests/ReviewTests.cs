@@ -114,7 +114,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await SwitchUserAsync(TestUsers.Applicant);
         await Page.GotoAsync($"/Applications/Details/{applicationId}?section=Info");
         await Expect(Page.GetByLabel("Phone")).ToBeEditableAsync();
-        await Page.GetByLabel("Phone").EnterAsync("248-555-0222");
+        await Page.GetByLabel("Phone").EnterAsync("217-555-0222");
         await Page.GetByRole(AriaRole.Button, new() { Name = "Continue" }).ClickAsync();
         await Page.GetByRole(AriaRole.Button, new() { Name = "Continue" }).ClickAsync();
 

@@ -28,7 +28,7 @@ public class ResidencesTests(E2EFixture fixture, ITestOutputHelper output) : E2E
         await Modal.OpenAsync(Page.GetByRole(AriaRole.Button, new() { Name = "Add residence" }), "Add residence");
         await Modal.Field("Address").EnterAsync("9 Pine Ct, Clawson, MI 48017");
         await Modal.Field("Landlord name").EnterAsync("Riley Park");
-        await Modal.Field("Landlord phone").EnterAsync("248-555-0177");
+        await Modal.Field("Landlord phone").EnterAsync("217-555-0177");
         await Modal.Field("Move In Date").EnterAsync("2019-05-01");
         await Modal.Field("Move Out Date").EnterAsync("2018-05-01");
         await Modal.SubmitExpectingErrorAsync("Move Out date can't be before Move In Date");

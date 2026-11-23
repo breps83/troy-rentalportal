@@ -45,9 +45,9 @@ public class TestData(IServiceProvider services)
         {
             Name = Unique(namePrefix),
             Street = "100 Main St",
-            City = "Troy",
-            State = "MI",
-            PostalCode = "48084"
+            City = "Springfield",
+            State = "IL",
+            PostalCode = "62701"
         };
 
         for (var i = 1; i <= unitCount; i++)
@@ -177,14 +177,14 @@ public class TestData(IServiceProvider services)
             application.UpdateApplicant(
                 applicant.FirstName,
                 applicant.LastName,
-                "248-555-0100",
+                "217-555-0100",
                 applicantEmail,
-                "12 Elm St, Troy, MI 48084");
+                "12 Elm St, Springfield, IL 62701");
 
             application.AddResidence(
-                "45 Oak Ave, Troy, MI 48083",
+                "45 Oak Ave, Springfield, IL 62701",
                 "Dana Landlord",
-                "248-555-0199",
+                "217-555-0199",
                 new DateOnly(2021, 6, 1),
                 new DateOnly(2024, 5, 31));
 

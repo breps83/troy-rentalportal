@@ -12,6 +12,8 @@ partial views, and view components, with no single-page application framework.
 - Spec: `docs/requirements.md` (requirement IDs such as FR 3.b and TR 1.b)
 - Progress: `docs/requirements-checklist.md`, with status diagrams in `docs/diagrams.md`
 - App: `src/RentalPortal.Web`. Tests: `tests/RentalPortal.Tests` (xUnit)
+- Integration tests: `tests/RentalPortal.Integration.Tests` (xUnit + `WebApplicationFactory`, own
+  `RentalPortalIntegration` database)
 - E2E tests: `tests/RentalPortal.E2E.Tests` (xUnit + Playwright, own `RentalPortalE2E` database). Guide in
   `docs/e2e-tests.md`, requirement coverage in `docs/e2e-coverage.md`. Skills: `e2e-tests` (write and
   maintain) and `run-e2e-tests` (run with videos and report)
@@ -66,6 +68,10 @@ folder instead: `dotnet build src/RentalPortal.Web -o <temp folder>`.
 # Unit tests
 dotnet build tests/RentalPortal.Tests -o $env:TEMP/RentalPortal.Tests
 dotnet test $env:TEMP/RentalPortal.Tests/RentalPortal.Tests.dll
+
+# Integration tests (in-memory app over HTTP, own RentalPortalIntegration database)
+dotnet build tests/RentalPortal.Integration.Tests -o $env:TEMP/RentalPortal.Integration.Tests
+dotnet test $env:TEMP/RentalPortal.Integration.Tests/RentalPortal.Integration.Tests.dll
 
 # E2E tests (the script builds to $env:TEMP/RentalPortal.E2E.Tests itself)
 ./tests/RentalPortal.E2E.Tests/run-e2e.ps1               # with videos (-NoVideo, -Filter "Requirement=FR 3.b", -Open)

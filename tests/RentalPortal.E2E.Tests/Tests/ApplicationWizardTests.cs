@@ -46,8 +46,8 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Expect(CurrentStep).ToContainTextAsync("Applicant Information");
 
         await Step("FR 3.b", "Continue with valid input saves and moves to Residence History");
-        await Page.GetByLabel("Phone").EnterAsync("248-555-0123");
-        await Page.GetByLabel("Current address").EnterAsync("500 W Big Beaver Rd, Troy, MI 48084");
+        await Page.GetByLabel("Phone").EnterAsync("217-555-0123");
+        await Page.GetByLabel("Current address").EnterAsync("500 Lincoln Ave, Springfield, IL 62701");
         await Button("Continue").ClickAsync();
         await Expect(CurrentStep).ToContainTextAsync("Residence History");
         await Expect(Page.Locator("li", new() { HasText = "Applicant Information" }).GetByLabel("saved"))
@@ -62,7 +62,7 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Modal.OpenAsync(Button("Add residence"), "Add residence");
         await Modal.Field("Address").EnterAsync("77 Lake St, Royal Oak, MI 48067");
         await Modal.Field("Landlord name").EnterAsync("Morgan Lee");
-        await Modal.Field("Landlord phone").EnterAsync("248-555-0144");
+        await Modal.Field("Landlord phone").EnterAsync("217-555-0144");
         await Modal.Field("Move In Date").EnterAsync("2020-08-01");
         await Modal.Field("Move Out Date").EnterAsync("2024-07-31");
         await Modal.SubmitAsync();
@@ -71,13 +71,13 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Step("FR 3.b", "Back returns to the previous section");
         await Button("Back").ClickAsync();
         await Expect(CurrentStep).ToContainTextAsync("Applicant Information");
-        await Expect(Page.GetByLabel("Phone")).ToHaveValueAsync("248-555-0123");
+        await Expect(Page.GetByLabel("Phone")).ToHaveValueAsync("217-555-0123");
         await Button("Continue").ClickAsync();
 
         await Step("FR 3.a", "Continue moves to the Summary, a read-only view of both sections");
         await Button("Continue").ClickAsync();
         await Expect(CurrentStep).ToContainTextAsync("Summary");
-        await Expect(Page.GetByText("248-555-0123")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("217-555-0123")).ToBeVisibleAsync();
         await Expect(Page.GetByText("77 Lake St, Royal Oak, MI 48067")).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Textbox)).ToHaveCountAsync(0);
         await Expect(Button("Edit")).ToHaveCountAsync(0);
@@ -116,7 +116,7 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Page.GotoAsync($"/Applications/Details/{applicationId}?section=Info");
 
         await Step("FR 3.d", "The same section renders read-only: text instead of inputs, no Continue");
-        await Expect(Page.GetByText("248-555-0100")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("217-555-0100")).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Textbox)).ToHaveCountAsync(0);
         await Expect(Button("Continue")).ToHaveCountAsync(0);
 

@@ -26,18 +26,18 @@ public class PropertiesTests(E2EFixture fixture, ITestOutputHelper output) : E2E
 
         await Step("TR 1.b", "Invalid input keeps the modal open with errors");
         await Modal.Field("Name").EnterAsync(name);
-        await Modal.Field("Street Address").EnterAsync("200 Big Beaver Rd");
-        await Modal.Field("City").EnterAsync("Troy");
+        await Modal.Field("Street Address").EnterAsync("200 Lincoln Ave");
+        await Modal.Field("City").EnterAsync("Springfield");
         await Modal.Field("State").EnterAsync("M1");
-        await Modal.Field("PostalCode").EnterAsync("4808");
+        await Modal.Field("PostalCode").EnterAsync("6270");
         await Modal.SubmitExpectingErrorAsync("Please enter a valid state abbreviation.");
         await Expect(Modal.Root.GetByText("Please enter a valid postal code.")).ToBeVisibleAsync();
 
         await Step("FR 2.a", "A valid property saves, the modal closes, and the list refreshes");
-        await Modal.Field("State").EnterAsync("MI");
-        await Modal.Field("PostalCode").EnterAsync("48084");
+        await Modal.Field("State").EnterAsync("IL");
+        await Modal.Field("PostalCode").EnterAsync("62701");
         await Modal.SubmitAsync();
-        await Expect(PropertyRow(name)).ToContainTextAsync("200 Big Beaver Rd");
+        await Expect(PropertyRow(name)).ToContainTextAsync("200 Lincoln Ave");
     }
 
     [Fact]

@@ -14,6 +14,8 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
 {
     private ILocator Status => Page.Locator("#application-status");
 
+    private ILocator History => Page.Locator("#application-history");
+
     private ILocator ReviewButton => Page.GetByRole(AriaRole.Button, new() { Name = "Review application" });
 
     private async Task ReviewAsync(string decision, string? comment)
@@ -52,7 +54,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await Expect(ReviewButton).ToHaveCountAsync(0);
 
         await Step("FR 4.c", "History shows each status change with who, when, and the comment");
-        var history = Status.Locator("li");
+        var history = History.Locator("tbody tr");
         await Expect(history).ToHaveCountAsync(3);
         await Expect(history.Nth(2)).ToContainTextAsync("Submitted →");
         await Expect(history.Nth(2)).ToContainTextAsync("Approved");
@@ -63,7 +65,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await SwitchUserAsync(TestUsers.Applicant);
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
         await Expect(Status).ToContainTextAsync("Approved");
-        await Expect(Status.GetByText("History")).ToHaveCountAsync(0);
+        await Expect(History.GetByText("History")).ToHaveCountAsync(0);
     }
 
     [Fact]

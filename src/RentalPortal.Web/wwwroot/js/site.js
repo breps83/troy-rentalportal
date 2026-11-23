@@ -3,8 +3,10 @@
 // Any element with data-modal-url opens the shared modal with the partial view returned from that URL.
 // Forms inside the modal are posted with fetch. The server either returns the same partial with
 // validation errors (re-rendered in place) or JSON { success: true }, in which case the modal closes
-// and the element named by data-refresh-target is reloaded from data-refresh-url. If the JSON includes
-// redirectUrl, the page navigates there instead.
+// and the element named by data-refresh-target is reloaded from data-refresh-url. To refresh several
+// elements, list comma-separated URLs and targets in the same order (for example
+// data-refresh-url="/a,/b" data-refresh-target="#a,#b"). If the JSON includes redirectUrl, the page
+// navigates there instead.
 //
 // A redirect response (e.g. an expired login sending the user to the login page) navigates the whole
 // page instead of rendering inside the modal. Error responses show a message instead.
@@ -82,23 +84,26 @@
             return;
         }
 
-       
-        const target = document.querySelector(refresh.target);
+        const urls = refresh.url.split(',');
+        const targets = refresh.target.split(',');
+
         try {
-            const response = await fetch(refresh.url, { headers: ajaxHeaders });
-            if (followRedirect(response)) {
-                return;
-            }
-            if (target && response.ok) {
+            for (let i = 0; i < urls.length; i++) {
+                const target = document.querySelector(targets[i].trim());
+                const response = await fetch(urls[i].trim(), { headers: ajaxHeaders });
+
+                if (followRedirect(response)) {
+                    return;
+                }
+                if (!target || !response.ok) {
+                    window.location.reload();
+                    return;
+                }
                 target.innerHTML = await response.text();
-                return;
             }
         } catch {
-            // Fall through to a full reload.
+            window.location.reload();
         }
-
-        // The save succeeded but the partial refresh failed; reload to show current data.
-        window.location.reload();
     }
 
     document.addEventListener('click', async function (event) {

@@ -30,26 +30,10 @@ public class ApplicationStatusViewComponent(AppDbContext db) : ViewComponent
                                     .OrderByDescending(c => c.ChangedAtUtc)
                                     .Select(c => c.Comment)
                                     .FirstOrDefault(),
-                CanReview = isPropertyManager && a.Status == Enums.ApplicationStatus.Submitted,
-                ShowHistory = isPropertyManager
+                CanReview = isPropertyManager && a.Status == Enums.ApplicationStatus.Submitted
             })
             .SingleAsync();
-
-        if (isPropertyManager)
-        {
-            model.ReviewStatusHistory = await db.ApplicationStatusChanges
-                .AsNoTracking()
-                .Where(c => c.RentalApplicationId == applicationId)
-                .OrderBy(c => c.ChangedAtUtc).ThenBy(c => c.Id)
-                .Select(c => new ReviewStatusChangeViewModel(
-                    c.FromStatus,
-                    c.ToStatus,
-                    $"{c.ChangedByUser.FirstName} {c.ChangedByUser.LastName}",
-                    c.ChangedAtUtc,
-                    c.Comment))
-                .ToListAsync();
-        }
-
+        
         return View(model);
     }
 }

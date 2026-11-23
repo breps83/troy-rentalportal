@@ -22,9 +22,4 @@ public class ApplicationStatusViewModel
 
     public bool CanReview { get; init; }
 
-    public bool ShowHistory { get; init; }
-
-    public IReadOnlyList<ReviewStatusChangeViewModel> ReviewStatusHistory { get; set; } =
-        new List<ReviewStatusChangeViewModel>();
-
 }

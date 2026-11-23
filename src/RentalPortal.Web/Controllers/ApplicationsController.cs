@@ -294,6 +294,17 @@ public class ApplicationsController(
             new { applicationId = id }) : Forbid();
     }
 
+    public async Task<IActionResult> History(int id)
+    {
+        var application = await db.RentalApplications.FindAsync(id);
+
+        if (application is null)
+            return NotFound();
+
+        return application.UserCanView(User) ? ViewComponent("ApplicationHistory",
+            new { applicationId = id }) : Forbid();
+    }
+
     private ConfirmDeleteViewModel WithdrawConfirmation(int id, string? error) =>
         new ConfirmDeleteViewModel
         {

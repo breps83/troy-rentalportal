@@ -1,8 +1,13 @@
 ﻿@model ApplicationStatusViewModel
+@{
+    var reviewUrl = Url.Action("Review", "Applications", new { id = Model.ApplicationId });
+    var statusUrl = Url.Action("Status", "Applications", new { id = Model.ApplicationId });
+    var historyUrl = Url.Action("History", "Applications", new { id = Model.ApplicationId });
+}
 
 <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center gap-3">
-        <span class="fw-semibold">Application status</span>
+        <span class="fw-semibold">Current Application Status</span>
         <partial name="_ApplicationStatus" model="Model.Status" />
     </div>
     <div class="card-body py-2">
@@ -43,39 +48,13 @@
         @if (Model.CanReview)
         {
             <button type="button" class="btn btn-sm btn-primary mt-1 mb-1"
-                    data-modal-url="@Url.Action("Review", "Applications", new { id = Model.ApplicationId })"
-                    data-refresh-url="@Url.Action("Status", "Applications", new { id = Model.ApplicationId })"
-                    data-refresh-target="#application-status">
+                    data-modal-url="@reviewUrl"
+                    data-refresh-url="@statusUrl,@historyUrl"
+                    data-refresh-target="#application-status,#application-history">
                 Review application
             </button>
         }
 
-        @if (Model.ShowHistory && Model.ReviewStatusHistory.Count > 0)
-        {
-            <div class="border-top pt-2 mt-2">
-                <div class="small fw-semibold mb-1">History</div>
-                <ul class="list-unstyled small mb-0">
-                    @foreach (var change in Model.ReviewStatusHistory)
-                    {
-                        <li class="mb-2">
-                            <div>
-                                @if (change.FromStatus.HasValue)
-                                {
-                                    <span>@change.FromStatus →</span>
-                                }
-                                <partial name="_ApplicationStatus" model="change.ToStatus" />
-                            </div>
-                            <div class="text-muted">
-                                @change.ChangedBy, @change.ChangedAtUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
-                            </div>
-                            @if (!string.IsNullOrWhiteSpace(change.Comment))
-                            {
-                                <div class="fst-italic">@change.Comment</div>
-                            }
-                        </li>
-                    }
-                </ul>
-            </div>
-        }
+        
     </div>
 </div>

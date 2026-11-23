@@ -137,6 +137,79 @@ public class PermissionsTests(IntegrationFixture fixture)
         Assert.Equal(ApplicationStatus.Withdrawn, application.Status);
     }
 
+    [Fact]
+    public async Task Applicant_CannotReadNotes()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        await _data.CreateNoteAsync(applicationId, TestUsers.Manager, "Private manager note.");
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync($"/Applications/Notes/{applicationId}");
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Applicant_DoesNotSeeNotesOnApplicationPage()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        await _data.CreateNoteAsync(applicationId, TestUsers.Manager, "Private manager note.");
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync($"/Applications/Details/{applicationId}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.DoesNotContain("Private manager note.", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Applicant_CannotAddNote()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync("/Applications/AddNote", new Dictionary<string, string>
+        {
+            ["ApplicationId"] = applicationId.ToString(),
+            ["Note"] = "Not allowed."
+        });
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Manager_CannotEditAnotherManagersNote()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var noteId = await _data.CreateNoteAsync(applicationId, TestUsers.OtherManager, "Original note.");
+        var client = await LoginAsync(TestUsers.Manager);
+
+        var response = await client.PostFormAsync("/Applications/EditNote", new Dictionary<string, string>
+        {
+            ["ApplicationId"] = applicationId.ToString(),
+            ["NoteId"] = noteId.ToString(),
+            ["Note"] = "Changed."
+        });
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+
+        var note = await _data.GetNoteAsync(noteId);
+        Assert.Equal("Original note.", note!.Note);
+    }
+
+    [Fact]
+    public async Task Manager_CannotDeleteAnotherManagersNote()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var noteId = await _data.CreateNoteAsync(applicationId, TestUsers.OtherManager, "Original note.");
+        var client = await LoginAsync(TestUsers.Manager);
+
+        var response = await client.PostFormAsync($"/Applications/DeleteNote/{noteId}", []);
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+        Assert.NotNull(await _data.GetNoteAsync(noteId));
+    }
+
     private async Task<HttpClient> LoginAsync(string email)
     {
         var client = _app.CreateNoRedirectClient();

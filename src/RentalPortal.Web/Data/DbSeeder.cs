@@ -26,6 +26,17 @@ public class DbSeeder
             ("Penthouse", false)
         ];
 
+    public static readonly string[] NoteSamples =
+        [
+            "This is a test note from the seeder.",
+            "Another note from seeder.",
+            "Yet anothre note from seeder.",
+            "Demo note from seeder.",
+            "5th note from seeder.",
+            "Note from seeder.",
+            "This is a demo note from seeder."            
+        ];
+
     /// <summary>
     /// Seeds the database with roles and demo application data.
     /// </summary>
@@ -289,6 +300,8 @@ public class DbSeeder
             (ApplicationStatus.Withdrawn, 3, 8)
         };
 
+        var reviewed = new List<(RentalApplication Application, DateTime SubmittedAt)>();
+
         for (var i = 0; i < plan.Length; i++)
         {
             var (status, applicantIndex, unitIndex) = plan[i];
@@ -357,6 +370,8 @@ public class DbSeeder
                         break;
 
                 }
+
+                reviewed.Add((application, submittedDate));
             }
 
             db.RentalApplications.Add(application);
@@ -364,6 +379,45 @@ public class DbSeeder
         }
 
         await db.SaveChangesAsync();
+
+        SeedNotes(db, faker, users.propertyManagers, reviewed);
+
+        await db.SaveChangesAsync();
+    }
+
+    private static void SeedNotes(
+        AppDbContext db,
+        Faker faker,
+        List<ApplicationUser> propertyManagers,
+        List<(RentalApplication Application, DateTime SubmittedAt)> reviewed)
+    {
+        foreach (var (application, submittedAt) in reviewed)
+        {
+            var noteCount = faker.Random.Int(0, 3);
+
+            for (var n = 0; n < noteCount; n++)
+            {
+                var manager = faker.PickRandom(propertyManagers);
+
+                var createdAt = submittedAt.AddHours(faker.Random.Int(1, 48));
+
+                var note = ApplicationNote.Create(
+                    application.Id,
+                    manager.Id,
+                    faker.PickRandom(NoteSamples),
+                    createdAt);
+
+                if (faker.Random.Bool(0.25f))
+                {
+                    note.Edit(
+                        manager.Id,
+                        faker.PickRandom(NoteSamples),
+                        createdAt.AddHours(faker.Random.Int(1, 4)));
+                }
+
+                db.ApplicationNotes.Add(note);
+            }
+        }
     }
 
     /// <summary>

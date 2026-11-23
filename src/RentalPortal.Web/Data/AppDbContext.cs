@@ -20,6 +20,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
     public DbSet<Lease> Leases => Set<Lease>();
 
+    public DbSet<ApplicationNote> ApplicationNotes => Set<ApplicationNote>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -159,6 +161,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
                 l.EndDate
             });
 
+        });
+
+        builder.Entity<ApplicationNote>(note =>
+        {
+            note.Property(n => n.Note).HasMaxLength(ApplicationNote.MaxLength);
+
+            note.HasOne<RentalApplication>()
+                .WithMany()
+                .HasForeignKey(n => n.RentalApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            note.HasOne(n => n.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(n => n.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            note.HasOne(n => n.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(n => n.UpdatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            note.HasIndex(n => n.RentalApplicationId);
         });
     }
 }

@@ -155,6 +155,46 @@ namespace RentalPortal.Web.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("RentalApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("RentalApplicationId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("ApplicationNotes");
+                });
+
             modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationStatusHistory", b =>
                 {
                     b.Property<int>("Id")
@@ -549,6 +589,30 @@ namespace RentalPortal.Web.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationNote", b =>
+                {
+                    b.HasOne("RentalPortal.Web.Domain.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RentalPortal.Web.Domain.RentalApplication", null)
+                        .WithMany()
+                        .HasForeignKey("RentalApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RentalPortal.Web.Domain.ApplicationUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationStatusHistory", b =>

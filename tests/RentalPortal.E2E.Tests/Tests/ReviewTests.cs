@@ -65,8 +65,7 @@ public class ReviewTests(E2EFixture fixture, ITestOutputHelper output) : E2ETest
         await SwitchUserAsync(TestUsers.Applicant);
         await Page.GotoAsync($"/Applications/Details/{applicationId}");
         await Expect(Status).ToContainTextAsync("Approved");
-        await Expect(History).ToBeAttachedAsync();
-        await Expect(History.Locator("tr")).ToHaveCountAsync(0);
+        await Expect(History).Not.ToBeAttachedAsync();
 
         await Step("FR 4.c", "Requesting the history section directly as the applicant returns no history");
         var response = await Context.APIRequest.GetAsync($"/Applications/History/{applicationId}");

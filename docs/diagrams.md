@@ -11,7 +11,8 @@ Requirement IDs (for example **FR 3.b**) match [requirements-checklist.md](requi
 | 🟨 Amber | **In progress**: partly implemented (for example domain model only, no UI yet) |
 | ⬜ Gray | **Not started** |
 
-Bonus items are left out; see the Bonus section of the checklist.
+Bonus items are left out, except **B3** (property manager notes), which is built; see the Bonus
+section of the checklist.
 
 ---
 
@@ -51,9 +52,9 @@ flowchart LR
 
 | Area | Status | What's left |
 |---|---|---|
-| TR 1.b | Done | Modals for properties, units, residences, withdrawal, and review (`_ReviewForm`) |
+| TR 1.b | Done | Modals for properties, units, residences, withdrawal, review (`_ReviewForm`), and notes (`_NoteForm`) |
 | TR 2.b.ii | Done | Roles, users, unit types, properties, units, and applications in every status with leases for approvals (`DbSeeder.SeedApplicationsAsync`) |
-| TR 2.c | Done | `UnitTypeTests`, `RentalApplicationTests`, `LeaseTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests` (81 passing) |
+| TR 2.c | Done | `UnitTypeTests`, `RentalApplicationTests`, `LeaseTests`, `RentalApplicationExtensionsTests`, `ApplicationSectionExtensionsTests`, `RentalApplicationServiceTests`, `ApplicationNoteTests` (92 passing) |
 | FR 2.a | Done | Available Units lists only units with no lease covering today (`ListingsController.Index`) |
 | FR 2.b | Done | `Penthouse` is seeded as the inactive type, on some 3-bedroom units |
 | FR 2.c | Done | Approval creates a twelve-month `Lease` starting on the approval date |
@@ -95,13 +96,16 @@ flowchart LR
     PM --> Review["Review: Approve, Return, Deny"]:::done
     PM --> History["See status history"]:::done
     PM --> AllList["See all applications"]:::done
+    PM --> Notes["B3: Add notes; edit and delete<br/>only their own"]:::done
 ```
 
 `PropertiesController` and `UnitsController` are restricted to `Roles.PropertyManager`,
 `ResidencesController` to `Roles.Applicant`, and `ApplicationsController` checks ownership and
 status on every save and on Withdraw (`Roles.Applicant` plus an owner check); `Review` is
 `Roles.PropertyManager` only and accepts only Submitted applications. Its list action
-filters to the applicant's own applications on the server. The navbar shows Properties only to
+filters to the applicant's own applications on the server. The note actions (`Notes`, `AddNote`,
+`EditNote`, `DeleteNote`) are `Roles.PropertyManager` only, and `EditNote` and `DeleteNote` also
+require the note's author (`ApplicationNote.IsAuthor`). The navbar shows Properties only to
 property managers, and Available Units and the application list to anyone logged in.
 
 ---
@@ -200,6 +204,19 @@ classDiagram
         +Overlaps(startDate, endDate) bool
     }
 
+    class ApplicationNote {
+        <<Done>>
+        +int Id
+        +string Note
+        +string CreatedById
+        +DateTime CreatedAtUtc
+        +string UpdatedById
+        +DateTime UpdatedAtUtc
+        +Create(applicationId, userId, note, nowUtc) ApplicationNote
+        +IsAuthor(userId) bool
+        +Edit(userId, note, nowUtc)
+    }
+
     Property "1" --> "*" Unit : cascade delete
     UnitType "1" --> "*" Unit : restrict
     Unit "1" --> "*" RentalApplication : restrict
@@ -208,12 +225,15 @@ classDiagram
     RentalApplication "1" --> "*" ApplicationStatusHistory : status history
     RentalApplication "1" --> "0..1" Lease : approval creates, restrict
     Unit "1" --> "*" Lease : restrict
+    RentalApplication "1" --> "*" ApplicationNote : B3 notes, cascade delete
+    ApplicationUser "1" --> "*" ApplicationNote : author, restrict
 ```
 
 Delete rules:
 - Removing a **property** removes its units. Because applications use `Restrict`, the property and
   unit delete actions refuse when any application exists, with a message in the confirm modal.
-- Removing an **application** isn't a feature; its residences and history would cascade with it.
+- Removing an **application** isn't a feature; its residences, history, and notes would cascade
+  with it.
 
 ---
 
@@ -294,7 +314,7 @@ The controller rejects posts that aren't allowed (FR 3.d), not just hides the bu
 
 ## 6. Modal request flow (TR 1.b) — done
 
-How every modal in the app works: properties, units, residences, withdrawal, and review. The withdraw confirmation returns JSON with `redirectUrl`, so the page navigates to the
+How every modal in the app works: properties, units, residences, withdrawal, review, and notes. The withdraw confirmation returns JSON with `redirectUrl`, so the page navigates to the
 application list instead of refreshing a target.
 Implemented in `wwwroot/js/site.js` and the `Create`/`Edit`/`Delete` actions.
 
@@ -347,13 +367,13 @@ sequenceDiagram
     participant DB as Database
 
     PM->>Ctrl: Open review modal for a Submitted application
-    Ctrl-->>PM: Review form: decision and comment
+    Ctrl-->>PM: Review form: decision, comment, and optional internal note
 
     PM->>Ctrl: POST decision
     alt Return or Deny
         Ctrl->>App: Return or Deny with comment
         Note right of App: Comment required
-        Ctrl->>DB: Save status and history
+        Ctrl->>DB: Save status, history, and internal note (B3)
     else Approve
         Ctrl->>DB: Load the unit's leases
         DB-->>Ctrl: Leases
@@ -363,8 +383,8 @@ sequenceDiagram
             Ctrl-->>PM: Error in the modal, nothing saved
         else No conflict
             App-->>Ctrl: New lease, 12-month term
-            Ctrl->>DB: Save status, history, and lease
-            Ctrl-->>PM: JSON success, modal closes, status panel refreshes
+            Ctrl->>DB: Save status, history, lease, and internal note (B3)
+            Ctrl-->>PM: JSON success, modal closes, status, history, and notes refresh
         end
     end
 ```

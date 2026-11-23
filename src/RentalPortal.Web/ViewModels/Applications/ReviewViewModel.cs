@@ -1,4 +1,5 @@
-﻿using RentalPortal.Web.Enums;
+﻿using RentalPortal.Web.Domain;
+using RentalPortal.Web.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace RentalPortal.Web.ViewModels.Applications;
@@ -14,6 +15,10 @@ public class ReviewViewModel : IValidatableObject
 
     [StringLength(1000)]
     public string? Comment { get; set; }
+
+    [StringLength(ApplicationNote.MaxLength)]
+    [Display(Name = "Internal note")]
+    public string? InternalNote { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
     {

@@ -18,7 +18,8 @@ namespace RentalPortal.Web.Controllers;
 public class ApplicationsController(
     AppDbContext db,
     RentalApplicationService applicationService,
-    UserManager<ApplicationUser> userManager) : Controller
+    UserManager<ApplicationUser> userManager,
+    TimeProvider time) : Controller
 {
     public async Task<IActionResult> Index(ApplicationStatus? status, int? propertyId)
     {
@@ -270,7 +271,8 @@ public class ApplicationsController(
         var result = await applicationService.ReviewApplicationAsync(
             application, 
             model.ReviewStatus!.Value, 
-            model.Comment, 
+            model.Comment,
+            model.InternalNote,
             User.GetUserId());
         
         if (!result.Succeeded)
@@ -305,6 +307,142 @@ public class ApplicationsController(
 
         return application.UserCanView(User) ? ViewComponent("ApplicationHistory",
             new { applicationId = id }) : Forbid();
+    }
+
+    [HttpGet, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> Notes(int id)
+    {
+        if (!await db.RentalApplications.AnyAsync(a => a.Id == id))
+            return NotFound();
+
+        return ViewComponent("ApplicationNotes", new { applicationId = id });
+    }
+
+    [HttpGet, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> AddNote(int id)
+    {
+        if (!await db.RentalApplications.AnyAsync(a => a.Id == id))
+            return NotFound();
+
+        return PartialView("_NoteForm", new ApplicationNoteFormViewModel { ApplicationId = id });
+    }
+
+    [HttpPost, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> AddNote(ApplicationNoteFormViewModel model)
+    {
+        if (!await db.RentalApplications.AnyAsync(a => a.Id == model.ApplicationId))
+            return NotFound();
+
+        if (!ModelState.IsValid)
+            return PartialView("_NoteForm", model);
+
+        try
+        {
+            db.ApplicationNotes.Add(ApplicationNote.Create(
+                model.ApplicationId,
+                User.GetUserId(),
+                model.Note!,
+                time.GetUtcNow().UtcDateTime));
+        }
+        catch(RuleException ex)
+        {
+            ModelState.AddModelError(nameof(model.Note), ex.Message);
+
+            return PartialView("_NoteForm", model);
+        }
+
+        await db.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
+
+    [HttpGet, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> EditNote(int id)
+    {
+        var note = await db.ApplicationNotes.FindAsync(id);
+
+        if (note is null)
+            return NotFound();
+
+        if (!note.IsAuthor(User.GetUserId()))
+            return Forbid();
+
+        var model = new ApplicationNoteFormViewModel
+        {
+            ApplicationId = note.RentalApplicationId,
+            NoteId = note.Id,
+            Note = note.Note
+        };
+
+        return PartialView("_NoteForm", model);
+    }
+
+    [HttpPost, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> EditNote(ApplicationNoteFormViewModel model)
+    {
+        var note = await db.ApplicationNotes.FindAsync(model.NoteId);
+
+        if (note is null)
+            return NotFound();
+
+        if (!note.IsAuthor(User.GetUserId()))
+            return Forbid();
+
+        if (!ModelState.IsValid)
+            return PartialView("_NoteForm", model);
+
+        try
+        {
+            note.Edit(User.GetUserId(), model.Note!, time.GetUtcNow().UtcDateTime);
+        }
+        catch (RuleException ex)
+        {
+            ModelState.AddModelError(nameof(model.Note), ex.Message);
+
+            return PartialView("_NoteForm", model);
+        }
+
+        await db.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
+
+    [HttpGet, Authorize(Roles = Roles.PropertyManager)]
+    public async Task<IActionResult> DeleteNote(int id)
+    {
+        var note = await db.ApplicationNotes.FindAsync(id);
+
+        if (note is null)
+            return NotFound();
+
+        if (!note.IsAuthor(User.GetUserId()))
+            return Forbid();
+
+        return PartialView("_ConfirmDelete", new ConfirmDeleteViewModel
+        {
+            Title = "Delete note",
+            Message = "Delete this note?",
+            ActionUrl = Url.Action(nameof(DeleteNote), new { id })!
+        });
+    }
+
+    [HttpPost, Authorize(Roles = Roles.PropertyManager)]
+    [ActionName(nameof(DeleteNote))]
+    public async Task<IActionResult> DeleteNoteConfirmed(int id)
+    {
+        var note = await db.ApplicationNotes.FindAsync(id);
+
+        if (note is null)
+            return NotFound();
+
+        if (!note.IsAuthor(User.GetUserId()))
+            return Forbid();
+
+        db.ApplicationNotes.Remove(note);
+
+        await db.SaveChangesAsync();
+
+        return Json(new { success = true });
     }
 
     private ConfirmDeleteViewModel WithdrawConfirmation(int id, string? error) =>

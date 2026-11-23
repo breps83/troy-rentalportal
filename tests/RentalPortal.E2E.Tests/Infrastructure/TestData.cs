@@ -17,6 +17,8 @@ public static class TestUsers
 
     public const string Manager = "manager@rentalportal.test";
 
+    public const string OtherManager = "manager2@rentalportal.test";
+
     public const string Applicant = "applicant@rentalportal.test";
 
     public const string OtherApplicant = "applicant2@rentalportal.test";
@@ -222,9 +224,38 @@ public class TestData(IServiceProvider services)
         if (comment == null && review != ApplicationReviewStatus.Approve)
             comment = "Please check your details.";
 
-        Check(await service.ReviewApplicationAsync(application, review, comment, manager.Id));
+        Check(await service.ReviewApplicationAsync(application, review, comment, internalNote: null, manager.Id));
 
         return application.Id;
+    }
+
+    /// <summary>
+    /// Adds a property manager note to the application, written by <paramref name="managerEmail"/>.
+    /// </summary>
+    public async Task<int> CreateNoteAsync(int applicationId, string managerEmail, string text)
+    {
+        using var scope = services.CreateScope();
+        var provider = scope.ServiceProvider;
+        var db = provider.GetRequiredService<AppDbContext>();
+        var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var manager = await userManager.FindByEmailAsync(managerEmail)
+            ?? throw new InvalidOperationException($"No user {managerEmail}.");
+
+        var note = ApplicationNote.Create(applicationId, manager.Id, text, DateTime.UtcNow);
+
+        db.ApplicationNotes.Add(note);
+        await db.SaveChangesAsync();
+
+        return note.Id;
+    }
+
+    public async Task<bool> NoteExistsAsync(int noteId)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await db.ApplicationNotes.AnyAsync(n => n.Id == noteId);
     }
 
     private static void Check(Result result)

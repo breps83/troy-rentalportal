@@ -94,6 +94,7 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         RentalApplication application,
         ApplicationReviewStatus reviewStatus,
         string? comment,
+        string? internalNote,
         string userId)
     {
         if (!application.CanReview)
@@ -142,6 +143,15 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
                 default:
                     return Result.Failure("Invalid review status");
             }
+
+            if(!string.IsNullOrWhiteSpace(internalNote))
+            {
+                db.ApplicationNotes.Add(ApplicationNote.Create(
+                    application.Id,
+                    userId,
+                    internalNote,
+                    Now));
+            }
         }
         catch (RuleException ex)
         {
@@ -152,5 +162,4 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
 
         return Result.Success();
     }
-
 }

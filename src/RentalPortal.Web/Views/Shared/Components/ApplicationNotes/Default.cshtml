@@ -1,0 +1,63 @@
+﻿@model List<ApplicationNoteViewModel>
+@{
+    var applicationId = (int)ViewData["ApplicationId"]!;
+    var refreshUrl = Url.Action("Notes", "Applications", new { id = applicationId });
+}
+
+<div class="d-flex justify-content-end p-3 pb-0">
+    <button type="button" class="btn btn-sm btn-primary"
+            data-modal-url="@Url.Action("AddNote", "Applications", new { id = applicationId })"
+            data-refresh-url="@refreshUrl"
+            data-refresh-target="#application-notes">
+        Add note
+    </button>
+</div>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted p-3 mb-0">No notes yet.</p>
+}
+else
+{
+    <ul class="list-group list-group-flush">
+        @foreach (var note in Model)
+        {
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="small text-muted">
+                        @note.CreatedBy, @note.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
+                        @if (note.UpdatedUtc.HasValue)
+                        {
+                            <span>
+                                (edited by @note.UpdatedBy,
+                                @note.UpdatedUtc.Value.ToLocalTime().ToString("MMM d, yyyy h:mm tt"))
+                            </span>
+                        }
+                    </div>
+                    @if (note.IsAuthor)
+                    {
+                        <div class="text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    data-modal-url="@Url.Action("EditNote", "Applications", new { id = note.Id })"
+                                    data-refresh-url="@refreshUrl"
+                                    data-refresh-target="#application-notes">
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-modal-url="@Url.Action("DeleteNote", "Applications", new { id = note.Id })"
+                                    data-refresh-url="@refreshUrl"
+                                    data-refresh-target="#application-notes">
+                                Delete
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="small text-muted text-nowrap">Only the author can edit</span>
+                    }
+                </div>
+                <div class="mt-1 text-break" style="white-space: pre-line">@note.Note</div>
+            </li>
+        }
+    </ul>
+}

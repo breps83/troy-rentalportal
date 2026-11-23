@@ -3,6 +3,7 @@
     var reviewUrl = Url.Action("Review", "Applications", new { id = Model.ApplicationId });
     var statusUrl = Url.Action("Status", "Applications", new { id = Model.ApplicationId });
     var historyUrl = Url.Action("History", "Applications", new { id = Model.ApplicationId });
+    var notesUrl = Url.Action("Notes", "Applications", new { id = Model.ApplicationId });
 }
 
 <div class="card shadow-sm">
@@ -49,8 +50,8 @@
         {
             <button type="button" class="btn btn-sm btn-primary mt-1 mb-1"
                     data-modal-url="@reviewUrl"
-                    data-refresh-url="@statusUrl,@historyUrl"
-                    data-refresh-target="#application-status,#application-history">
+                    data-refresh-url="@statusUrl,@historyUrl,@notesUrl"
+                    data-refresh-target="#application-status,#application-history,#application-notes">
                 Review application
             </button>
         }

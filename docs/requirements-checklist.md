@@ -57,8 +57,10 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [x] Units: add, edit, remove
   - [x] Residences: add, edit, remove (`ResidencesController`, `_ResidenceForm`, `_ConfirmDelete`)
   - [x] Withdraw confirmation (`ApplicationsController.Withdraw`, `_ConfirmWithdraw`)
-  - [x] Review modal (`ApplicationsController.Review`, `_ReviewForm`; refreshes `#application-status`
-        and `#application-history` through `ApplicationsController.Status` and `History`)
+  - [x] Review modal (`ApplicationsController.Review`, `_ReviewForm`; refreshes `#application-status`,
+        `#application-history`, and `#application-notes` through `ApplicationsController.Status`,
+        `History`, and `Notes`)
+  - [x] Notes: add, edit, delete (`AddNote`, `EditNote`, `DeleteNote`, `_NoteForm`, `_ConfirmDelete`)
 - [ ] **1.c** Structure and styling follow best practices
 
 ### TR 2. Backend (.NET 10)
@@ -81,6 +83,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
         leases cover today, so those units aren't listed as available)
 - [x] **2.c** Unit tests for business logic
   - [x] Unit type selection rule (`UnitTypeTests`: `UnitType.IsSelectableFor`)
+  - [x] Note author rule (`ApplicationNoteTests`: `IsAuthor`, `Edit`)
   - [x] Application rules (`RentalApplicationTests`): create, sections, residences, submit, withdraw,
         read-only after submit
   - [x] Section navigation for Continue and Back (`ApplicationSectionExtensionsTests`)
@@ -204,7 +207,14 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [ ] JSON endpoint returning the page of rows and the filtered total
   - [ ] Endpoint documented with OpenAPI
 - [ ] **B2** Review queue: claim (Under Review) and release
-- [ ] **B3** Property manager notes, never rendered or returned to applicants
+- [x] **B3** Property manager notes, never rendered or returned to applicants
+  - [x] Domain and database (`ApplicationNote`, `AddApplicationNotes` migration)
+  - [x] Notes tab on the application page (`ApplicationNotesViewComponent`), with add, edit, and delete
+        through modals; the review modal's internal note is saved as a note (`ReviewApplicationAsync`)
+  - [x] Visible and editable only to property managers, enforced on the server
+        (`[Authorize(Roles = Roles.PropertyManager)]` on the note actions; the component renders nothing
+        for applicants; only the author can edit or delete, `ApplicationNote.IsAuthor`)
+  - [x] Seeded notes on submitted applications (optional, for the demo) (`DbSeeder.SeedNotes`)
 - [ ] **B4** Save sections with validation errors
   - [ ] Summary lists everything blocking submission
   - [ ] Submit stays blocked while any error remains

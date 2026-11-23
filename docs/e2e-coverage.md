@@ -5,7 +5,7 @@ in a real browser, or says why E2E doesn't apply and what verifies it instead. T
 `tests/RentalPortal.E2E.Tests/Tests` and carry `[Trait("Requirement", "...")]` with the same IDs, so
 `run-e2e.ps1 -Filter "Requirement=FR 3.b"` runs one requirement. See [e2e-tests.md](e2e-tests.md).
 
-Status as of 2026-11-22: 42 tests, all passing.
+Status as of 2026-11-23: 46 tests, all passing.
 
 **Legend:** ✅ covered by a passing E2E test · ➖ not E2E (verified another way) · ⬜ not covered yet
 
@@ -37,7 +37,7 @@ details (units). Every modal is opened by at least one test below.
 | Item | E2E | Tests or how it's verified |
 |---|---|---|
 | TR 1.a Controllers, view models, views, partials, view components | ➖ | Code structure. The pages they render are covered by `SmokeTests`; view components (unit list, residence history, application status) are exercised by `UnitsTests`, `ResidencesTests`, `ReviewTests` |
-| TR 1.b Modals from partial views | ✅ | Open: every modal test. Validation re-renders the partial: `UnitsTests.AddUnit_WithDuplicateNumber_ReRendersModalWithServerError` (server), `PropertiesTests.AddProperty_ThroughModal_AppearsInList` (client), `ResidencesTests`, `ReviewTests.Return_*`. Success closes and refreshes: `PropertiesTests`, `UnitsTests`, `ResidencesTests`, `ReviewTests` (`#application-status` and `#application-history` refreshed in place: `Return_*`), `ListingsTests.Manager_EditsAndDeletesUnit_*` (no target: page reload), `WithdrawTests` (redirect) |
+| TR 1.b Modals from partial views | ✅ | Open: every modal test. Validation re-renders the partial: `UnitsTests.AddUnit_WithDuplicateNumber_ReRendersModalWithServerError` (server), `PropertiesTests.AddProperty_ThroughModal_AppearsInList` (client), `ResidencesTests`, `ReviewTests.Return_*`. Success closes and refreshes: `PropertiesTests`, `UnitsTests`, `ResidencesTests`, `NotesTests.Manager_AddsEditsAndDeletesOwnNote` (`#application-notes`), `ReviewTests` (in-place refresh of `#application-status` and `#application-history` after a review: `Return_*`), `ListingsTests.Manager_EditsAndDeletesUnit_*` (no target: page reload), `WithdrawTests` (redirect) |
 | TR 1.c Structure and styling | ➖ | Code review (unchecked in the checklist) |
 | TR 2.a ASP.NET Identity | ✅ | `AccountTests` |
 | TR 2.b.i Database created, migrations applied on start | ➖ | Exercised by every run: the E2E fixture drops `RentalPortalE2E` and the app's startup migrates it |
@@ -90,4 +90,13 @@ details (units). Every modal is opened by at least one test below.
 
 ## Bonus and deliverables
 
-Not implemented yet, so not covered. Add tests when a bonus item is built.
+B1, B2, B4, and B5 are not implemented yet, so not covered.
+
+| Item | E2E | Tests or how it's verified |
+|---|---|---|
+| B3 Domain and database | ➖ | `ApplicationNoteTests` (unit tests) |
+| B3 Notes tab: add, edit, delete through modals | ✅ | `NotesTests.Manager_AddsEditsAndDeletesOwnNote` |
+| B3 Review's internal note saved as a note | ✅ | `NotesTests.ReviewInternalNote_IsSavedToNotes` |
+| B3 Only the author edits or deletes | ✅ | `NotesTests.AnotherManagersNote_CantBeEditedOrDeleted` (incl. crafted delete); `PermissionsTests.Manager_CannotEditAnotherManagersNote`, `Manager_CannotDeleteAnotherManagersNote` (integration) |
+| B3 Never rendered or returned to applicants | ✅ | `NotesTests.Applicant_NeverSeesNotes` (incl. direct `Notes` request); `PermissionsTests.Applicant_CannotReadNotes`, `Applicant_DoesNotSeeNotesOnApplicationPage`, `Applicant_CannotAddNote` (integration) |
+| B3 Seeded notes | ➖ | Demo data only (`DbSeeder.SeedNotes`) |

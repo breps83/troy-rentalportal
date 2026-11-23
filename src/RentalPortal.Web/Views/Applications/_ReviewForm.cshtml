@@ -27,6 +27,14 @@
                 <div class="form-text">Required when returning or denying the application.</div>
                 <span asp-validation-for="Comment" class="text-danger"></span>
             </div>
+
+            <div class="mt-3 p-3 border border-warning-subtle rounded bg-warning-subtle">
+                <label asp-for="InternalNote" class="form-label"></label>
+                <span class="badge text-bg-warning ms-1">Not visible to the applicant</span>
+                <textarea asp-for="InternalNote" rows="3" class="form-control"></textarea>
+                <div class="form-text">Optional. Saved to the application's internal notes.</div>
+                <span asp-validation-for="InternalNote" class="text-danger"></span>
+            </div>
         }
     </div>
     <div class="modal-footer">

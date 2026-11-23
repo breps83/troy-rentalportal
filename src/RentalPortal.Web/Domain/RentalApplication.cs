@@ -231,7 +231,7 @@ public class RentalApplication
         return Lease;
     }
 
-    public void ReturnLease(
+    public void Return(
         string userId,
         string comment,
         DateTime nowUtc)
@@ -247,7 +247,7 @@ public class RentalApplication
             comment);
     }
 
-    public void DenyLease(
+    public void Deny(
         string userId,
         string comment,
         DateTime nowUtc)

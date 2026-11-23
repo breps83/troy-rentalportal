@@ -331,7 +331,7 @@ public class DbSeeder
                 switch (status)
                 {
                     case ApplicationStatus.Returned:
-                        application.ReturnLease(
+                        application.Return(
                             manager.Id,
                             "Return Lease Test Comment from Seeder.",
                             reviewedDate);
@@ -346,7 +346,7 @@ public class DbSeeder
                             []);
                         break;
                     case ApplicationStatus.Denied:
-                        application.DenyLease(
+                        application.Deny(
                             manager.Id,
                             "Denied Lease Test Comment from Seeder.",
                             reviewedDate);

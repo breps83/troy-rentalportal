@@ -44,9 +44,9 @@ public class AccountController(
         await using var transaction = await db.Database.BeginTransactionAsync();
 
         var result = await userManager.CreateAsync(user, model.Password!);
-        
-        if(result.Succeeded)
-            await userManager.AddToRoleAsync(user, role!);
+
+        if (result.Succeeded)
+            result = await userManager.AddToRoleAsync(user, role!);
 
         if (!result.Succeeded)
         {
@@ -56,7 +56,7 @@ public class AccountController(
             }
 
             return View(model);
-        }        
+        }
 
         await transaction.CommitAsync();
 

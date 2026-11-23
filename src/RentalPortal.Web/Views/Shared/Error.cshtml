@@ -1,10 +1,25 @@
 ﻿@model ErrorViewModel
 @{
     ViewData["Title"] = "Error";
+
+    string errorMessage = "An error occurred while processing your request.";
+    
+    if (Model.StatusCode == 404)
+    {
+        errorMessage = "404 - Page not found.";
+    }
+    else if (Model.StatusCode == 403)
+    {
+        errorMessage = "403 - Access Denied. You don't have permission to view this page.";
+    }
+    else if (Model.StatusCode == 400)
+    {
+        errorMessage = "400 - The request couldn't be processed. Please try again.";
+    }
 }
 
 <h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h2 class="text-danger">@errorMessage</h2>
 
 @if (Model.ShowRequestId)
 {

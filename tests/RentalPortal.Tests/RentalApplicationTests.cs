@@ -532,7 +532,7 @@ public class RentalApplicationTests
         var application = NewSubmitted();
 
         // Act
-        application.ReturnLease(ManagerId, " Please add a landlord phone ", _reviewedUtc);
+        application.Return(ManagerId, " Please add a landlord phone ", _reviewedUtc);
 
         // Assert
         Assert.Equal(ApplicationStatus.Returned, application.Status);
@@ -556,7 +556,7 @@ public class RentalApplicationTests
     {
         // Arrange
         var application = NewSubmitted();
-        application.ReturnLease(ManagerId, "Please fix", _reviewedUtc);
+        application.Return(ManagerId, "Please fix", _reviewedUtc);
 
         // Act
         Assert.True(application.IsEditable);
@@ -576,7 +576,7 @@ public class RentalApplicationTests
         var application = NewSubmitted();
 
         // Act
-        application.DenyLease(ManagerId, "Incomplete rental history", _reviewedUtc);
+        application.Deny(ManagerId, "Incomplete rental history", _reviewedUtc);
 
         // Assert
         Assert.Equal(ApplicationStatus.Denied, application.Status);
@@ -603,8 +603,8 @@ public class RentalApplicationTests
         var historyCount = application.StatusHistory.Count;
 
         // Act & Assert
-        Assert.Throws<RuleException>(() => application.ReturnLease(ManagerId, comment!, _reviewedUtc));
-        Assert.Throws<RuleException>(() => application.DenyLease(ManagerId, comment!, _reviewedUtc));
+        Assert.Throws<RuleException>(() => application.Return(ManagerId, comment!, _reviewedUtc));
+        Assert.Throws<RuleException>(() => application.Deny(ManagerId, comment!, _reviewedUtc));
         Assert.Equal(ApplicationStatus.Submitted, application.Status);
         Assert.Equal(historyCount, application.StatusHistory.Count);
     }
@@ -617,13 +617,13 @@ public class RentalApplicationTests
         var draft = NewCompleteDraft();
 
         var returned = NewSubmitted();
-        returned.ReturnLease(ManagerId, "Please fix", _reviewedUtc);
+        returned.Return(ManagerId, "Please fix", _reviewedUtc);
 
         var approved = NewSubmitted();
         approved.ApproveApplicationForLease(ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, _noLeases);
 
         var denied = NewSubmitted();
-        denied.DenyLease(ManagerId, "No", _reviewedUtc);
+        denied.Deny(ManagerId, "No", _reviewedUtc);
 
         var withdrawn = NewSubmitted();
         withdrawn.Withdraw("applicant-1", _withdrawnUtc);
@@ -637,8 +637,8 @@ public class RentalApplicationTests
             Assert.Throws<RuleException>(() =>
                 application.ApproveApplicationForLease(
                     ManagerId, null, _reviewedUtc, _reviewedToday, _leaseStart, _noLeases));
-            Assert.Throws<RuleException>(() => application.ReturnLease(ManagerId, "Again", _reviewedUtc));
-            Assert.Throws<RuleException>(() => application.DenyLease(ManagerId, "Again", _reviewedUtc));
+            Assert.Throws<RuleException>(() => application.Return(ManagerId, "Again", _reviewedUtc));
+            Assert.Throws<RuleException>(() => application.Deny(ManagerId, "Again", _reviewedUtc));
 
             Assert.Equal(status, application.Status);
             Assert.Same(lease, application.Lease);

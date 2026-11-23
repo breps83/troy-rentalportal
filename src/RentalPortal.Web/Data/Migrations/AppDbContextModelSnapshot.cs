@@ -192,7 +192,7 @@ namespace RentalPortal.Web.Data.Migrations
 
                     b.HasIndex("RentalApplicationId");
 
-                    b.ToTable("ApplicationStatusChanges");
+                    b.ToTable("ApplicationStatusHistory");
                 });
 
             modelBuilder.Entity("RentalPortal.Web.Domain.ApplicationUser", b =>

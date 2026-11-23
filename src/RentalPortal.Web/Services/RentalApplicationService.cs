@@ -126,14 +126,14 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
                     break;
 
                 case ApplicationReviewStatus.Return:
-                    application.ReturnLease(
+                    application.Return(
                         userId,
                         comment!,
                         Now);
                     break;
 
                 case ApplicationReviewStatus.Deny:
-                    application.DenyLease(
+                    application.Deny(
                         userId,
                         comment!,
                         Now);

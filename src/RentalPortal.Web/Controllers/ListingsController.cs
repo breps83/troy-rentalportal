@@ -32,7 +32,8 @@ public class ListingsController(AppDbContext db, TimeProvider time) : Controller
             {
                 Id = u.Id,
                 PropertyName = u.Property.Name,
-                Address = u.Property.Street + ", " + u.Property.City + ", " + u.Property.State,
+                Address = u.Property.Street + ", " + u.Property.City + ", "
+                        + u.Property.State + " " + u.Property.PostalCode,
                 UnitNumber = u.UnitNumber,
                 UnitType = u.UnitType.Name,
                 UnitTypeIsActive = u.UnitType.IsActive,

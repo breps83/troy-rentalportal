@@ -30,7 +30,7 @@ public class DbSeeder
         [
             "This is a test note from the seeder.",
             "Another note from seeder.",
-            "Yet anothre note from seeder.",
+            "Yet another note from seeder.",
             "Demo note from seeder.",
             "5th note from seeder.",
             "Note from seeder.",

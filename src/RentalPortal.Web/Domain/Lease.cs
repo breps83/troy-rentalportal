@@ -28,7 +28,7 @@ public class Lease
     public static Lease CreateFromApplication(
         RentalApplication application,
         DateOnly startDate) =>
-            new Lease()
+            new()
             {
                 UnitId = application.UnitId,
                 RentalApplication = application,

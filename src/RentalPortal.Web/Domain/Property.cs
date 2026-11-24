@@ -14,6 +14,6 @@ public class Property
 
     public string PostalCode { get; set; } = string.Empty;
 
-    public List<Unit> Units { get; set; } = new List<Unit>();
+    public List<Unit> Units { get; set; } = [];
 
 }

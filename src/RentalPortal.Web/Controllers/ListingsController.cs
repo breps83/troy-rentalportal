@@ -7,9 +7,18 @@ using RentalPortal.Web.ViewModels.Listings;
 
 namespace RentalPortal.Web.Controllers;
 
+/// <summary>
+/// Provides listings of units without an active lease.
+/// </summary>
+/// <param name="db">The database context used to query units and related property details.</param>
+/// <param name="time">The time provider used to determine the current date.</param>
 [Authorize]
 public class ListingsController(AppDbContext db, TimeProvider time) : Controller
 {
+    /// <summary>
+    /// Displays units that are not currently leased.
+    /// </summary>
+    /// <returns>A view containing the units, ordered by property name and unit number.</returns>
     public async Task<IActionResult> Index()
     {
         var today = time.GetToday();

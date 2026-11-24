@@ -14,6 +14,13 @@ using RentalPortal.Web.ViewModels.Shared;
 
 namespace RentalPortal.Web.Controllers;
 
+/// <summary>
+/// Handles rental application workflows for applicants and property managers.
+/// </summary>
+/// <param name="db">Provides access to application, property, unit, residence, and note data.</param>
+/// <param name="applicationService">Coordinates application submission, withdrawal, and review operations.</param>
+/// <param name="userManager">Retrieves the authenticated user's account.</param>
+/// <param name="time">Provides the current UTC time for application note operations.</param>
 [Authorize(Roles = $"{Roles.Applicant},{Roles.PropertyManager}")]
 public class ApplicationsController(
     AppDbContext db,
@@ -21,6 +28,14 @@ public class ApplicationsController(
     UserManager<ApplicationUser> userManager,
     TimeProvider time) : Controller
 {
+    /// <summary>
+    /// Displays rental applications, optionally filtered by status and property.
+    /// </summary>
+    /// <remarks>Property managers receive applications across properties; other users receive only their own
+    /// applications.</remarks>
+    /// <param name="status">The application status used to filter the results.</param>
+    /// <param name="propertyId">The property identifier used to filter the results.</param>
+    /// <returns>A view containing the matching applications and available property filters.</returns>
     public async Task<IActionResult> Index(ApplicationStatus? status, int? propertyId)
     {
         var query = db.RentalApplications.AsNoTracking();
@@ -67,6 +82,12 @@ public class ApplicationsController(
         });
     }
 
+    /// <summary>
+    /// Starts a rental application for the specified unit.
+    /// </summary>
+    /// <param name="unitId">The identifier of the unit for which to start an application.</param>
+    /// <returns>A challenge if no authenticated user is available, a redirect to the listings page when the unit is unavailable,
+    /// or a redirect to the application details.</returns>
     [HttpPost, Authorize(Roles = Roles.Applicant)]
     public async Task<IActionResult> Apply(int unitId)
     {
@@ -87,6 +108,13 @@ public class ApplicationsController(
         return RedirectToAction(nameof(Details), new { id = application.Id });
     }
 
+    /// <summary>
+    /// Displays the application details form.
+    /// </summary>
+    /// <param name="id">The application identifier.</param>
+    /// <param name="section">The optional application section to display.</param>
+    /// <returns>The application details view, a not-found result when the application does not exist, or a forbidden result when
+    /// the application is not viewable.</returns>
     [HttpGet]
     public async Task<IActionResult> Details(int id, ApplicationSection? section)
     {
@@ -101,6 +129,15 @@ public class ApplicationsController(
         return View(CreateForm(application, section ?? DefaultSection(application, application.UserCanEdit(User))));
     }
 
+    /// <summary>
+    /// Processes navigation and updates for a rental application form.
+    /// </summary>
+    /// <remarks>Navigates backward, updates applicant information or residence history, or submits the
+    /// application according to the command and current section.</remarks>
+    /// <param name="id">The application identifier.</param>
+    /// <param name="model">The application form data and current section.</param>
+    /// <param name="command">The form action to perform.</param>
+    /// <returns>An action result containing the next form section, submission result, validation response, or an error response.</returns>
     [HttpPost]
     public async Task<IActionResult> Details(int id, ApplicationFormViewModel model, string command)
     {
@@ -193,6 +230,13 @@ public class ApplicationsController(
 
     }
 
+    /// <summary>
+    /// Displays a confirmation for withdrawing a rental application.
+    /// </summary>
+    /// <remarks>Withdrawal is unavailable when the application is no longer eligible.</remarks>
+    /// <param name="id">The rental application identifier.</param>
+    /// <returns>A not-found result if the application does not exist, a forbidden result if the user does not own the
+    /// application, or a partial view for withdrawal confirmation.</returns>
     [HttpGet, Authorize(Roles = Roles.Applicant)]
     public async Task<IActionResult> Withdraw(int id)
     {
@@ -212,6 +256,11 @@ public class ApplicationsController(
         return PartialView("_ConfirmWithdraw", WithdrawConfirmation(id, error));
     }
 
+    /// <summary>
+    /// Withdraws the applicant's rental application.
+    /// </summary>
+    /// <param name="id">The ID of the rental application to withdraw.</param>
+    /// <returns>An action result indicating whether the application was withdrawn.</returns>
     [HttpPost, Authorize(Roles = Roles.Applicant)]
     [ActionName(nameof(Withdraw))]
     public async Task<IActionResult> WithdrawConfirmed(int id)
@@ -235,6 +284,12 @@ public class ApplicationsController(
         return Json(new { success = true, redirectUrl = Url.Action(nameof(Index)) });
     }
 
+    /// <summary>
+    /// Displays the review form for a rental application.
+    /// </summary>
+    /// <remarks>Only property managers may access this action.</remarks>
+    /// <param name="id">The identifier of the rental application.</param>
+    /// <returns>The not-found result when the application does not exist; otherwise, the partial review form.</returns>
     [HttpGet, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> Review(int id)
     {
@@ -256,6 +311,12 @@ public class ApplicationsController(
         });
     }
 
+    /// <summary>
+    /// Reviews a rental application and records the decision and associated notes.
+    /// </summary>
+    /// <param name="model">The rental application review details.</param>
+    /// <returns>A not-found result when the application is missing; a partial review form with validation errors; or a success
+    /// result.</returns>
     [HttpPost, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> Review(ReviewViewModel model)
     {
@@ -285,6 +346,11 @@ public class ApplicationsController(
         return Json(new { success = true });
     }
 
+    /// <summary>
+    /// Displays the status of a rental application.
+    /// </summary>
+    /// <param name="id">The ID of the rental application.</param>
+    /// <returns>A view component containing the application status, or a not-found or forbidden result.</returns>
     [HttpGet]
     public async Task<IActionResult> Status(int id)
     {
@@ -297,6 +363,12 @@ public class ApplicationsController(
             new { applicationId = id }) : Forbid();
     }
 
+    /// <summary>
+    /// Displays the history for a rental application.
+    /// </summary>
+    /// <param name="id">The rental application identifier.</param>
+    /// <returns>A not-found response if the application does not exist, a forbidden response if the user cannot view it, or the
+    /// application history view component.</returns>
     [HttpGet]
     public async Task<IActionResult> History(int id)
     {
@@ -309,6 +381,11 @@ public class ApplicationsController(
             new { applicationId = id }) : Forbid();
     }
 
+    /// <summary>
+    /// Displays the notes for a rental application.
+    /// </summary>
+    /// <param name="id">The ID of the rental application.</param>
+    /// <returns>An action result that displays the application's notes, or a not-found result if the application does not exist.</returns>
     [HttpGet, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> Notes(int id)
     {
@@ -318,6 +395,11 @@ public class ApplicationsController(
         return ViewComponent("ApplicationNotes", new { applicationId = id });
     }
 
+    /// <summary>
+    /// Displays the form for adding a note to a rental application.
+    /// </summary>
+    /// <param name="id">The ID of the rental application.</param>
+    /// <returns>A partial view containing the note form, or a not-found result if the application does not exist.</returns>
     [HttpGet, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> AddNote(int id)
     {
@@ -327,6 +409,12 @@ public class ApplicationsController(
         return PartialView("_NoteForm", new ApplicationNoteFormViewModel { ApplicationId = id });
     }
 
+    /// <summary>
+    /// Adds a note to the specified rental application.
+    /// </summary>
+    /// <param name="model">The application note form data.</param>
+    /// <returns>A not-found result when the application does not exist, a partial view containing validation errors, or a JSON
+    /// success result.</returns>
     [HttpPost, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> AddNote(ApplicationNoteFormViewModel model)
     {
@@ -356,6 +444,11 @@ public class ApplicationsController(
         return Json(new { success = true });
     }
 
+    /// <summary>
+    /// Displays the form for editing an application note.
+    /// </summary>
+    /// <param name="id">The identifier of the application note.</param>
+    /// <returns>The note form partial view, or a not-found or forbidden result when the note is unavailable or cannot be edited.</returns>
     [HttpGet, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> EditNote(int id)
     {
@@ -377,6 +470,12 @@ public class ApplicationsController(
         return PartialView("_NoteForm", model);
     }
 
+    /// <summary>
+    /// Edits an application note created by the current property manager.
+    /// </summary>
+    /// <param name="model">The note form containing the note identifier and revised text.</param>
+    /// <returns>A partial note form when the note is unavailable or the submitted text is invalid; a not found or forbidden
+    /// result when access requirements fail; or a success response after the note is saved.</returns>
     [HttpPost, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> EditNote(ApplicationNoteFormViewModel model)
     {
@@ -407,6 +506,13 @@ public class ApplicationsController(
         return Json(new { success = true });
     }
 
+    /// <summary>
+    /// Displays the confirmation view for deleting an application note.
+    /// </summary>
+    /// <remarks>Only property managers can access this action.</remarks>
+    /// <param name="id">The identifier of the note to delete.</param>
+    /// <returns>A partial confirmation view; a not-found result if the note does not exist; or a forbidden result if the current
+    /// user is not the note author.</returns>
     [HttpGet, Authorize(Roles = Roles.PropertyManager)]
     public async Task<IActionResult> DeleteNote(int id)
     {
@@ -426,6 +532,12 @@ public class ApplicationsController(
         });
     }
 
+    /// <summary>
+    /// Deletes an application note owned by the current property manager.
+    /// </summary>
+    /// <remarks>The note must exist and the current user must be its author.</remarks>
+    /// <param name="id">The identifier of the application note to delete.</param>
+    /// <returns>The not-found, forbidden, or successful JSON result of the delete operation.</returns>
     [HttpPost, Authorize(Roles = Roles.PropertyManager)]
     [ActionName(nameof(DeleteNote))]
     public async Task<IActionResult> DeleteNoteConfirmed(int id)
@@ -445,6 +557,12 @@ public class ApplicationsController(
         return Json(new { success = true });
     }
 
+    /// <summary>
+    /// Creates the confirmation view model for withdrawing an application.
+    /// </summary>
+    /// <param name="id">The identifier of the application to withdraw.</param>
+    /// <param name="error">An optional error message to display in the confirmation view.</param>
+    /// <returns>A view model containing the withdrawal confirmation text and action URL.</returns>
     private ConfirmDeleteViewModel WithdrawConfirmation(int id, string? error) =>
         new ()
         {
@@ -454,6 +572,13 @@ public class ApplicationsController(
             Error = error
         };
 
+    /// <summary>
+    /// Retrieves a rental application by identifier.
+    /// </summary>
+    /// <remarks>Includes the associated unit and property, as well as residence history.</remarks>
+    /// <param name="id">The rental application identifier.</param>
+    /// <returns>A task that represents the asynchronous operation; the rental application when found, or <see langword="null" />
+    /// when no matching application exists.</returns>
     private Task<RentalApplication?> GetApplicationAsync(int id) =>
         db.RentalApplications
             .Include(a => a.Unit)
@@ -461,6 +586,13 @@ public class ApplicationsController(
             .Include(a => a.Residences)
             .FirstOrDefaultAsync(a => a.Id == id);
 
+    /// <summary>
+    /// Determines whether the current user may reject an edit to the specified rental application.
+    /// </summary>
+    /// <remarks>The application owner must match the current user, and the application must remain
+    /// editable.</remarks>
+    /// <param name="application">The rental application to validate.</param>
+    /// <returns>A forbid or details redirect result when the edit is rejected; otherwise, null.</returns>
     private IActionResult? RejectEditActionResult(RentalApplication application)
     {
         if (application.ApplicantId != User.GetUserId())
@@ -478,6 +610,13 @@ public class ApplicationsController(
         return null;
     }
 
+    /// <summary>
+    /// Creates an application form view model for the specified application and section.
+    /// </summary>
+    /// <param name="application">The rental application represented by the form.</param>
+    /// <param name="section">The application section currently displayed in the form.</param>
+    /// <param name="applicantInfo">The applicant information to use, or <see langword="null"/> to create it from the application.</param>
+    /// <returns>An application form view model configured for the current user and application section.</returns>
     private ApplicationFormViewModel CreateForm(
         RentalApplication application,
         ApplicationSection section,
@@ -509,6 +648,12 @@ public class ApplicationsController(
         return form;
     }
 
+    /// <summary>
+    /// Determines the default section to display for a rental application.
+    /// </summary>
+    /// <param name="application">The rental application being reviewed.</param>
+    /// <param name="editable">Whether the application can be edited.</param>
+    /// <returns>The default application section.</returns>
     private static ApplicationSection DefaultSection(RentalApplication application, bool editable) =>
       !editable ? ApplicationSection.Summary
       : !application.ApplicantInfoCompleted ? ApplicationSection.Info

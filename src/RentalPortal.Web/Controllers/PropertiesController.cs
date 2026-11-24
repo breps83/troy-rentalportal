@@ -8,6 +8,10 @@ using RentalPortal.Web.ViewModels.Shared;
 
 namespace RentalPortal.Web.Controllers;
 
+/// <summary>
+/// Handles property management operations for property managers.
+/// </summary>
+/// <param name="db">The application database context.</param>
 [Authorize(Roles = Roles.PropertyManager)]
 public class PropertiesController(AppDbContext db) : Controller
 {

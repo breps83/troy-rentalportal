@@ -26,8 +26,7 @@ creates and seeds its own database, so there is nothing else to set up.
    | Applicant | `applicant@rentalportal.test` | `Password1**` |
    | Applicant | `applicant2@rentalportal.test` through `applicant8@rentalportal.test` | `Password1**` |
 
-   The password is `Password1**` with the two asterisks at the end. You can also register a new
-   account; email confirmation is off, so it can sign in right away.
+   You can also register a new account; email confirmation is off, so it can sign in right away.
 
 **Optional: HTTPS.** The `http` profile needs no certificate. To run over HTTPS, trust the .NET
 development certificate once, then use the `https` profile and open https://localhost:7153:

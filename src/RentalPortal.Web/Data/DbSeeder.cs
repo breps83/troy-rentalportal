@@ -431,6 +431,42 @@ public class DbSeeder
         }
     }
 
+    private static void SeedApplication(
+        RentalApplication application,
+        ApplicationUser applicant,
+        Faker faker,
+        DateTime createdAtUtc)
+    {
+        application.UpdateApplicant(
+            applicant.FirstName,
+            applicant.LastName,
+            faker.Phone.PhoneNumber(),
+            applicant.Email!,
+            GetAddress(faker));
+
+        var moveOut = DateOnly.FromDateTime(createdAtUtc)
+                        .AddDays(-1 * faker.Random.Int(0, 30));
+
+        var residenceCount = faker.Random.Int(1, 3);
+
+        for (var r = 0; r < residenceCount; r++)
+        {
+            var moveIn = moveOut.AddMonths(-1 * faker.Random.Int(12, 36));
+
+            application.AddResidence(
+                GetAddress(faker),
+                faker.Name.FullName(),
+                faker.Phone.PhoneNumber(),
+                moveIn,
+                moveOut);
+
+            moveOut = moveIn.AddDays(-1);
+
+        }
+
+        application.SetResidenceHistoryCompleted();
+    }
+
     /// <summary>
     /// Ensures a user exists and belongs to the specified role.
     /// </summary>
@@ -476,42 +512,6 @@ public class DbSeeder
         }
 
         return user;
-    }
-
-    private static void SeedApplication(
-        RentalApplication application,
-        ApplicationUser applicant,
-        Faker faker,
-        DateTime createdAtUtc)
-    {
-        application.UpdateApplicant(
-            applicant.FirstName,
-            applicant.LastName,
-            faker.Phone.PhoneNumber(),
-            applicant.Email!,
-            GetAddress(faker));
-
-        var moveOut = DateOnly.FromDateTime(createdAtUtc)
-                        .AddDays(-1 * faker.Random.Int(0, 30));
-
-        var residenceCount = faker.Random.Int(1, 3);
-
-        for (var r = 0; r < residenceCount; r++)
-        {
-            var moveIn = moveOut.AddMonths(-1 * faker.Random.Int(12, 36));
-
-            application.AddResidence(
-                GetAddress(faker),
-                faker.Name.FullName(),
-                faker.Phone.PhoneNumber(),
-                moveIn,
-                moveOut);
-
-            moveOut = moveIn.AddDays(-1);
-
-        }
-
-        application.SetResidenceHistoryCompleted();
     }
 
     private static string GetAddress(Faker faker) =>

@@ -186,6 +186,14 @@ public class TestData(IServiceProvider services)
         return await db.Properties.AnyAsync(p => p.Name == name);
     }
 
+    public async Task<List<Residence>> GetResidencesAsync(int applicationId)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await db.Residences.AsNoTracking().Where(r => r.ApplicationId == applicationId).ToListAsync();
+    }
+
     public async Task<int> CreateNoteAsync(int applicationId, string managerEmail, string text)
     {
         using var scope = services.CreateScope();

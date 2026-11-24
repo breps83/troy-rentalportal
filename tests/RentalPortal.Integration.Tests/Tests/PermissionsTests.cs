@@ -210,6 +210,267 @@ public class PermissionsTests(IntegrationFixture fixture)
         Assert.NotNull(await _data.GetNoteAsync(noteId));
     }
 
+    [Fact]
+    public async Task Applicant_CannotGoBackOnAnotherApplicantsApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Applications/Details/{applicationId}",
+            new Dictionary<string, string>
+            {
+                ["command"] = "back",
+                ["CurrentSection"] = nameof(ApplicationSection.ResidenceHistory)
+            });
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Applicant_CannotCompleteResidenceHistoryOfAnotherApplicantsApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Applications/Details/{applicationId}",
+            new Dictionary<string, string>
+            {
+                ["command"] = "continue",
+                ["CurrentSection"] = nameof(ApplicationSection.ResidenceHistory)
+            });
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Applicant_CannotSubmitAnotherApplicantsApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Applications/Details/{applicationId}",
+            new Dictionary<string, string>
+            {
+                ["command"] = "submit",
+                ["CurrentSection"] = nameof(ApplicationSection.Summary)
+            });
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+
+        var application = await _data.GetApplicationAsync(applicationId);
+        Assert.Equal(ApplicationStatus.Draft, application.Status);
+    }
+
+    [Fact]
+    public async Task Applicant_CannotOpenWithdrawForAnotherApplicantsApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Submitted);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync($"/Applications/Withdraw/{applicationId}");
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Applicant_WithdrawModalForWithdrawnApplication_ShowsError()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Withdrawn);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync($"/Applications/Withdraw/{applicationId}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("This application is Withdrawn and can no longer be withdrawn.",
+            await response.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>A second withdraw, for example from a double-click or a stale modal, is refused.</summary>
+    [Fact]
+    public async Task Applicant_CannotWithdrawTwice()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Withdrawn);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Applications/Withdraw/{applicationId}", []);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("\"success\":true", html);
+        Assert.Contains("An application that is Withdrawn can&#x27;t be withdrawn.", html);
+    }
+
+    [Theory]
+    [InlineData("/Applications/EditNote/{0}")]
+    [InlineData("/Applications/DeleteNote/{0}")]
+    public async Task Manager_CannotOpenAnotherManagersNote(string urlFormat)
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var noteId = await _data.CreateNoteAsync(applicationId, TestUsers.OtherManager, "Original note.");
+        var client = await LoginAsync(TestUsers.Manager);
+
+        var response = await client.GetAsync(string.Format(urlFormat, noteId));
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Applicant_CannotListAnotherApplicantsResidences()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync($"/Residences/List?applicationId={applicationId}");
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Fact]
+    public async Task Manager_CannotOpenResidences()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var client = await LoginAsync(TestUsers.Manager);
+
+        var response = await client.GetAsync($"/Residences/List?applicationId={applicationId}");
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Theory]
+    [InlineData("/Residences/Create?applicationId={0}")]
+    [InlineData("/Residences/Edit/{1}")]
+    [InlineData("/Residences/Delete/{1}")]
+    public async Task Applicant_CannotOpenResidenceModalsOnAnotherApplicantsApplication(string urlFormat)
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var residence = (await _data.GetResidencesAsync(applicationId)).Single();
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync(string.Format(urlFormat, applicationId, residence.Id));
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+    }
+
+    [Theory]
+    [InlineData("/Residences/Create?applicationId={0}")]
+    [InlineData("/Residences/Edit/{1}")]
+    [InlineData("/Residences/Delete/{1}")]
+    public async Task Applicant_ResidenceModalsOnSubmittedApplication_ShowError(string urlFormat)
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var residence = (await _data.GetResidencesAsync(applicationId)).Single();
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.GetAsync(string.Format(urlFormat, applicationId, residence.Id));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("This application is Submitted and can no longer be edited.",
+            await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Applicant_CannotAddResidenceToAnotherApplicantsApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync("/Residences/Create", ResidenceFields(applicationId));
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+        Assert.Single(await _data.GetResidencesAsync(applicationId));
+    }
+
+    [Fact]
+    public async Task Applicant_CannotEditAnotherApplicantsResidence()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var before = (await _data.GetResidencesAsync(applicationId)).Single();
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync("/Residences/Edit", ResidenceFields(applicationId, before.Id));
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+        var after = (await _data.GetResidencesAsync(applicationId)).Single();
+        Assert.Equal(before.Address, after.Address);
+    }
+
+    [Fact]
+    public async Task Applicant_CannotDeleteAnotherApplicantsResidence()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.OtherApplicant, ApplicationStatus.Draft);
+        var residence = (await _data.GetResidencesAsync(applicationId)).Single();
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Residences/Delete/{residence.Id}", []);
+
+        AssertRedirectsTo(response, "/Account/AccessDenied");
+        Assert.Single(await _data.GetResidencesAsync(applicationId));
+    }
+
+    [Fact]
+    public async Task Applicant_CannotAddResidenceToSubmittedApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync("/Residences/Create", ResidenceFields(applicationId));
+
+        await AssertNotEditableAsync(response, "Submitted");
+        Assert.Single(await _data.GetResidencesAsync(applicationId));
+    }
+
+    [Fact]
+    public async Task Applicant_CannotEditResidenceOfSubmittedApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var before = (await _data.GetResidencesAsync(applicationId)).Single();
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync("/Residences/Edit", ResidenceFields(applicationId, before.Id));
+
+        await AssertNotEditableAsync(response, "Submitted");
+        var after = (await _data.GetResidencesAsync(applicationId)).Single();
+        Assert.Equal(before.Address, after.Address);
+    }
+
+    [Fact]
+    public async Task Applicant_CannotDeleteResidenceOfWithdrawnApplication()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Withdrawn);
+        var residence = (await _data.GetResidencesAsync(applicationId)).Single();
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Residences/Delete/{residence.Id}", []);
+
+        await AssertNotEditableAsync(response, "Withdrawn");
+        Assert.Single(await _data.GetResidencesAsync(applicationId));
+    }
+
+    /// <summary>
+    /// Form fields for a valid residence. With <paramref name="residenceId"/>, the fields edit that residence.
+    /// </summary>
+    private static Dictionary<string, string> ResidenceFields(int applicationId, int residenceId = 0) => new()
+    {
+        ["Id"] = residenceId.ToString(),
+        ["ApplicationId"] = applicationId.ToString(),
+        ["Address"] = "99 Changed St, Springfield, IL 62701",
+        ["LandlordName"] = "Changed Landlord",
+        ["LandlordPhone"] = "217-555-0123",
+        ["MoveInDate"] = "2019-01-01",
+        ["MoveOutDate"] = "2021-05-31"
+    };
+
+    /// <summary>
+    /// The residence modal shows the not-editable error instead of saving.
+    /// </summary>
+    private static async Task AssertNotEditableAsync(HttpResponseMessage response, string status)
+    {
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("\"success\":true", html);
+        Assert.Contains($"This application is {status} and can no longer be edited.", html);
+    }
+
     private async Task<HttpClient> LoginAsync(string email)
     {
         var client = _app.CreateNoRedirectClient();

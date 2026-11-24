@@ -112,6 +112,9 @@ public class AccountController(
             else
                 logger.LogWarning("Sign-in failed for user {UserId}", user.Id);
 
+            // By design for the demo. 
+            // Letting an end user know the account is locked reveals that there is an account.
+            // Sending a locked out email could be a better option.
             ModelState.AddModelError(string.Empty, result.IsLockedOut
                 ? "This account is locked. Try again in a few minutes."
                 : invalidLoginMessage);

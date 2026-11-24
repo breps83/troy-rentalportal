@@ -31,6 +31,10 @@ html {
     white-space: pre-line;
 }
 
+.note-text {
+    white-space: pre-line;
+}
+
 .status-line .badge {
     font-size: .875rem;
     line-height: 1.5;

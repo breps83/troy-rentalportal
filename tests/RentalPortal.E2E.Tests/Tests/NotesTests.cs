@@ -109,6 +109,23 @@ public class NotesTests(E2EFixture fixture, ITestOutputHelper output) : E2ETestB
 
     [Fact]
     [Trait("Requirement", "B3")]
+    public async Task MultiLineNote_KeepsItsLineBreaks()
+    {
+        var applicationId = await CreateSubmittedApplicationAsync();
+        await Data.CreateNoteAsync(applicationId, TestUsers.Manager, "Called the prior landlord.\nLeft a voicemail.");
+
+        await LoginAsAsync(TestUsers.Manager);
+        await Page.GotoAsync($"/Applications/Details/{applicationId}");
+        await NotesTab.ClickAsync();
+
+        await Step("B3", "A note written on two lines shows on two lines");
+        // InnerText is the text as rendered, so the line break is only there if the page keeps it.
+        var text = await NoteItem("Called the prior landlord.").InnerTextAsync();
+        Assert.Contains("Called the prior landlord.\nLeft a voicemail.", text);
+    }
+
+    [Fact]
+    [Trait("Requirement", "B3")]
     public async Task Applicant_NeverSeesNotes()
     {
         var applicationId = await CreateSubmittedApplicationAsync();

@@ -5,7 +5,7 @@ in a real browser, or says why E2E doesn't apply and what verifies it instead. T
 `tests/RentalPortal.E2E.Tests/Tests` and carry `[Trait("Requirement", "...")]` with the same IDs, so
 `run-e2e.ps1 -Filter "Requirement=FR 3.b"` runs one requirement. See [e2e-tests.md](e2e-tests.md).
 
-Status as of 2026-11-23: 47 tests, all passing.
+Status as of 2026-11-24: 48 tests, all passing.
 
 **Legend:** ✅ covered by a passing E2E test · ➖ not E2E (verified another way) · ⬜ not covered yet
 
@@ -15,6 +15,10 @@ Every screen opens for each role that can see it (`SmokeTests`): Home (logged in
 Register, Access denied, the 404 error page (logged out), Available Units, Applications list, Application
 (all three sections), Properties, and Property details (units). Every modal is opened by at least one
 test below.
+
+Every test also fails if the browser reports a Content-Security-Policy violation (`E2ETestBase`), except in
+video and headed runs, which bypass the policy so their inline-styled banners show. The headers themselves
+are checked by `SecurityHeadersTests` (integration).
 
 ## Roles and permissions
 
@@ -96,7 +100,7 @@ B1, B2, B4, and B5 are not implemented yet, so not covered.
 | Item | E2E | Tests or how it's verified |
 |---|---|---|
 | B3 Domain and database | ➖ | `ApplicationNoteTests` (unit tests) |
-| B3 Notes tab: add, edit, delete through modals | ✅ | `NotesTests.Manager_AddsEditsAndDeletesOwnNote` |
+| B3 Notes tab: add, edit, delete through modals | ✅ | `NotesTests.Manager_AddsEditsAndDeletesOwnNote`; line breaks kept: `NotesTests.MultiLineNote_KeepsItsLineBreaks` |
 | B3 Review's internal note saved as a note | ✅ | `NotesTests.ReviewInternalNote_IsSavedToNotes` |
 | B3 Only the author edits or deletes | ✅ | `NotesTests.AnotherManagersNote_CantBeEditedOrDeleted` (incl. crafted delete); `PermissionsTests.Manager_CannotEditAnotherManagersNote`, `Manager_CannotDeleteAnotherManagersNote` (integration) |
 | B3 Never rendered or returned to applicants | ✅ | `NotesTests.Applicant_NeverSeesNotes` (incl. direct `Notes` request); `PermissionsTests.Applicant_CannotReadNotes`, `Applicant_DoesNotSeeNotesOnApplicationPage`, `Applicant_CannotAddNote` (integration) |

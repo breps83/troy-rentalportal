@@ -37,6 +37,7 @@ builder.Services.AddControllersWithViews(opt =>
 
 var app = builder.Build();
 
+// Apply migrations & seed data
 await DbSeeder.SeedAsync(app.Services);
 
 // Configure the HTTP request pipeline.
@@ -46,6 +47,36 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// Security headers on every response. Scripts and styles only load from our own files,
+// so inline <script> and style="" are blocked. Bootstrap's icons are data: images.
+// In development, dotnet watch reloads the browser over a localhost websocket.
+var connectSources = app.Environment.IsDevelopment()
+    ? "'self' ws://localhost:* wss://localhost:*"
+    : "'self'";
+
+var contentSecurityPolicy =
+    "default-src 'self'; " +
+    "script-src 'self'; " +
+    "style-src 'self'; " +
+    "img-src 'self' data:; " +
+    $"connect-src {connectSources}; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self'; " +
+    "frame-ancestors 'none'";
+
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+
+    headers.ContentSecurityPolicy = contentSecurityPolicy;
+    headers.XContentTypeOptions = "nosniff";
+    headers.XFrameOptions = "DENY";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+    await next();
+});
 
 app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 

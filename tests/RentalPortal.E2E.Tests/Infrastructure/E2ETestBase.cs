@@ -51,7 +51,10 @@ public abstract class E2ETestBase : IAsyncLifetime
             BaseURL = Fixture.App.BaseUrl,
             ViewportSize = new ViewportSize { Width = 1280, Height = 800 },
             // US formats for currency and dates, matching the app's text.
-            Locale = "en-US"
+            Locale = "en-US",
+            // The banners and chapter cards in video and headed runs are inline styles, which the app's
+            // Content-Security-Policy blocks. Other runs still check the policy.
+            BypassCSP = E2ESettings.Annotate
         };
 
         if (E2ESettings.RecordVideo)
@@ -78,6 +81,12 @@ public abstract class E2ETestBase : IAsyncLifetime
         Modal = new Modal(Page);
 
         Page.PageError += (_, error) => _pageErrors.Add($"Script error: {error}");
+        // The browser logs a console error when the Content-Security-Policy blocks a script, style, or request.
+        Page.Console += (_, message) =>
+        {
+            if (message.Type == "error" && message.Text.Contains("Content Security Policy"))
+                _pageErrors.Add($"CSP violation: {message.Text}");
+        };
         Page.Response += (_, response) =>
         {
             if (response.Status >= 500)
@@ -121,7 +130,8 @@ public abstract class E2ETestBase : IAsyncLifetime
             _output.WriteLine($"Video: {videoPath}");
         }
 
-        // Fails the test (as a cleanup failure) if the page threw a script error or the server returned a 5xx.
+        // Fails the test (as a cleanup failure) if the page threw a script error, broke the
+        // Content-Security-Policy, or the server returned a 5xx.
         if (_pageErrors.Count > 0 && !_allowPageErrors)
             throw new InvalidOperationException("The page reported errors:\n" + string.Join("\n", _pageErrors));
     }

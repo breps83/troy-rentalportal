@@ -76,7 +76,10 @@ public class ResidencesController(AppDbContext db) : Controller
         try
         {
             application!.AddResidence(
-                model.Address!,
+                model.Street!,
+                model.City!,
+                model.State!,
+                model.PostalCode!,
                 model.LandlordName!,
                 model.LandlordPhone!,
                 model.MoveInDate!.Value,
@@ -141,7 +144,10 @@ public class ResidencesController(AppDbContext db) : Controller
         {
             application!.UpdateResidence(
                 model.Id,
-                model.Address!,
+                model.Street!,
+                model.City!,
+                model.State!,
+                model.PostalCode!,
                 model.LandlordName!,
                 model.LandlordPhone!,
                 model.MoveInDate!.Value,

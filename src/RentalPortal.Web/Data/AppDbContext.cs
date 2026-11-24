@@ -103,8 +103,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             application.Property(a => a.Email)
                         .HasMaxLength(255);
 
-            application.Property(a => a.CurrentAddress)
-                        .HasMaxLength(250);
+            application.Property(a => a.CurrentStreet)
+                        .HasMaxLength(200);
+
+            application.Property(a => a.CurrentCity)
+                        .HasMaxLength(100);
+
+            application.Property(a => a.CurrentState)
+                        .HasMaxLength(2);
+
+            application.Property(a => a.CurrentPostalCode)
+                        .HasMaxLength(10);
 
             application.HasIndex(a => a.Status);
 
@@ -136,8 +145,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
         builder.Entity<Residence>(r =>
         {
-            r.Property(r => r.Address)
-                .HasMaxLength(250);
+            r.Property(r => r.Street)
+                .HasMaxLength(200);
+
+            r.Property(r => r.City)
+                .HasMaxLength(100);
+
+            r.Property(r => r.State)
+                .HasMaxLength(2);
+
+            r.Property(r => r.PostalCode)
+                .HasMaxLength(10);
 
             r.Property(r => r.LandlordName)
                 .HasMaxLength(100);

@@ -10,8 +10,19 @@ public class ResidenceFormViewModel : IValidatableObject
 
     public int ApplicationId { get; set; }
 
-    [Required, StringLength(250)]
-    public string? Address { get; set; }
+    [Required, StringLength(200), Display(Name = "Street address")]
+    public string? Street { get; set; }
+
+    [Required, StringLength(100)]
+    public string? City { get; set; }
+
+    [Required, StringLength(2)]
+    [RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Please enter a valid state abbreviation.")]
+    public string? State { get; set; }
+
+    [Required, StringLength(10), Display(Name = "Postal code")]
+    [RegularExpression(@"^\d{5}(-\d{4})?$", ErrorMessage = "Please enter a valid postal code.")]
+    public string? PostalCode { get; set; }
 
     [Required, StringLength(100), Display(Name = "Landlord name")]
     public string? LandlordName { get; set; }
@@ -37,7 +48,10 @@ public class ResidenceFormViewModel : IValidatableObject
     {
         Id = residence.Id,
         ApplicationId = applicationId,
-        Address = residence.Address,
+        Street = residence.Street,
+        City = residence.City,
+        State = residence.State,
+        PostalCode = residence.PostalCode,
         LandlordName = residence.LandlordName,
         LandlordPhone = residence.LandlordPhone,
         MoveInDate = residence.MoveInDate,

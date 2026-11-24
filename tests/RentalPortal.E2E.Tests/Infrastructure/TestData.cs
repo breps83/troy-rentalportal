@@ -181,10 +181,16 @@ public class TestData(IServiceProvider services)
                 applicant.LastName,
                 "217-555-0100",
                 applicantEmail,
-                "12 Elm St, Springfield, IL 62701");
+                "12 Elm St",
+                "Springfield",
+                "IL",
+                "62701");
 
             application.AddResidence(
-                "45 Oak Ave, Springfield, IL 62701",
+                "45 Oak Ave",
+                "Springfield",
+                "IL",
+                "62701",
                 "Dana Landlord",
                 "217-555-0199",
                 new DateOnly(2021, 6, 1),

@@ -102,7 +102,10 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
             ["ApplicantInfo.LastName"] = "Intruder",
             ["ApplicantInfo.Phone"] = "217-555-0111",
             ["ApplicantInfo.Email"] = "mallory@example.com",
-            ["ApplicantInfo.CurrentAddress"] = "1 Hack St"
+            ["ApplicantInfo.Street"] = "1 Hack St",
+            ["ApplicantInfo.City"] = "Springfield",
+            ["ApplicantInfo.State"] = "IL",
+            ["ApplicantInfo.PostalCode"] = "62701"
         });
 
         Assert.Equal(302, response.Status);
@@ -132,7 +135,10 @@ public class RolesAndPermissionsTests(E2EFixture fixture, ITestOutputHelper outp
             ["ApplicantInfo.LastName"] = "Name",
             ["ApplicantInfo.Phone"] = "217-555-0111",
             ["ApplicantInfo.Email"] = "changed@example.com",
-            ["ApplicantInfo.CurrentAddress"] = "1 Changed St"
+            ["ApplicantInfo.Street"] = "1 Changed St",
+            ["ApplicantInfo.City"] = "Springfield",
+            ["ApplicantInfo.State"] = "IL",
+            ["ApplicantInfo.PostalCode"] = "62701"
         });
 
         Assert.Equal(302, response.Status);

@@ -48,8 +48,9 @@ public class RentalApplicationExtensionsTests
     private static RentalApplication NewSubmitted()
     {
         var application = NewDraft();
-        application.UpdateApplicant("Bruce", "Willis", "555-0100", "a@rentalportal.test", "1 Main St, Springfield, IL");
-        application.AddResidence("10 Oak Ave, Springfield, IL", "Pat Landlord", "555-0199",
+        application.UpdateApplicant("Bruce", "Willis", "555-0100", "a@rentalportal.test",
+            "1 Main St", "Springfield", "IL", "62701");
+        application.AddResidence("10 Oak Ave", "Springfield", "IL", "62701", "Pat Landlord", "555-0199",
             new DateOnly(2022, 1, 1), new DateOnly(2024, 6, 30));
         application.SetResidenceHistoryCompleted();
         application.Submit(OwnerId, _submittedUtc, DateOnly.FromDateTime(_submittedUtc), []);

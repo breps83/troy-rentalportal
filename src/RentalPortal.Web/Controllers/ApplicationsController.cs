@@ -176,7 +176,10 @@ public class ApplicationsController(
                     applicantInfo.LastName!,
                     applicantInfo.Phone!,
                     applicantInfo.Email!,
-                    applicantInfo.CurrentAddress!);
+                    applicantInfo.Street!,
+                    applicantInfo.City!,
+                    applicantInfo.State!,
+                    applicantInfo.PostalCode!);
 
                 await db.SaveChangesAsync();
 

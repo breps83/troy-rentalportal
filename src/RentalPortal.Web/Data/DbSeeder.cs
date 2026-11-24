@@ -439,7 +439,10 @@ public class DbSeeder
             applicant.LastName,
             faker.Phone.PhoneNumber(),
             applicant.Email!,
-            GetAddress(faker));
+            faker.Address.StreetAddress(),
+            faker.Address.City(),
+            faker.Address.StateAbbr(),
+            faker.Address.ZipCode("#####"));
 
         var moveOut = DateOnly.FromDateTime(createdAtUtc)
                         .AddDays(-1 * faker.Random.Int(0, 30));
@@ -451,7 +454,10 @@ public class DbSeeder
             var moveIn = moveOut.AddMonths(-1 * faker.Random.Int(12, 36));
 
             application.AddResidence(
-                GetAddress(faker),
+                faker.Address.StreetAddress(),
+                faker.Address.City(),
+                faker.Address.StateAbbr(),
+                faker.Address.ZipCode("#####"),
                 faker.Name.FullName(),
                 faker.Phone.PhoneNumber(),
                 moveIn,
@@ -510,8 +516,5 @@ public class DbSeeder
 
         return user;
     }
-
-    private static string GetAddress(Faker faker) =>
-        $"{faker.Address.StreetAddress()}, {faker.Address.City()}, {faker.Address.StateAbbr()} {faker.Address.ZipCode("#####")}";
 
 }

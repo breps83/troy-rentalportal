@@ -27,9 +27,24 @@
             <span asp-validation-for="Email" class="text-danger small"></span>
         </div>
         <div class="col-12">
-            <label asp-for="CurrentAddress" class="form-label"></label>
-            <input asp-for="CurrentAddress" class="form-control" autocomplete="street-address" />
-            <span asp-validation-for="CurrentAddress" class="text-danger small"></span>
+            <label asp-for="Street" class="form-label"></label>
+            <input asp-for="Street" class="form-control" autocomplete="address-line1" />
+            <span asp-validation-for="Street" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="City" class="form-label"></label>
+            <input asp-for="City" class="form-control" autocomplete="address-level2" />
+            <span asp-validation-for="City" class="text-danger small"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="State" class="form-label"></label>
+            <input asp-for="State" class="form-control text-uppercase" maxlength="2" autocomplete="address-level1" />
+            <span asp-validation-for="State" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PostalCode" class="form-label"></label>
+            <input asp-for="PostalCode" class="form-control" autocomplete="postal-code" />
+            <span asp-validation-for="PostalCode" class="text-danger small"></span>
         </div>
     </div>
 }

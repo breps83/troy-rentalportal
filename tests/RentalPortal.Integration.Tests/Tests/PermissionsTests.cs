@@ -109,7 +109,10 @@ public class PermissionsTests(IntegrationFixture fixture)
                 ["ApplicantInfo.LastName"] = before.LastName!,
                 ["ApplicantInfo.Phone"] = before.Phone!,
                 ["ApplicantInfo.Email"] = before.Email!,
-                ["ApplicantInfo.CurrentAddress"] = before.CurrentAddress!
+                ["ApplicantInfo.Street"] = before.CurrentStreet!,
+                ["ApplicantInfo.City"] = before.CurrentCity!,
+                ["ApplicantInfo.State"] = before.CurrentState!,
+                ["ApplicantInfo.PostalCode"] = before.CurrentPostalCode!
             });
 
         AssertRedirectsTo(response, $"/Applications/Details/{applicationId}");
@@ -502,7 +505,10 @@ public class PermissionsTests(IntegrationFixture fixture)
     {
         ["Id"] = residenceId.ToString(),
         ["ApplicationId"] = applicationId.ToString(),
-        ["Address"] = "99 Changed St, Springfield, IL 62701",
+        ["Street"] = "99 Changed St",
+        ["City"] = "Springfield",
+        ["State"] = "IL",
+        ["PostalCode"] = "62701",
         ["LandlordName"] = "Changed Landlord",
         ["LandlordPhone"] = "217-555-0123",
         ["MoveInDate"] = "2019-01-01",

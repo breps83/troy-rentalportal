@@ -24,7 +24,17 @@ public class RentalApplication
 
     public string? Email { get; private set; }
 
-    public string? CurrentAddress { get; private set; }
+    public string? CurrentStreet { get; private set; }
+
+    public string? CurrentCity { get; private set; }
+
+    public string? CurrentState { get; private set; }
+
+    public string? CurrentPostalCode { get; private set; }
+
+    public string? CurrentAddress => CurrentStreet == null
+        ? null
+        : $"{CurrentStreet}, {CurrentCity}, {CurrentState} {CurrentPostalCode}";
 
     public bool ApplicantInfoCompleted { get; private set; }
 
@@ -85,7 +95,10 @@ public class RentalApplication
         string lastName,
         string phone,
         string email,
-        string currentAddress)
+        string street,
+        string city,
+        string state,
+        string postalCode)
     {
         CheckEditable();
 
@@ -97,14 +110,23 @@ public class RentalApplication
 
         Email = email.Trim();
 
-        CurrentAddress = currentAddress.Trim();
+        CurrentStreet = street.Trim();
+
+        CurrentCity = city.Trim();
+
+        CurrentState = state.Trim().ToUpperInvariant();
+
+        CurrentPostalCode = postalCode.Trim();
 
         ApplicantInfoCompleted = true;
 
     }
 
     public Residence AddResidence(
-        string address,
+        string street,
+        string city,
+        string state,
+        string postalCode,
         string landlordName,
         string landlordPhone,
         DateOnly moveIn,
@@ -116,7 +138,10 @@ public class RentalApplication
 
         SetResidence(
             residence,
-            address,
+            street,
+            city,
+            state,
+            postalCode,
             landlordName,
             landlordPhone,
             moveIn,
@@ -132,7 +157,10 @@ public class RentalApplication
 
     public void UpdateResidence(
         int residenceId,
-        string address,
+        string street,
+        string city,
+        string state,
+        string postalCode,
         string landlordName,
         string landlordPhone,
         DateOnly moveIn,
@@ -142,7 +170,10 @@ public class RentalApplication
 
         SetResidence(
             GetResidence(residenceId),
-            address,
+            street,
+            city,
+            state,
+            postalCode,
             landlordName,
             landlordPhone,
             moveIn,
@@ -283,7 +314,10 @@ public class RentalApplication
 
     private static void SetResidence(
         Residence residence,
-        string address,
+        string street,
+        string city,
+        string state,
+        string postalCode,
         string landlordName,
         string landlordPhone,
         DateOnly moveIn,
@@ -292,7 +326,13 @@ public class RentalApplication
         if (moveOut < moveIn)
             throw new RuleException("Move Out date cannot be before the Move In date.");
 
-        residence.Address = address.Trim();
+        residence.Street = street.Trim();
+
+        residence.City = city.Trim();
+
+        residence.State = state.Trim().ToUpperInvariant();
+
+        residence.PostalCode = postalCode.Trim();
 
         residence.LandlordName = landlordName.Trim();
 

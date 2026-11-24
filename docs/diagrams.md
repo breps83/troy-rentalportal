@@ -160,7 +160,10 @@ classDiagram
         +string LastName
         +string Phone
         +string Email
-        +string CurrentAddress
+        +string CurrentStreet
+        +string CurrentCity
+        +string CurrentState
+        +string CurrentPostalCode
         +bool ApplicantInfoCompleted
         +bool ResidenceHistoryCompleted
         +UpdateApplicant()
@@ -178,7 +181,10 @@ classDiagram
     class Residence {
         <<Done>>
         +int Id
-        +string Address
+        +string Street
+        +string City
+        +string State
+        +string PostalCode
         +string LandlordName
         +string LandlordPhone
         +DateOnly MoveInDate

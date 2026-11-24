@@ -41,11 +41,13 @@ public class RentalApplicationTests
         RentalApplication.NewApplication(unitId: 7, NewApplicant(), _createdUtc);
 
     private static void FillApplicantInfo(RentalApplication application) =>
-        application.UpdateApplicant("Bruce", "Willis", "555-0100", "applicant3@rentalportal.test", "1 Main St, Springfield, IL 62701");
+        application.UpdateApplicant("Bruce", "Willis", "555-0100", "applicant3@rentalportal.test",
+            "1 Main St", "Springfield", "IL", "62701");
 
     private static Residence AddResidence(RentalApplication application, int id = 1)
     {
-        var residence = application.AddResidence("10 Oak Ave, Springfield, IL 62701", "Pat Landlord", "555-0199", _moveIn, _moveOut);
+        var residence = application.AddResidence("10 Oak Ave", "Springfield", "IL", "62701",
+            "Pat Landlord", "555-0199", _moveIn, _moveOut);
 
         // Ids are normally assigned by the database; set one so the residence can be found by id.
         residence.Id = id;
@@ -135,14 +137,19 @@ public class RentalApplicationTests
         var application = NewDraft();
 
         // Act
-        application.UpdateApplicant("  Bruce ", " Willis ", " 555-0100 ", " bruce@example.test ", " 1 Main St ");
+        application.UpdateApplicant("  Bruce ", " Willis ", " 555-0100 ", " bruce@example.test ",
+            " 1 Main St ", " Springfield ", " il ", " 62701 ");
 
         // Assert
         Assert.Equal("Bruce", application.FirstName);
         Assert.Equal("Willis", application.LastName);
         Assert.Equal("555-0100", application.Phone);
         Assert.Equal("bruce@example.test", application.Email);
-        Assert.Equal("1 Main St", application.CurrentAddress);
+        Assert.Equal("1 Main St", application.CurrentStreet);
+        Assert.Equal("Springfield", application.CurrentCity);
+        Assert.Equal("IL", application.CurrentState);
+        Assert.Equal("62701", application.CurrentPostalCode);
+        Assert.Equal("1 Main St, Springfield, IL 62701", application.CurrentAddress);
         Assert.True(application.ApplicantInfoCompleted);
     }
 
@@ -155,11 +162,16 @@ public class RentalApplicationTests
         var application = NewDraft();
 
         // Act
-        var residence = application.AddResidence(" 10 Oak Ave ", " Pat Landlord ", " 555-0199 ", _moveIn, _moveOut);
+        var residence = application.AddResidence(" 10 Oak Ave ", " Springfield ", " il ", " 62701 ",
+            " Pat Landlord ", " 555-0199 ", _moveIn, _moveOut);
 
         // Assert
         Assert.Same(residence, Assert.Single(application.Residences));
-        Assert.Equal("10 Oak Ave", residence.Address);
+        Assert.Equal("10 Oak Ave", residence.Street);
+        Assert.Equal("Springfield", residence.City);
+        Assert.Equal("IL", residence.State);
+        Assert.Equal("62701", residence.PostalCode);
+        Assert.Equal("10 Oak Ave, Springfield, IL 62701", residence.Address);
         Assert.Equal("Pat Landlord", residence.LandlordName);
         Assert.Equal("555-0199", residence.LandlordPhone);
         Assert.Equal(_moveIn, residence.MoveInDate);
@@ -174,7 +186,8 @@ public class RentalApplicationTests
 
         // Act & Assert
         Assert.Throws<RuleException>(() =>
-            application.AddResidence("10 Oak Ave", "Pat Landlord", "555-0199", _moveOut, _moveIn));
+            application.AddResidence("10 Oak Ave", "Springfield", "IL", "62701",
+                "Pat Landlord", "555-0199", _moveOut, _moveIn));
         Assert.Empty(application.Residences);
     }
 
@@ -186,7 +199,8 @@ public class RentalApplicationTests
         var application = NewDraft();
 
         // Act
-        application.AddResidence("10 Oak Ave", "Pat Landlord", "555-0199", _moveIn, _moveIn);
+        application.AddResidence("10 Oak Ave", "Springfield", "IL", "62701",
+            "Pat Landlord", "555-0199", _moveIn, _moveIn);
 
         // Assert
         Assert.Single(application.Residences);
@@ -201,10 +215,11 @@ public class RentalApplicationTests
         var newMoveOut = new DateOnly(2025, 1, 31);
 
         // Act
-        application.UpdateResidence(5, "22 Elm St", "Sam Owner", "555-0123", _moveIn, newMoveOut);
+        application.UpdateResidence(5, "22 Elm St", "Springfield", "IL", "62701",
+            "Sam Owner", "555-0123", _moveIn, newMoveOut);
 
         // Assert
-        Assert.Equal("22 Elm St", residence.Address);
+        Assert.Equal("22 Elm St", residence.Street);
         Assert.Equal("Sam Owner", residence.LandlordName);
         Assert.Equal("555-0123", residence.LandlordPhone);
         Assert.Equal(newMoveOut, residence.MoveOutDate);
@@ -235,7 +250,8 @@ public class RentalApplicationTests
 
         // Act & Assert
         Assert.Throws<RuleException>(() =>
-            application.UpdateResidence(99, "22 Elm St", "Sam Owner", "555-0123", _moveIn, _moveOut));
+            application.UpdateResidence(99, "22 Elm St", "Springfield", "IL", "62701",
+                "Sam Owner", "555-0123", _moveIn, _moveOut));
         Assert.Throws<RuleException>(() => application.RemoveResidence(99));
     }
 
@@ -266,7 +282,8 @@ public class RentalApplicationTests
 
         // Update
         var updated = NewCompleteDraft();
-        updated.UpdateResidence(1, "22 Elm St", "Sam Owner", "555-0123", _moveIn, _moveOut);
+        updated.UpdateResidence(1, "22 Elm St", "Springfield", "IL", "62701",
+            "Sam Owner", "555-0123", _moveIn, _moveOut);
         Assert.False(updated.ResidenceHistoryCompleted);
         Assert.False(updated.CanSubmit);
 
@@ -393,9 +410,11 @@ public class RentalApplicationTests
         Assert.False(application.IsEditable);
         Assert.Throws<RuleException>(() => FillApplicantInfo(application));
         Assert.Throws<RuleException>(() =>
-            application.AddResidence("22 Elm St", "Sam Owner", "555-0123", _moveIn, _moveOut));
+            application.AddResidence("22 Elm St", "Springfield", "IL", "62701",
+                "Sam Owner", "555-0123", _moveIn, _moveOut));
         Assert.Throws<RuleException>(() =>
-            application.UpdateResidence(1, "22 Elm St", "Sam Owner", "555-0123", _moveIn, _moveOut));
+            application.UpdateResidence(1, "22 Elm St", "Springfield", "IL", "62701",
+                "Sam Owner", "555-0123", _moveIn, _moveOut));
         Assert.Throws<RuleException>(() => application.RemoveResidence(1));
         Assert.Throws<RuleException>(application.SetResidenceHistoryCompleted);
     }

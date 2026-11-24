@@ -47,7 +47,10 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
 
         await Step("FR 3.b", "Continue with valid input saves and moves to Residence History");
         await Page.GetByLabel("Phone").EnterAsync("217-555-0123");
-        await Page.GetByLabel("Current address").EnterAsync("500 Lincoln Ave, Springfield, IL 62701");
+        await Page.GetByLabel("Street address").EnterAsync("500 Lincoln Ave");
+        await Page.GetByLabel("City").EnterAsync("Springfield");
+        await Page.GetByLabel("State").EnterAsync("IL");
+        await Page.GetByLabel("Postal code").EnterAsync("62701");
         await Button("Continue").ClickAsync();
         await Expect(CurrentStep).ToContainTextAsync("Residence History");
         await Expect(Page.Locator("li", new() { HasText = "Applicant Information" }).GetByLabel("saved"))
@@ -60,13 +63,16 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
 
         await Step("FR 3.c", "Add a residence through the modal");
         await Modal.OpenAsync(Button("Add residence"), "Add residence");
-        await Modal.Field("Address").EnterAsync("77 Lake St, Royal Oak, MI 48067");
+        await Modal.Field("Street address").EnterAsync("77 Lake St");
+        await Modal.Field("City").EnterAsync("Springfield");
+        await Modal.Field("State").EnterAsync("IL");
+        await Modal.Field("Postal code").EnterAsync("62704");
         await Modal.Field("Landlord name").EnterAsync("Morgan Lee");
         await Modal.Field("Landlord phone").EnterAsync("217-555-0144");
         await Modal.Field("Move In Date").EnterAsync("2020-08-01");
         await Modal.Field("Move Out Date").EnterAsync("2024-07-31");
         await Modal.SubmitAsync();
-        await Expect(Page.Locator("#residence-history")).ToContainTextAsync("77 Lake St, Royal Oak, MI 48067");
+        await Expect(Page.Locator("#residence-history")).ToContainTextAsync("77 Lake St, Springfield, IL 62704");
 
         await Step("FR 3.b", "Back returns to the previous section");
         await Button("Back").ClickAsync();
@@ -78,7 +84,7 @@ public class ApplicationWizardTests(E2EFixture fixture, ITestOutputHelper output
         await Button("Continue").ClickAsync();
         await Expect(CurrentStep).ToContainTextAsync("Summary");
         await Expect(Page.GetByText("217-555-0123")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("77 Lake St, Royal Oak, MI 48067")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("77 Lake St, Springfield, IL 62704")).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Textbox)).ToHaveCountAsync(0);
         await Expect(Button("Edit")).ToHaveCountAsync(0);
 

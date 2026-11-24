@@ -6,7 +6,15 @@ public class Residence
 
     public int ApplicationId { get; set; }
 
-    public string Address { get; set; } = string.Empty;
+    public string Street { get; set; } = string.Empty;
+
+    public string City { get; set; } = string.Empty;
+
+    public string State { get; set; } = string.Empty;
+
+    public string PostalCode { get; set; } = string.Empty;
+
+    public string Address => $"{Street}, {City}, {State} {PostalCode}";
 
     public string LandlordName { get; set; } = string.Empty;
 

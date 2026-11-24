@@ -22,6 +22,14 @@ public class ApplicationNote
 
     public DateTime? UpdatedAtUtc { get; private set; }
 
+    /// <summary>
+    /// Creates an application note.
+    /// </summary>
+    /// <param name="applicationId">The identifier of the rental application.</param>
+    /// <param name="userId">The identifier of the user creating the note.</param>
+    /// <param name="note">The note text.</param>
+    /// <param name="nowUtc">The UTC date and time when the note is created.</param>
+    /// <returns>A new application note.</returns>
     public static ApplicationNote Create(
         int applicationId,
         string userId,
@@ -37,8 +45,20 @@ public class ApplicationNote
         };
     }
 
+    /// <summary>
+    /// Determines whether the specified user created this item.
+    /// </summary>
+    /// <param name="userId">The ID of the user to compare with the creator ID.</param>
+    /// <returns><see langword="true"/> if the specified user created this item; otherwise, <see langword="false"/>.</returns>
     public bool IsAuthor(string userId) => CreatedById == userId;
 
+    /// <summary>
+    /// Edits the note and records the user and UTC timestamp of the update.
+    /// </summary>
+    /// <param name="userId">The identifier of the user editing the note.</param>
+    /// <param name="note">The updated note text.</param>
+    /// <param name="nowUtc">The UTC date and time of the update.</param>
+    /// <exception cref="RuleException">Thrown when the user is not the author or the note is invalid.</exception>
     public void Edit(
         string userId,
         string note,

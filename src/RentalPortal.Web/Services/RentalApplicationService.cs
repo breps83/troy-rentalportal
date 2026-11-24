@@ -6,6 +6,13 @@ using RentalPortal.Web.Extensions;
 
 namespace RentalPortal.Web.Services;
 
+/// <summary>
+/// Coordinates rental application lifecycle operations, including starting, submitting, withdrawing, and reviewing
+/// applications.
+/// </summary>
+/// <param name="db">The database context used to access and persist rental applications and related records.</param>
+/// <param name="time">The time provider used to determine current dates and timestamps.</param>
+/// <param name="logger">The logger used to record application and lease service operations.</param>
 public class RentalApplicationService(
     AppDbContext db,
     TimeProvider time,

@@ -29,30 +29,39 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
         builder.Entity<ApplicationUser>(user =>
         {
             user.Property(u => u.FirstName)
-                .HasMaxLength(100).IsRequired();
+                .HasMaxLength(100)
+                .IsRequired();
 
             user.Property(u => u.LastName)
-                .HasMaxLength(100).IsRequired();
+                .HasMaxLength(100)
+                .IsRequired();
         });
 
         builder.Entity<Property>(property =>
         {
-            property.Property(p => p.Name).HasMaxLength(100);
+            property.Property(p => p.Name)
+                    .HasMaxLength(100);
 
-            property.Property(p => p.Street).HasMaxLength(200);
+            property.Property(p => p.Street)
+                    .HasMaxLength(200);
 
-            property.Property(p => p.City).HasMaxLength(100);
+            property.Property(p => p.City)
+                    .HasMaxLength(100);
 
-            property.Property(p => p.State).HasMaxLength(2);
+            property.Property(p => p.State)
+                    .HasMaxLength(2);
 
-            property.Property(p => p.PostalCode).HasMaxLength(10);
+            property.Property(p => p.PostalCode)
+                    .HasMaxLength(10);
         });
 
         builder.Entity<UnitType>(unitType =>
         {
-            unitType.Property(t => t.Name).HasMaxLength(50);
+            unitType.Property(t => t.Name)
+                    .HasMaxLength(50);
 
-            unitType.HasIndex(t => t.Name).IsUnique();
+            unitType.HasIndex(t => t.Name)
+                    .IsUnique();
         });
 
         builder.Entity<Unit>(unit =>
@@ -63,7 +72,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             unit.Property(u => u.MonthlyRent)
                 .HasPrecision(10, 2);
 
-            unit.HasIndex(u => new { u.PropertyId, u.UnitNumber }).IsUnique();
+            unit.HasIndex(u => new { u.PropertyId, u.UnitNumber })
+                .IsUnique();
 
             unit.HasOne(u => u.Property)
                 .WithMany(p => p.Units)
@@ -81,51 +91,59 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
-            application.Property(a => a.FirstName).HasMaxLength(100);
+            application.Property(a => a.FirstName)
+                        .HasMaxLength(100);
 
-            application.Property(a => a.LastName).HasMaxLength(100);
+            application.Property(a => a.LastName)
+                        .HasMaxLength(100);
 
-            application.Property(a => a.Phone).HasMaxLength(25);
+            application.Property(a => a.Phone)
+                        .HasMaxLength(25);
 
-            application.Property(a => a.Email).HasMaxLength(255);
+            application.Property(a => a.Email)
+                        .HasMaxLength(255);
 
-            application.Property(a => a.CurrentAddress).HasMaxLength(250);
+            application.Property(a => a.CurrentAddress)
+                        .HasMaxLength(250);
 
             application.HasIndex(a => a.Status);
 
             application.HasOne(a => a.Unit)
-                .WithMany(u => u.Applications)
-                .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany(u => u.Applications)
+                        .OnDelete(DeleteBehavior.Restrict);
 
             application.HasOne(a => a.Applicant)
-                .WithMany()
-                .HasForeignKey(a => a.ApplicantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey(a => a.ApplicantId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
             application.HasMany(a => a.Residences)
-                .WithOne()
-                .HasForeignKey(r => r.ApplicationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                        .WithOne()
+                        .HasForeignKey(r => r.ApplicationId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
             application.HasMany(a => a.StatusHistory)
-                .WithOne()
-                .HasForeignKey(c => c.RentalApplicationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                        .WithOne()
+                        .HasForeignKey(c => c.RentalApplicationId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
             application.HasOne(a => a.Lease)
-                .WithOne(l => l.RentalApplication)
-                .HasForeignKey<Lease>(l => l.RentalApplicationId)
-                .OnDelete(DeleteBehavior.Restrict);
+                        .WithOne(l => l.RentalApplication)
+                        .HasForeignKey<Lease>(l => l.RentalApplicationId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
         });
 
         builder.Entity<Residence>(r =>
         {
-            r.Property(r => r.Address).HasMaxLength(250);
+            r.Property(r => r.Address)
+                .HasMaxLength(250);
 
-            r.Property(r => r.LandlordName).HasMaxLength(100);
+            r.Property(r => r.LandlordName)
+                .HasMaxLength(100);
 
-            r.Property(r => r.LandlordPhone).HasMaxLength(25);
+            r.Property(r => r.LandlordPhone)
+                .HasMaxLength(25);
         });
 
         builder.Entity<ApplicationStatusHistory>(h =>
@@ -165,7 +183,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
         builder.Entity<ApplicationNote>(note =>
         {
-            note.Property(n => n.Note).HasMaxLength(ApplicationNote.MaxLength);
+            note.Property(n => n.Note)
+                .HasMaxLength(ApplicationNote.MaxLength);
 
             note.HasOne<RentalApplication>()
                 .WithMany()

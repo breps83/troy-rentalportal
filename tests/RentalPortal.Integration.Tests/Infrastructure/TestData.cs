@@ -212,6 +212,49 @@ public class TestData(IServiceProvider services)
         return await db.ApplicationNotes.AsNoTracking().SingleOrDefaultAsync(n => n.Id == noteId);
     }
 
+    /// <summary>
+    /// Creates an applicant with <see cref="TestUsers.Password"/> and returns the email. For tests that
+    /// change the account, such as locking it out, so the seeded users stay usable.
+    /// </summary>
+    public async Task<string> CreateApplicantAsync()
+    {
+        using var scope = services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var email = $"{Guid.NewGuid():N}@rentalportal.test";
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            FirstName = "Jordan",
+            LastName = "Tester"
+        };
+
+        var result = await userManager.CreateAsync(user, TestUsers.Password);
+        if (result.Succeeded)
+            result = await userManager.AddToRoleAsync(user, Roles.Applicant);
+
+        if (!result.Succeeded)
+            throw new InvalidOperationException(result.Errors.First().Description);
+
+        return email;
+    }
+
+    /// <summary>
+    /// The user's roles, or null when there is no user with that email.
+    /// </summary>
+    public async Task<IList<string>?> GetRolesAsync(string email)
+    {
+        using var scope = services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null)
+            return null;
+
+        return await userManager.GetRolesAsync(user);
+    }
+
     private static void Check(Result result)
     {
         if (!result.Succeeded)

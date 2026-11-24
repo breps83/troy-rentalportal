@@ -43,6 +43,7 @@ warning. See [Run](#run) for more.
 
 | Doc | What it covers |
 |---|---|
+| [architecture.md](docs/architecture.md) | Project layout, where the business rules live, request and modal flow, permissions, and data access |
 | [requirements.md](docs/requirements.md) | The assessment spec, with requirement IDs such as FR 3.b and TR 1.b |
 | [requirements-checklist.md](docs/requirements-checklist.md) | Progress against each requirement, naming the code that satisfies it |
 | [diagrams.md](docs/diagrams.md) | Progress by area, roles, domain model, status lifecycle, page and modal flows |

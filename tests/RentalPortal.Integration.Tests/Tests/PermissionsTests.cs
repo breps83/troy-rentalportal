@@ -446,6 +446,55 @@ public class PermissionsTests(IntegrationFixture fixture)
         Assert.Single(await _data.GetResidencesAsync(applicationId));
     }
 
+    /// <summary>A form command the page doesn't offer is a bad request, and changes nothing.</summary>
+    [Fact]
+    public async Task Applicant_UnknownFormCommand_IsBadRequest()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Draft);
+        var client = await LoginAsync(TestUsers.Applicant);
+
+        var response = await client.PostFormAsync($"/Applications/Details/{applicationId}",
+            new Dictionary<string, string>
+            {
+                ["command"] = "approve",
+                ["CurrentSection"] = nameof(ApplicationSection.Summary)
+            });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var application = await _data.GetApplicationAsync(applicationId);
+        Assert.Equal(ApplicationStatus.Draft, application.Status);
+    }
+
+    /// <summary>A record that doesn't exist (id 0 is never used) is not found, not an error page.</summary>
+    [Theory]
+    [InlineData(TestUsers.Manager, "/Properties/Edit/0")]
+    [InlineData(TestUsers.Manager, "/Properties/Delete/0")]
+    [InlineData(TestUsers.Manager, "/Units/Create?propertyId=0")]
+    [InlineData(TestUsers.Manager, "/Units/Edit/0")]
+    [InlineData(TestUsers.Manager, "/Units/Delete/0")]
+    [InlineData(TestUsers.Manager, "/Applications/Details/0")]
+    [InlineData(TestUsers.Manager, "/Applications/Review/0")]
+    [InlineData(TestUsers.Manager, "/Applications/Status/0")]
+    [InlineData(TestUsers.Manager, "/Applications/History/0")]
+    [InlineData(TestUsers.Manager, "/Applications/Notes/0")]
+    [InlineData(TestUsers.Manager, "/Applications/AddNote/0")]
+    [InlineData(TestUsers.Manager, "/Applications/EditNote/0")]
+    [InlineData(TestUsers.Manager, "/Applications/DeleteNote/0")]
+    [InlineData(TestUsers.Applicant, "/Applications/Withdraw/0")]
+    [InlineData(TestUsers.Applicant, "/Residences/List?applicationId=0")]
+    [InlineData(TestUsers.Applicant, "/Residences/Create?applicationId=0")]
+    [InlineData(TestUsers.Applicant, "/Residences/Edit/0")]
+    [InlineData(TestUsers.Applicant, "/Residences/Delete/0")]
+    public async Task MissingRecord_IsNotFound(string email, string url)
+    {
+        var client = await LoginAsync(email);
+
+        var response = await client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     /// <summary>
     /// Form fields for a valid residence. With <paramref name="residenceId"/>, the fields edit that residence.
     /// </summary>

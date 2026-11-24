@@ -154,6 +154,14 @@ public class TestData(IServiceProvider services)
         return await db.Units.AnyAsync(u => u.Id == unitId);
     }
 
+    public async Task<Unit> GetUnitAsync(int unitId)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await db.Units.AsNoTracking().SingleAsync(u => u.Id == unitId);
+    }
+
     public async Task<bool> PropertyExistsAsync(int propertyId)
     {
         using var scope = services.CreateScope();

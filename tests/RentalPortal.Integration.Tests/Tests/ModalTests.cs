@@ -1,5 +1,6 @@
 using System.Net;
 using RentalPortal.Integration.Tests.Infrastructure;
+using RentalPortal.Web.Enums;
 
 namespace RentalPortal.Integration.Tests.Tests;
 
@@ -73,6 +74,103 @@ public class ModalTests(IntegrationFixture fixture)
         var html = await AssertPartialAsync(response);
         Assert.Contains("This property already has a unit with that number.", html);
         Assert.Contains($"value=\"{unitTypeId}\"", html);
+    }
+
+    [Fact]
+    public async Task InvalidPropertyEdit_ReturnsFormWithErrors_AndKeepsProperty()
+    {
+        var unit = await _data.CreateUnitAsync();
+        var newName = TestData.Unique("Renamed");
+        var client = await LoginManagerAsync();
+
+        var response = await client.PostFormAsync("/Properties/Edit", new Dictionary<string, string>
+        {
+            ["Id"] = unit.PropertyId.ToString(),
+            ["Name"] = newName,
+            ["Street"] = "1 Main St",
+            ["City"] = "Springfield",
+            ["State"] = "Illinois",
+            ["PostalCode"] = "62701"
+        });
+
+        var html = await AssertPartialAsync(response);
+        Assert.Contains("Please enter a valid state abbreviation.", html);
+        Assert.True(await _data.PropertyExistsAsync(unit.Property.Name));
+        Assert.False(await _data.PropertyExistsAsync(newName));
+    }
+
+    /// <summary>
+    /// FR 2.b: an inactive unit type can't be chosen for a unit that doesn't already use it. The form
+    /// comes back with its unit type list filled in again.
+    /// </summary>
+    [Fact]
+    public async Task UnitEdit_ToInactiveType_ReturnsFormWithError_AndKeepsType()
+    {
+        var unit = await _data.CreateUnitAsync();
+        var inactiveType = (await _data.GetUnitTypesAsync()).First(t => !t.IsActive);
+        var client = await LoginManagerAsync();
+
+        var response = await client.PostFormAsync("/Units/Edit", new Dictionary<string, string>
+        {
+            ["Id"] = unit.Id.ToString(),
+            ["PropertyId"] = unit.PropertyId.ToString(),
+            ["UnitNumber"] = unit.UnitNumber,
+            ["Bedrooms"] = unit.Bedrooms.ToString(),
+            ["MonthlyRent"] = unit.MonthlyRent.ToString(),
+            ["UnitTypeId"] = inactiveType.Id.ToString()
+        });
+
+        var html = await AssertPartialAsync(response);
+        Assert.Contains("This unit type is inactive and can&#x27;t be selected.", html);
+        Assert.Contains($"value=\"{unit.UnitTypeId}\"", html);
+        Assert.Equal(unit.UnitTypeId, (await _data.GetUnitAsync(unit.Id)).UnitTypeId);
+    }
+
+    [Fact]
+    public async Task EmptyNote_ReturnsFormWithError()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var client = await LoginManagerAsync();
+
+        var response = await client.PostFormAsync("/Applications/AddNote", new Dictionary<string, string>
+        {
+            ["ApplicationId"] = applicationId.ToString(),
+            ["Note"] = ""
+        });
+
+        var html = await AssertPartialAsync(response);
+        Assert.Contains("Please enter a note.", html);
+    }
+
+    [Fact]
+    public async Task NoteEditedToEmpty_ReturnsFormWithError_AndKeepsNote()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Submitted);
+        var noteId = await _data.CreateNoteAsync(applicationId, TestUsers.Manager, "Original note.");
+        var client = await LoginManagerAsync();
+
+        var response = await client.PostFormAsync("/Applications/EditNote", new Dictionary<string, string>
+        {
+            ["ApplicationId"] = applicationId.ToString(),
+            ["NoteId"] = noteId.ToString(),
+            ["Note"] = "   "
+        });
+
+        var html = await AssertPartialAsync(response);
+        Assert.Contains("Please enter a note.", html);
+        Assert.Equal("Original note.", (await _data.GetNoteAsync(noteId))!.Note);
+    }
+
+    [Fact]
+    public async Task ReviewModal_ForWithdrawnApplication_ShowsError()
+    {
+        var applicationId = await _data.CreateApplicationAsync(TestUsers.Applicant, ApplicationStatus.Withdrawn);
+        var client = await LoginManagerAsync();
+
+        var response = await client.GetAsync($"/Applications/Review/{applicationId}");
+
+        var html = await AssertPartialAsync(response);
+        Assert.Contains("This application is Withdrawn and can no longer be reviewed.", html);
     }
 
     private async Task<HttpClient> LoginManagerAsync()

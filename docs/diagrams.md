@@ -3,7 +3,7 @@
 Mermaid diagrams for [requirements.md](requirements.md), with the current implementation status.
 Requirement IDs (for example **FR 3.b**) match [requirements-checklist.md](requirements-checklist.md).
 
-**Status as of 2026-11-23.** Colors used in the diagrams:
+**Status as of 2026-11-24.** Colors used in the diagrams:
 
 | Color | Meaning |
 |---|---|
@@ -46,7 +46,7 @@ flowchart LR
 
     subgraph DL["Deliverables"]
         README["README.md"]:::done
-        GH["GitHub repository"]:::todo
+        GH["GitHub repository"]:::done
     end
 ```
 
@@ -62,6 +62,7 @@ flowchart LR
 | FR 4 | Done | Review modal (Approve, Return, Deny; comment required for Return and Deny) and status history for property managers |
 | FR 5 | Done | `ApplicationsController.Index` filters by status and property in the database; applicants see only their own |
 | README.md | Done | Getting started (prerequisites, LocalDB, connection string, demo logins) and Testing sections |
+| GitHub repository | Done | Public at `breps83/troy-rentalportal`; link not yet sent in reply to the assessment email |
 
 ---
 
@@ -292,7 +293,7 @@ active lease check, FR 3.e).
 flowchart TD
     classDef done fill:#c8e6c9,stroke:#2e7d32,color:#1b3d1f
     classDef partial fill:#ffe0b2,stroke:#ef6c00,color:#4e2a00
-    classDef decision fill:#fff8e1,stroke:#f9a825,color:#3e2f00
+    classDef decision fill:#ffffff,stroke:#546e7a,color:#263238
 
     Open(["Open application"]):::done --> Editable{"Editable?<br/>Draft or Returned,<br/>decided on the server"}:::decision
     Editable -- No --> ReadOnly["All sections read-only"]:::done

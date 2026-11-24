@@ -231,7 +231,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
         (`README.md`, Testing)
   - [x] Setup: demo logins, connection string, LocalDB (`README.md`, Getting started)
 - [x] Code pushed to a GitHub repository
-- [ ] Link sent in reply to the assessment email
+- [x] Link sent in reply to the assessment email
 
 ## Pre-interview
 

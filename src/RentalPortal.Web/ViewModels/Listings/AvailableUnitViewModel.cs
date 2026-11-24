@@ -12,6 +12,8 @@ public class AvailableUnitViewModel
 
     public string UnitType { get; init; } = string.Empty;
 
+    public bool UnitTypeIsActive { get; init; }
+
     public int Bedrooms { get; init; }
 
     public decimal MonthlyRent { get; init; }

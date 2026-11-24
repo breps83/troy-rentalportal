@@ -36,13 +36,13 @@
 else
 {
     <dl class="row mb-0">
-        <dt class="col-sm-3">Name</dt>
+        <dt class="col-sm-3 fw-normal text-muted">Name</dt>
         <dd class="col-sm-9">@Model.FirstName @Model.LastName</dd>
-        <dt class="col-sm-3"><label asp-for="Phone"></label></dt>
+        <dt class="col-sm-3 fw-normal text-muted"><label asp-for="Phone"></label></dt>
         <dd class="col-sm-9">@Model.Phone</dd>
-        <dt class="col-sm-3"><label asp-for="Email"></label></dt>
+        <dt class="col-sm-3 fw-normal text-muted"><label asp-for="Email"></label></dt>
         <dd class="col-sm-9">@Model.Email</dd>
-        <dt class="col-sm-3"><label asp-for="CurrentAddress"></label></dt>
+        <dt class="col-sm-3 fw-normal text-muted"><label asp-for="CurrentAddress"></label></dt>
         <dd class="col-sm-9">@Model.CurrentAddress</dd>
     </dl>
 }

@@ -26,6 +26,7 @@ public class ListingsController(AppDbContext db, TimeProvider time) : Controller
                 Address = u.Property.Street + ", " + u.Property.City + ", " + u.Property.State,
                 UnitNumber = u.UnitNumber,
                 UnitType = u.UnitType.Name,
+                UnitTypeIsActive = u.UnitType.IsActive,
                 Bedrooms = u.Bedrooms,
                 MonthlyRent = u.MonthlyRent
             })

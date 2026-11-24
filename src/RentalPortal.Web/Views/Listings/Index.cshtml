@@ -60,7 +60,13 @@ else
                         {
                             <tr>
                                 <td>@unit.UnitNumber</td>
-                                <td>@unit.UnitType</td>
+                                <td>
+                                    @unit.UnitType                                   
+                                    @if (propertyManager && !unit.UnitTypeIsActive)
+                                    {
+                                        <span class="badge text-bg-light border ms-1">inactive</span>
+                                    }
+                                </td>
                                 <td class="text-center">@(unit.Bedrooms == 0 ? "Studio" : unit.Bedrooms.ToString())</td>
                                 <td class="text-center">@unit.MonthlyRent.ToString("C0")</td>
                                 @if (canApply)

@@ -5,7 +5,7 @@ in a real browser, or says why E2E doesn't apply and what verifies it instead. T
 `tests/RentalPortal.E2E.Tests/Tests` and carry `[Trait("Requirement", "...")]` with the same IDs, so
 `run-e2e.ps1 -Filter "Requirement=FR 3.b"` runs one requirement. See [e2e-tests.md](e2e-tests.md).
 
-Status as of 2026-11-23: 46 tests, all passing.
+Status as of 2026-11-23: 47 tests, all passing.
 
 **Legend:** ✅ covered by a passing E2E test · ➖ not E2E (verified another way) · ⬜ not covered yet
 
@@ -58,11 +58,11 @@ test below.
 | FR 2.a Units: add, edit, remove | ✅ | `UnitsTests.AddUnit_*`, `EditAndDeleteUnit_ThroughModal`; from Available Units: `ListingsTests.Manager_EditsAndDeletesUnit_FromAvailableUnits` |
 | FR 2.a Delete refused with a message when there are applications | ✅ | `PropertiesTests.DeleteProperty_WithApplications_IsRefusedWithMessage`, `UnitsTests.DeleteUnit_WithApplications_IsRefusedWithMessage` |
 | FR 2.a Applicants browse available units | ✅ | `ListingsTests.AvailableUnits_ListsUnitsFromNavbar` |
-| FR 2.a Only units with no lease covering today | ✅ | `ListingsTests.LeasedUnit_IsNotListed` |
 | FR 2.a Start an application from a unit (reopens an open one) | ✅ | `ListingsTests.ApplyForUnit_StartsApplication_AndReopensIt` |
 | FR 2.b Unit type lookup, inactive shown on existing units | ✅ | `UnitsTests.InactiveUnitType_ShowsOnExistingUnit_ButCantBeChosen` |
 | FR 2.b Inactive type can't be selected; enforced on the server | ✅ | `UnitsTests.InactiveUnitType_ShowsOnExistingUnit_ButCantBeChosen` (option injected by hand is refused) |
 | FR 2.b Seed data includes an inactive type | ✅ | Same test uses the seeded `Penthouse` type |
+| FR 2.b Available Units marks an inactive type for managers only | ✅ | `ListingsTests.InactiveUnitType_OnAvailableUnits_BadgeShownToManagersOnly` |
 | FR 2.c Approval creates a twelve-month lease starting today | ✅ | `ReviewTests.Approve_IssuesTwelveMonthLease_AndRecordsHistory` |
 | FR 2.c A leased unit is not available | ✅ | `ListingsTests.LeasedUnit_IsNotListed`, `ListingsTests.ApplyForUnit_LeasedSinceThePageLoaded_IsRefused` |
 | FR 3 Domain model and database | ➖ | Code and unit tests; exercised by every application test |

@@ -19,9 +19,11 @@
     </ol>
 </nav>
 
-<div class="mb-4">
+<div class="mb-4 p-3 p-md-4 bg-body border rounded-3 shadow-sm">
     <h1 class="h3 mb-0">@Model.PropertyName – Unit @Model.UnitNumber</h1>
-    <div class="text-muted">@Model.MonthlyRent.ToString("C0") per month</div>
+    <div class="fs-5 fw-semibold">
+        @Model.MonthlyRent.ToString("C0") <span class="fs-6 fw-normal text-muted">per month</span>
+    </div>
 
     <div class="mt-2" id="application-status">
         @await Component.InvokeAsync("ApplicationStatus", new { applicationId = Model.Id })
@@ -29,7 +31,7 @@
 
     @if (Model.CanWithdraw)
     {
-        <button type="button" class="btn btn-outline-danger mt-2"
+        <button type="button" class="btn btn-sm btn-outline-danger mt-2"
                 data-modal-url="@Url.Action("Withdraw", new { id = Model.Id })">
             Withdraw application
         </button>
@@ -41,10 +43,11 @@
     {
         <li class="list-group-item flex-fill @(step == current ? "active" : "")"
             aria-current="@(step == current ? "step" : null)">
-            @step.Title()
+            <span class="badge rounded-pill text-bg-light border me-2">@((int)step + 1)</span>@step.Title()
             @if (Model.IsSectionCompleted(step))
             {
-                <span class="ms-1" aria-label="saved">✓</span>
+                @* Plain white on the blue active step; green elsewhere. *@
+                <span class="ms-1 @(step == current ? "" : "text-success")" aria-label="saved">✓</span>
             }
         </li>
     }
@@ -140,7 +143,7 @@
 
 @if (User.IsPropertyManager())
 {
-    <ul class="nav nav-tabs mt-4" role="tablist">
+    <ul class="nav nav-underline mt-4" role="tablist">
         <li class="nav-item" role="presentation">
             <button type="button" class="nav-link active" id="notes-tab" role="tab"
                     data-bs-toggle="tab" data-bs-target="#notes-pane"
@@ -156,7 +159,7 @@
             </button>
         </li>
     </ul>
-    <div class="tab-content border border-top-0 rounded-bottom mb-4 bg-body">
+    <div class="tab-content mt-2 mb-4 bg-body border rounded-3 shadow-sm">
         <div class="tab-pane fade show active" id="notes-pane" role="tabpanel" aria-labelledby="notes-tab">
             <div id="application-notes">
                 @await Component.InvokeAsync("ApplicationNotes", new { applicationId = Model.Id })

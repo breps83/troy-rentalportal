@@ -52,6 +52,30 @@ public class ListingsTests(E2EFixture fixture, ITestOutputHelper output) : E2ETe
     }
 
     [Fact]
+    [Trait("Requirement", "FR 2.b")]
+    public async Task InactiveUnitType_OnAvailableUnits_BadgeShownToManagersOnly()
+    {
+        var property = await Data.CreatePropertyAsync();
+        await Data.CreateUnitAsync(property.Id, "PH1", "Penthouse");
+
+        await LoginAsAsync(TestUsers.Manager);
+        await Page.GotoAsync("/Listings");
+
+        await Step("FR 2.b", "A manager sees the inactive type marked inactive on Available Units");
+        var row = UnitRow(PropertyGroup(property.Name), "PH1");
+        await Expect(row).ToContainTextAsync("Penthouse");
+        await Expect(row.GetByText("inactive", new() { Exact = true })).ToBeVisibleAsync();
+
+        await SwitchUserAsync(TestUsers.Applicant);
+        await Page.GotoAsync("/Listings");
+
+        await Step("FR 2.b", "An applicant sees the same unit's type without the inactive badge");
+        row = UnitRow(PropertyGroup(property.Name), "PH1");
+        await Expect(row).ToContainTextAsync("Penthouse");
+        await Expect(row.GetByText("inactive", new() { Exact = true })).ToHaveCountAsync(0);
+    }
+
+    [Fact]
     [Trait("Requirement", "FR 2.a")]
     public async Task ApplyForUnit_StartsApplication_AndReopensIt()
     {

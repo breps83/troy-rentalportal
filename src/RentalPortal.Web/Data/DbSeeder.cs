@@ -49,19 +49,14 @@ public class DbSeeder
         using var scope = services.CreateScope();
 
         var provider = scope.ServiceProvider;
-
         var environment = provider.GetRequiredService<IHostEnvironment>();
-
         var logger = provider.GetRequiredService<ILogger<DbSeeder>>();
-
         var db = provider.GetRequiredService<AppDbContext>();
 
         await db.Database.MigrateAsync();
 
         var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
-
         var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
-
         var faker = new Faker(FakerCulture) { Random = new Randomizer(4021) };
 
         var now = provider.GetRequiredService<TimeProvider>()
@@ -91,8 +86,10 @@ public class DbSeeder
                         (propertyManagers, applicants),
                         now);
 
+#pragma warning disable CA1873 // Avoid potentially expensive logging
                     logger.LogInformation("Seeded demo data: {Managers} property managers, {Applicants} applicants",
                         propertyManagers.Count, applicants.Count);
+#pragma warning restore CA1873 // Avoid potentially expensive logging
                 }
                 else
                 {

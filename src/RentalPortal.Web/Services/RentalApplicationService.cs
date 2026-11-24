@@ -56,9 +56,6 @@ public class RentalApplicationService(
 
         await db.SaveChangesAsync();
 
-        logger.LogInformation("Application {ApplicationId} started by user {UserId} for unit {UnitId}",
-            application.Id, applicant.Id, unitId);
-
         return application;
     }
 
@@ -88,8 +85,6 @@ public class RentalApplicationService(
 
         await db.SaveChangesAsync();
 
-        logger.LogInformation("Application {ApplicationId} submitted by user {UserId}", application.Id, userId);
-
         return Result.Success();
     }
 
@@ -107,8 +102,6 @@ public class RentalApplicationService(
         application.Withdraw(userId, Now);
 
         await db.SaveChangesAsync();
-
-        logger.LogInformation("Application {ApplicationId} withdrawn by user {UserId}", application.Id, userId);
 
         return Result.Success();
     }
@@ -184,15 +177,6 @@ public class RentalApplicationService(
         }
 
         await db.SaveChangesAsync();
-
-        logger.LogInformation("Application {ApplicationId} reviewed by user {UserId}: {Status}",
-            application.Id, userId, application.Status);
-
-        if (lease != null)
-        {
-            logger.LogInformation("Lease {LeaseId} created for unit {UnitId} from application {ApplicationId}",
-                lease.Id, lease.UnitId, application.Id);
-        }
 
         return Result.Success();
     }

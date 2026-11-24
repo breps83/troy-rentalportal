@@ -8,6 +8,13 @@ using RentalPortal.Web.ViewModels.Account;
 
 namespace RentalPortal.Web.Controllers;
 
+/// <summary>
+/// Handles account registration, sign-in, sign-out, and access-denied requests.
+/// </summary>
+/// <param name="db">Provides access to application data.</param>
+/// <param name="userManager">Manages application user creation and role assignment.</param>
+/// <param name="signInManager">Manages user authentication and sign-out operations.</param>
+/// <param name="logger">Records account activity and authentication failures.</param>
 public class AccountController(
     AppDbContext db,
     UserManager<ApplicationUser> userManager, 

@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Data.SqlClient;
 
 namespace RentalPortal.E2E.Tests.Infrastructure;
 
@@ -10,9 +11,9 @@ public static class E2ESettings
 {
     public const string DatabaseName = "RentalPortalE2E";
 
-    public const string ConnectionString =
-        "Server=(localdb)\\mssqllocaldb;Database=" + DatabaseName +
-        ";Trusted_Connection=True;MultipleActiveResultSets=true";
+    // RENTALPORTAL_TEST_SQL=<connection string> uses another SQL Server instead of LocalDB.
+    // The database name is always replaced, because each run drops and recreates this database.
+    public static readonly string ConnectionString = BuildConnectionString();
 
     // E2E_VIDEO=1 records a video of each test, with annotations.
     public static bool RecordVideo => IsOn("E2E_VIDEO");
@@ -44,6 +45,21 @@ public static class E2ESettings
 
     // E2E_OUTPUT=<folder> sets where videos and traces go; defaults to TestResults/e2e/<timestamp> at the repo root.
     public static string OutputDirectory => _outputDirectory.Value;
+
+    private static string BuildConnectionString()
+    {
+        var server = Environment.GetEnvironmentVariable("RENTALPORTAL_TEST_SQL");
+
+        if (string.IsNullOrWhiteSpace(server))
+            server = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True";
+
+        var builder = new SqlConnectionStringBuilder(server)
+        {
+            InitialCatalog = DatabaseName
+        };
+
+        return builder.ConnectionString;
+    }
 
     private static bool IsOn(string name)
     {

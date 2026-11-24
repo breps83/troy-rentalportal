@@ -7,7 +7,8 @@ items is in [e2e-coverage.md](e2e-coverage.md).
 - **Project:** `tests/RentalPortal.E2E.Tests` (xUnit, [Microsoft.Playwright](https://playwright.dev/dotnet/))
 - **Browser:** Chromium, headless unless you ask for headed
 - **App:** started by the tests themselves, in-process on a random port. You don't need to run it first.
-- **Database:** its own LocalDB database, `RentalPortalE2E`. Your `RentalPortalDb` is never touched.
+- **Database:** its own database, `RentalPortalE2E`, on LocalDB by default (or the server in
+  `RENTALPORTAL_TEST_SQL`). Your `RentalPortalDb` is never touched.
 
 ## Setup (once)
 
@@ -22,7 +23,9 @@ items is in [e2e-coverage.md](e2e-coverage.md).
 
    `run-e2e.ps1` does this step for you. Repeat it after upgrading the `Microsoft.Playwright` package.
 
-You need LocalDB, which is already required by the app.
+You need LocalDB, which is already required by the app, or another SQL Server set in
+`RENTALPORTAL_TEST_SQL` (see the table below and the README's
+[Using a SQL Server other than LocalDB](../README.md#using-a-sql-server-other-than-localdb)).
 
 ## Running
 
@@ -81,6 +84,7 @@ All settings are environment variables, which the script and the runsettings fil
 | `E2E_HEADED=1` | Show the browser window | off |
 | `E2E_SLOWMO=<ms>` | Pause on each browser action (`run-e2e.ps1 -SlowMo <ms>`) | 600 with video or headed, otherwise 0 |
 | `E2E_OUTPUT=<folder>` | Where videos and traces go | `TestResults/e2e/<timestamp>` |
+| `RENTALPORTAL_TEST_SQL=<connection string>` | Use another SQL Server instead of LocalDB. The database name is always `RentalPortalE2E`, and any `Database=` in the value is replaced, because each run drops it | LocalDB |
 
 ## Videos, annotations, and traces
 

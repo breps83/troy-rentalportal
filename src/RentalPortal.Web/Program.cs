@@ -50,6 +50,10 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
 app.UseHttpsRedirection();
+
+// US formats for rent, dates, and form input, whatever the server or browser language is
+app.UseRequestLocalization("en-US");
+
 app.UseRouting();
 
 app.UseAuthentication();

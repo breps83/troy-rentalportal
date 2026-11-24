@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace RentalPortal.Integration.Tests.Infrastructure;
@@ -9,9 +10,26 @@ namespace RentalPortal.Integration.Tests.Infrastructure;
 /// </summary>
 public class IntegrationAppFactory : WebApplicationFactory<Program>
 {
-    public const string ConnectionString =
-        "Server=(localdb)\\mssqllocaldb;Database=RentalPortalIntegration" +
-        ";Trusted_Connection=True;MultipleActiveResultSets=true";
+    public const string DatabaseName = "RentalPortalIntegration";
+
+    // RENTALPORTAL_TEST_SQL=<connection string> uses another SQL Server instead of LocalDB.
+    // The database name is always replaced, because each run drops and recreates this database.
+    public static readonly string ConnectionString = BuildConnectionString();
+
+    private static string BuildConnectionString()
+    {
+        var server = Environment.GetEnvironmentVariable("RENTALPORTAL_TEST_SQL");
+
+        if (string.IsNullOrWhiteSpace(server))
+            server = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True";
+
+        var builder = new SqlConnectionStringBuilder(server)
+        {
+            InitialCatalog = DatabaseName
+        };
+
+        return builder.ConnectionString;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

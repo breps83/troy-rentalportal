@@ -1,8 +1,28 @@
 # Working with Claude Code
 
-This repository is set up for [Claude Code](https://docs.claude.com/en/docs/claude-code). Claude is
-used to review work, help with plans and requirement tracking, and assist with UI and small pieces of
-logic.
+This repository is set up for [Claude Code](https://docs.claude.com/en/docs/claude-code).
+
+## How Claude was used
+
+**I wrote the application.** The domain model, business rules, controllers, data access, views, and
+most of the code in this repository are my own work. Claude was used as an assistant around that code,
+not to generate the application. It was used to:
+
+- **Write documentation:** the README, the guides in `docs/`, and the diagrams.
+- **Validate requirements:** check the code against each requirement in
+  [requirements.md](requirements.md) and keep [requirements-checklist.md](requirements-checklist.md)
+  accurate. An item is ticked only when the code implements it.
+- **Review code:** run code reviews and security reviews on my changes. I decided which findings to
+  act on.
+- **Write tests:** create detailed unit, integration, and E2E tests for the behavior I built.
+- **Run tests:** run the test suites, record the E2E videos, and report the results.
+- **Make small changes on request:** for example, UI tweaks, added logging, and test configuration.
+  I asked for each one and reviewed it before committing.
+
+[CLAUDE.md](../CLAUDE.md) sets these limits for every session: keep changes small, ask before design
+changes, and don't rewrite code I'm working on.
+
+## Setup
 
 - **[CLAUDE.md](../CLAUDE.md)** at the root holds the project instructions Claude reads every session:
   the project layout, how to work in the repo, the code conventions, and the build and test commands.

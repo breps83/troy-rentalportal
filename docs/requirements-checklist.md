@@ -61,7 +61,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
         `#application-history`, and `#application-notes` through `ApplicationsController.Status`,
         `History`, and `Notes`)
   - [x] Notes: add, edit, delete (`AddNote`, `EditNote`, `DeleteNote`, `_NoteForm`, `_ConfirmDelete`)
-- [ ] **1.c** Structure and styling follow best practices
+- [x] **1.c** Structure and styling follow best practices
 
 ### TR 2. Backend (.NET 10)
 
@@ -230,7 +230,7 @@ verify each item is in [e2e-coverage.md](e2e-coverage.md).
   - [x] Testing: unit, integration, and E2E tests, building to a temp folder, the E2E report
         (`README.md`, Testing)
   - [x] Setup: demo logins, connection string, LocalDB (`README.md`, Getting started)
-- [ ] Code pushed to a GitHub repository
+- [x] Code pushed to a GitHub repository
 - [ ] Link sent in reply to the assessment email
 
 ## Pre-interview

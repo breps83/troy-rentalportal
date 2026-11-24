@@ -6,7 +6,10 @@ using RentalPortal.Web.Extensions;
 
 namespace RentalPortal.Web.Services;
 
-public class RentalApplicationService(AppDbContext db, TimeProvider time)
+public class RentalApplicationService(
+    AppDbContext db,
+    TimeProvider time,
+    ILogger<RentalApplicationService> logger)
 {
     private DateTime Now => time.GetUtcNow().UtcDateTime;
 
@@ -34,7 +37,10 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
             !u.Leases.Any(l => l.StartDate <= today && today <= l.EndDate));
 
         if (!available)
+        {
+            logger.LogWarning("Unit {UnitId} is not available; user {UserId} can't apply", unitId, applicant.Id);
             return null;
+        }
 
         // start a new application
         var application = RentalApplication.NewApplication(unitId, applicant, Now);
@@ -42,6 +48,9 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         db.RentalApplications.Add(application);
 
         await db.SaveChangesAsync();
+
+        logger.LogInformation("Application {ApplicationId} started by user {UserId} for unit {UnitId}",
+            application.Id, applicant.Id, unitId);
 
         return application;
     }
@@ -51,10 +60,10 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         var today = time.GetToday();
 
         if (application.ApplicantId != userId)
-            return Result.Failure("Failed. This may not be your application.");
+            return Rejected(application, "submit", userId, "Failed. This may not be your application.");
 
         if (!application.CanSubmit)
-            return Result.Failure("Please complete both sections before submitting.");
+            return Rejected(application, "submit", userId, "Please complete both sections before submitting.");
 
         var unitLeases = await db.Leases
             .Where(l => l.UnitId == application.UnitId &&
@@ -67,10 +76,12 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         }
         catch (RuleException ex)
         {
-            return Result.Failure(ex.Message);
+            return Rejected(application, "submit", userId, ex.Message);
         }
 
         await db.SaveChangesAsync();
+
+        logger.LogInformation("Application {ApplicationId} submitted by user {UserId}", application.Id, userId);
 
         return Result.Success();
     }
@@ -78,14 +89,19 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
     public async Task<Result> WithdrawApplicationAsync(RentalApplication application, string userId)
     {
         if (application.ApplicantId != userId)
-            return Result.Failure("You can only withdraw your own application.");
+            return Rejected(application, "withdraw", userId, "You can only withdraw your own application.");
 
         if (!application.CanWithdraw)
-            return Result.Failure($"An application that is {application.Status} can't be withdrawn.");
+        {
+            return Rejected(application, "withdraw", userId,
+                $"An application that is {application.Status} can't be withdrawn.");
+        }
 
         application.Withdraw(userId, Now);
 
         await db.SaveChangesAsync();
+
+        logger.LogInformation("Application {ApplicationId} withdrawn by user {UserId}", application.Id, userId);
 
         return Result.Success();
     }
@@ -98,10 +114,12 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         string userId)
     {
         if (!application.CanReview)
-            return Result.Failure("The application needs to be submitted before review.");
+            return Rejected(application, "review", userId, "The application needs to be submitted before review.");
 
         if (reviewStatus != ApplicationReviewStatus.Approve && string.IsNullOrWhiteSpace(comment))
             return Result.Failure("A comment is required.");
+
+        Lease? lease = null;
 
         try
         {
@@ -115,7 +133,7 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
                     var today = time.GetToday();
 
                     // lease starts today
-                    var lease = application.ApproveApplicationForLease(
+                    lease = application.ApproveApplicationForLease(
                         userId,
                         comment,
                         Now,
@@ -155,11 +173,29 @@ public class RentalApplicationService(AppDbContext db, TimeProvider time)
         }
         catch (RuleException ex)
         {
-            return Result.Failure(ex.Message);
+            return Rejected(application, "review", userId, ex.Message);
         }
 
         await db.SaveChangesAsync();
 
+        logger.LogInformation("Application {ApplicationId} reviewed by user {UserId}: {Status}",
+            application.Id, userId, application.Status);
+
+        if (lease != null)
+        {
+            logger.LogInformation("Lease {LeaseId} created for unit {UnitId} from application {ApplicationId}",
+                lease.Id, lease.UnitId, application.Id);
+        }
+
         return Result.Success();
+    }
+
+    // logs a status change that was refused, then returns the failure
+    private Result Rejected(RentalApplication application, string action, string userId, string error)
+    {
+        logger.LogWarning("Can't {Action} application {ApplicationId} for user {UserId}: {Error}",
+            action, application.Id, userId, error);
+
+        return Result.Failure(error);
     }
 }

@@ -11,7 +11,8 @@ namespace RentalPortal.Web.Controllers;
 public class AccountController(
     AppDbContext db,
     UserManager<ApplicationUser> userManager, 
-    SignInManager<ApplicationUser> signInManager) : Controller
+    SignInManager<ApplicationUser> signInManager,
+    ILogger<AccountController> logger) : Controller
 {
     [HttpGet]
     public IActionResult Register() => View(new RegisterViewModel());
@@ -60,6 +61,8 @@ public class AccountController(
 
         await transaction.CommitAsync();
 
+        logger.LogInformation("User {UserId} registered as {Role}", user.Id, role);
+
         await signInManager.SignInAsync(user, isPersistent: false);
 
         return RedirectToAction("Index", "Home");
@@ -83,6 +86,9 @@ public class AccountController(
 
         if (user == null)
         {
+            // don't log the email; it may be personal data or a mistyped password
+            logger.LogWarning("Sign-in failed: no account for the email entered");
+
             ModelState.AddModelError(string.Empty, invalidLoginMessage);
 
             return View(model);
@@ -94,6 +100,11 @@ public class AccountController(
 
         if (!result.Succeeded)
         {
+            if (result.IsLockedOut)
+                logger.LogWarning("Sign-in blocked: user {UserId} is locked out", user.Id);
+            else
+                logger.LogWarning("Sign-in failed for user {UserId}", user.Id);
+
             ModelState.AddModelError(string.Empty, result.IsLockedOut
                 ? "This account is locked. Try again in a few minutes."
                 : invalidLoginMessage);

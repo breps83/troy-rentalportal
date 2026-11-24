@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using RentalPortal.Web.Data;
 using RentalPortal.Web.Domain;
 using RentalPortal.Web.Enums;
@@ -32,7 +33,10 @@ public class RentalApplicationServiceTests
             .UseSqlServer("Server=unused;Database=unused")
             .Options;
 
-        return new RentalApplicationService(new AppDbContext(options), TimeProvider.System);
+        return new RentalApplicationService(
+            new AppDbContext(options),
+            TimeProvider.System,
+            NullLogger<RentalApplicationService>.Instance);
     }
 
     private static RentalApplication NewDraft() =>

@@ -52,6 +52,8 @@ public class DbSeeder
 
         var environment = provider.GetRequiredService<IHostEnvironment>();
 
+        var logger = provider.GetRequiredService<ILogger<DbSeeder>>();
+
         var db = provider.GetRequiredService<AppDbContext>();
 
         await db.Database.MigrateAsync();
@@ -88,13 +90,22 @@ public class DbSeeder
                         faker,
                         (propertyManagers, applicants),
                         now);
+
+                    logger.LogInformation("Seeded demo data: {Managers} property managers, {Applicants} applicants",
+                        propertyManagers.Count, applicants.Count);
+                }
+                else
+                {
+                    logger.LogInformation("Demo data not seeded: the database already has users");
                 }
             }
 
             await transaction.CommitAsync();
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Database seeding failed; changes were rolled back");
+
             await transaction.RollbackAsync();
 
             throw;

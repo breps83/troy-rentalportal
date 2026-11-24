@@ -21,9 +21,9 @@ From the assessment specification. See [requirements.md](requirements.md) for th
 
 ## Pre-interview checklist
 
-- [ ] Pull the latest code.
-- [ ] Build the solution.
-- [ ] Start the application (database created, migrations applied, data seeded).
-- [ ] Log in as an **applicant**.
-- [ ] Log in as a **property manager**.
-- [ ] Run the tests.
+- [x] Pull the latest code.
+- [x] Build the solution.
+- [x] Start the application (database created, migrations applied, data seeded).
+- [x] Log in as an **applicant**.
+- [x] Log in as a **property manager**.
+- [x] Run the tests.

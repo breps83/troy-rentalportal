@@ -169,6 +169,19 @@ Tests create their own properties, units, and applications.
 Chromium the first time. You don't need to start the app: the tests start it themselves, on a random
 port.
 
+Running the tests from Test Explorer or `dotnet test` doesn't install Chromium. On a new machine, run
+the script once first, or install it yourself after building:
+
+```powershell
+dotnet build tests/RentalPortal.E2E.Tests -o $env:TEMP/RentalPortal.E2E.Tests
+pwsh $env:TEMP/RentalPortal.E2E.Tests/playwright.ps1 install chromium
+```
+
+**On Windows**, if PowerShell won't run the script because it isn't digitally signed, either run it
+once with `pwsh -ExecutionPolicy Bypass -File ./tests/RentalPortal.E2E.Tests/run-e2e.ps1`, or allow
+local scripts for your user with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`. If the repo
+came from a ZIP download, also unblock its scripts with `Get-ChildItem -Recurse -Filter *.ps1 | Unblock-File`.
+
 **On Linux**, Chromium also needs some system libraries that the script doesn't install. Install them
 once, as root or with `sudo` (this uses `apt`, so it works on Debian and Ubuntu):
 
@@ -177,9 +190,10 @@ dotnet build tests/RentalPortal.E2E.Tests -o /tmp/RentalPortal.E2E.Tests
 pwsh /tmp/RentalPortal.E2E.Tests/playwright.ps1 install --with-deps chromium
 ```
 
-Windows and macOS don't need this step.
+Windows and macOS don't need these libraries.
 
-Run them with the script:
+Run them with the script. A run with video is slow, because the script pauses on each browser action
+so the video is easy to follow. For a quick check, use `-NoVideo`.
 
 ```powershell
 ./tests/RentalPortal.E2E.Tests/run-e2e.ps1                                         # all tests, with video
